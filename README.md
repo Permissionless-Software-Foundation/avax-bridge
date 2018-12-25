@@ -1,5 +1,5 @@
 # token-liquidity
-This is an application for providing token liquidity, inspired by the pricing algorithm in the Bancor Whitepaper. While Bancor uses ERC20 tokens, this application focuses on the Wormhole protocol for creating tokens on the BCH network.
+This is an application for providing token liquidity, inspired by the pricing algorithm in the [Bancor Whitepaper](docs/bancor-protocol-whitepaper.pdf). While Bancor uses ERC20 tokens, this application focuses on the Wormhole protocol for creating tokens on the BCH network.
 
 The idea is simple. This program has its own BCH public address. If you send BCH to the address, the program will send you tokens. If you send tokens to that address, the program will send you BCH. The exchange rate is determined by the price formula.
 
