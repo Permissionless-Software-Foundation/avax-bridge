@@ -1,7 +1,7 @@
 {
-  "name": "babel-free-koa2-api-boilerplate",
-  "version": "3.0.0",
-  "description": "Koa2 boilerplate covering essentials for APIs, babel removed as a dependency",
+  "name": "token-liquidity",
+  "version": "1.0.0",
+  "description": "BCH Wormhole Token Liquidity Web App for the Permissionless Software Foundation",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -20,15 +20,19 @@
     "es6",
     "mongoose",
     "passportjs",
-    "apidoc"
+    "apidoc",
+    "bitcoin-cash",
+    "bitcoin",
+    "BCH",
+    "wormhole"
   ],
   "author": "Chris Troutner <chris.troutner@gmail.com>",
   "license": "MIT",
   "apidoc": {
-    "title": "babel-free-koa2-api-boilerplate",
+    "title": "token-liquidity",
     "url": "localhost:5000"
   },
-  "repository": "christroutner/babel-free-koa2-api-boilerplate",
+  "repository": "Permissionless-Software-Foundation/token-liquidity",
   "dependencies": {
     "apidoc": "^0.17.6",
     "bcryptjs": "^2.4.3",
