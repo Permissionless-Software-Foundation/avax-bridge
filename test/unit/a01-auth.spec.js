@@ -1,4 +1,4 @@
-const app = require('../bin/server')
+const app = require('../../bin/server')
 // const supertest = require('supertest')
 // const expect = require('chai').expect
 const should = require('chai').should
@@ -8,18 +8,15 @@ const utils = require('./utils')
 
 const rp = require('request-promise')
 const assert = require('chai').assert
- 
+
 should()
 // const request = supertest.agent(app.listen())
 const context = {}
 
 const LOCALHOST = 'http://localhost:5000'
 
-
-
 describe('Auth', () => {
   before(async () => {
-
     await app.startServer()
 
     utils.cleanDb()
@@ -60,7 +57,7 @@ describe('Auth', () => {
 
         let result = await rp(options)
 
-          // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+        // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
         console.log(`result stringified: ${JSON.stringify(result, null, 2)}`)
         assert(false, 'Unexpected result')
