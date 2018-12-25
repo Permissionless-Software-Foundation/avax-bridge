@@ -1,4 +1,10 @@
-# babel-free-koa2-api-boilerplate
+# token-liquidity
+This is an application for providing token liquidity, inspired by the pricing algorithm in the Bancor Whitepaper. While Bancor uses ERC20 tokens, this application focuses on the Wormhole protocol for creating tokens on the BCH network.
+
+The idea is simple. This program has its own BCH public address. If you send BCH to the address, the program will send you tokens. If you send tokens to that address, the program will send you BCH. The exchange rate is determined by the price formula.
+
+The price formula used in this program was inspired by the Bancor whitepaper, but I ultimately threw those equations out and created my own. My experiments are preserved here in the spreadsheet. Skip to the log-price-test sheet to see the final curve and breakdown that I settled on.
+
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com)
 
 [![Coverage Status](https://coveralls.io/repos/github/christroutner/babel-free-koa2-api-boilerplate/badge.svg?branch=unstable)](https://coveralls.io/github/christroutner/babel-free-koa2-api-boilerplate?branch=unstable)

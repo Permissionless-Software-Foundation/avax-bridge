@@ -1,6 +1,6 @@
 {
   "name": "token-liquidity",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "BCH Wormhole Token Liquidity Web App for the Permissionless Software Foundation",
   "main": "index.js",
   "scripts": {
