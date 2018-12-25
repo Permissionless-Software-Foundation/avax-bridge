@@ -3,7 +3,7 @@ This is an application for providing token liquidity, inspired by the pricing al
 
 The idea is simple. This program has its own BCH public address. If you send BCH to the address, the program will send you tokens. If you send tokens to that address, the program will send you BCH. The exchange rate is determined by the price formula.
 
-The price formula used in this program was inspired by the Bancor whitepaper, but I ultimately threw those equations out and created my own. My experiments are preserved here in the spreadsheet. Skip to the log-price-test sheet to see the final curve and breakdown that I settled on.
+The price formula used in this program was inspired by the Bancor whitepaper, but those equations were ultimately thrown out and similar equations created. Experiments are preserved here in [the spreadsheet](docs/bancor-cals.xlsx), and a whitepaper will be created to explain the new equations in detail. Skip to the log-price-test sheet to see the final curve and breakdown that I settled on.
 
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com)
 
