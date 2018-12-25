@@ -7,7 +7,7 @@
 const BITBOXCli = require('bitbox-sdk/lib/bitbox-sdk').default
 const BITBOX = new BITBOXCli({ restURL: 'https://trest.bitcoin.com/v1/' })
 
-const lib = require('./util.js')
+const lib = require('./token-util.js')
 
 module.exports = {
   sendBch
@@ -21,7 +21,7 @@ module.exports = {
 // Open the wallet generated with create-wallet.
 let walletInfo
 try {
-  walletInfo = require(`../wallet.json`)
+  walletInfo = require(`../../wallet.json`)
 } catch (err) {
   console.log(`Could not open wallet.json. Generate a wallet with create-wallet first.`)
   process.exit(0)

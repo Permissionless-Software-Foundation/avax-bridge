@@ -22,7 +22,7 @@ module.exports = {
 // Open the wallet generated with create-wallet.
 let walletInfo
 try {
-  walletInfo = require(`../wallet.json`)
+  walletInfo = require(`../../wallet.json`)
 } catch (err) {
   console.log(
     `Could not open wallet.json. Generate a wallet with create-wallet first.
