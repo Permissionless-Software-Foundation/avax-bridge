@@ -12,6 +12,9 @@ const cors = require('kcors')
 const config = require('../config')
 const errorMiddleware = require('../src/middleware')
 
+// Winston logger
+const wlogger = require('../src/utils/logging')
+
 async function startServer () {
   // Create a Koa instance.
   const app = new Koa()
@@ -51,6 +54,7 @@ async function startServer () {
   // })
   await app.listen(config.port)
   console.log(`Server started on ${config.port}`)
+  wlogger.info(`Server started on ${config.port}`)
 
   return app
 }

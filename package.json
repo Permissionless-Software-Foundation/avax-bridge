@@ -53,6 +53,8 @@
     "passport-local": "^1.0.0",
     "request": "^2.85.0",
     "request-promise": "^4.2.2",
+    "winston": "^3.1.0",
+    "winston-daily-rotate-file": "^3.5.1",
     "wormhole-sdk": "^1.5.3"
   },
   "devDependencies": {
