@@ -31,13 +31,13 @@ const wlogger = require('./logging')
 
 const lastTransactionLib = require('./last-transaction.js')
 
-const BCH_ADDR1 = `bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pzqf`
-const TOKEN_ID = 556
+const config = require('../../config')
+const BCH_ADDR1 = config.BCH_ADDR
+const TOKEN_ID = config.TOKEN_ID
+const TOKENS_QTY_ORIGINAL = config.TOKENS_QTY_ORIGINAL
+const BCH_QTY_ORIGINAL = config.BCH_QTY_ORIGINAL
 
-const TOKENS_QTY_ORIGINAL = 5000
-const BCH_QTY_ORIGINAL = 25
-
-const seenTxs = []
+const seenTxs = [] // Track processed TXIDs
 
 // Get the balance in BCH of a BCH address.
 // Returns an object containing balance information.

@@ -6,6 +6,7 @@
 
 const lib = require('../src/utils/token-util.js')
 const got = require('got')
+const config = require('../config')
 
 // Used for debugging.
 const util = require('util')
@@ -24,8 +25,8 @@ const wormhole = new Wormhole({ restURL: `https://trest.bitcoin.com/v1/` })
 const tknLib = require(`../src/utils/send-tokens.js`)
 const bchLib = require(`../src/utils/send-bch.js`)
 
-const BCH_ADDR1 = `bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pzqf`
-const TOKEN_ID = 556
+const BCH_ADDR1 = config.BCH_ADDR
+const TOKEN_ID = config.TOKEN_ID
 
 let bchBalance
 let tokenBalance
