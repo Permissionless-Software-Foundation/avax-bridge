@@ -24,7 +24,7 @@ bchLib.sendBch = sinon.stub().returns({})
 // If not specified, default to unit test.
 if (!process.env.APP_ENV) process.env.APP_ENV = 'test'
 
-describe('util', () => {
+describe('#token-util', () => {
   let BITBOX, wormhole
   // let mockedWallet
 
@@ -166,7 +166,7 @@ describe('util', () => {
       }
 
       const result = lib.exchangeBCHForTokens(exchangeObj)
-      console.log(`result: ${util.inspect(result)}`)
+      // console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ['tokensOut', 'bch2', 'token2'])
       assert.equal(Math.floor(result.tokensOut), 500, `Should match spreadsheet`)
@@ -234,18 +234,20 @@ describe('util', () => {
       assert.equal(result, true)
     })
 
-    it(`should return false if confirmations are less than 2`, async () => {
-      bitboxMock.mockTransactions.txs[0].confirmations = 0
-      const addr = `bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pzqf`
-      // console.log(`blah: ${util.inspect(blah.txs[0].confirmations)}`)
+    if (process.env.APP_ENV === 'test') {
+      it(`should return false if confirmations are less than 2`, async () => {
+        bitboxMock.mockTransactions.txs[0].confirmations = 0
+        const addr = `bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pzqf`
+        // console.log(`blah: ${util.inspect(blah.txs[0].confirmations)}`)
 
-      const result = await lib.testableComponents.only2Conf(addr, BITBOX)
-      // console.log(`result: ${util.inspect(result)}`)
+        const result = await lib.testableComponents.only2Conf(addr, BITBOX)
+        // console.log(`result: ${util.inspect(result)}`)
 
-      bitboxMock.mockTransactions.txs[0].confirmations = 30
+        bitboxMock.mockTransactions.txs[0].confirmations = 30
 
-      assert.equal(result, false)
-    })
+        assert.equal(result, false)
+      })
+    }
   })
 
   // Only run these tests for a unit test.

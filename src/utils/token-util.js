@@ -6,9 +6,6 @@
 
 'use strict'
 
-const util = require('util')
-util.inspect.defaultOptions = { depth: 3 }
-
 module.exports = {
   getBCHBalance, // Get the BCH balance for a given address.
   getTokenBalance, // Get the Token balance for a given address.
@@ -25,6 +22,12 @@ module.exports = {
     only2Conf
   }
 }
+
+const util = require('util')
+util.inspect.defaultOptions = { depth: 3 }
+
+// Winston logger
+const wlogger = require('./logging')
 
 const lastTransactionLib = require('./last-transaction.js')
 
@@ -53,8 +56,8 @@ async function getBCHBalance (addr, verbose, BITBOX) {
 
     return bchBalance
   } catch (err) {
-    console.error(`Error in getBCHBalance: `, err)
-    console.log(`addr: ${addr}`)
+    wlogger.error(`Error in getBCHBalance: `, err)
+    wlogger.error(`addr: ${addr}`)
     throw err
   }
 }
@@ -62,13 +65,15 @@ async function getBCHBalance (addr, verbose, BITBOX) {
 // Get the token balance of a BCH address
 async function getTokenBalance (addr, wormhole) {
   try {
+    wlogger.silly(`Enter getTokenBalance()`)
+
     const result = await wormhole.DataRetrieval.balancesForAddress(addr)
-    // console.log(result);
+    wlogger.debug(`token balance: `, result)
 
     if (result === 'Address not found') return 0
     return result
   } catch (err) {
-    console.error(`Error in util.js/getTokenBalance: `, err)
+    wlogger.error(`Error in util.js/getTokenBalance: `, err)
     throw err
   }
 }
@@ -115,16 +120,16 @@ async function compareLastTransaction (obj, tknLib, bchLib, wormhole) {
 
       // Is this a new, unseen transaction?
       if (lastTransaction !== txid && notSeen) {
-        console.log(`New TXID ${lastTransaction} detected.`)
+        wlogger.debug(`New TXID ${lastTransaction} detected.`)
 
         // Get the sender's address for this transaction.
         const userAddr = await getUserAddr(lastTransaction, wormhole)
-        console.log(`userAddr: ${util.inspect(userAddr)}`)
+        wlogger.debug(`userAddr: ${util.inspect(userAddr)}`)
 
         // Exit if the userAddr is the same as the bchAddr for this app.
         // This occurs when the app sends bch or tokens to the user.
         if (userAddr === bchAddr) {
-          console.log(`userAddr === bchAddr. Exiting compareLastTransaction()`)
+          wlogger.debug(`userAddr === bchAddr. Exiting compareLastTransaction()`)
           seenTxs.push(lastTransaction)
           const retObj = {
             lastTransaction: lastTransaction,
@@ -136,7 +141,7 @@ async function compareLastTransaction (obj, tknLib, bchLib, wormhole) {
 
         // Process new txid.
         const isTokenTx = await tokenTxInfo(lastTransaction, wormhole)
-        console.log(`isTokenTx: ${isTokenTx}`)
+        wlogger.debug(`isTokenTx: ${isTokenTx}`)
 
         // User sent tokens.
         if (isTokenTx) {
@@ -149,22 +154,22 @@ async function compareLastTransaction (obj, tknLib, bchLib, wormhole) {
           }
 
           const bchOut = exchangeTokensForBCH(exchangeObj)
-          console.log(
+          wlogger.info(
             `Ready to send ${bchOut} BCH in exchange for ${isTokenTx} tokens`
           )
 
           // Update the balances
           newTokenBalance = round8(exchangeObj.tokenBalance + isTokenTx)
           newBchBalance = round8(bchBalance - bchOut)
-          console.log(`New BCH balance: ${newBchBalance}`)
-          console.log(`New token balance: ${newTokenBalance}`)
+          wlogger.info(`New BCH balance: ${newBchBalance}`)
+          wlogger.info(`New token balance: ${newTokenBalance}`)
 
           // Send BCH
           const obj = {
             recvAddr: userAddr,
             satoshisToSend: Math.floor(bchOut * 100000000)
           }
-          console.log(`obj.satoshisToSend: ${obj.satoshisToSend}`)
+          wlogger.debug(`obj.satoshisToSend: ${obj.satoshisToSend}`)
 
           await bchLib.sendBch(obj)
 
@@ -172,7 +177,7 @@ async function compareLastTransaction (obj, tknLib, bchLib, wormhole) {
         } else {
           // Get the BCH send amount.
           const bchQty = await recievedBch(lastTransaction, BCH_ADDR1, wormhole)
-          console.log(`${bchQty} BCH recieved.`)
+          wlogger.debug(`${bchQty} BCH recieved.`)
 
           // Exchange BCH for tokens
           const exchangeObj = {
@@ -183,7 +188,7 @@ async function compareLastTransaction (obj, tknLib, bchLib, wormhole) {
           }
           const retObj = exchangeBCHForTokens(exchangeObj)
 
-          console.log(
+          wlogger.info(
             `Ready to send ${retObj.tokensOut} tokens in exchange for ${bchQty} BCH`
           )
 
@@ -191,9 +196,9 @@ async function compareLastTransaction (obj, tknLib, bchLib, wormhole) {
           // newBchBalance = retObj.bch2
           newBchBalance = round8(Number(bchBalance) + exchangeObj.bchIn)
           newTokenBalance = round8(Number(tokenBalance) - retObj.tokensOut)
-          console.log(`retObj: ${util.inspect(retObj)}`)
-          console.log(`New BCH balance: ${newBchBalance}`)
-          console.log(`New token balance: ${newTokenBalance}`)
+          wlogger.debug(`retObj: ${util.inspect(retObj)}`)
+          wlogger.info(`New BCH balance: ${newBchBalance}`)
+          wlogger.info(`New token balance: ${newTokenBalance}`)
 
           // Send Tokens
           const obj = {
@@ -221,11 +226,11 @@ async function compareLastTransaction (obj, tknLib, bchLib, wormhole) {
     }
 
     // Return false to signal no detected change in txid.
-    console.log(`compareLastTransaction returning false.`)
+    wlogger.debug(`compareLastTransaction returning false.`)
     return false
   } catch (err) {
-    console.log(`Error in compareLastTransaction: `, err)
-    console.log(`obj: ${JSON.stringify(obj, null, 2)}`)
+    wlogger.error(`Error in compareLastTransaction: `, err)
+    wlogger.error(`obj: ${JSON.stringify(obj, null, 2)}`)
     throw err
   }
 }
@@ -242,55 +247,72 @@ async function getBlockchainBalances (bchAddr, wormhole) {
     const thisToken = tokenInfo.find(token => token.propertyid === TOKEN_ID)
     const tokenBalance = thisToken.balance
 
-    console.log(`Blockchain balance: ${currentBCHBalance} BCH, ${tokenBalance} tokens`)
+    wlogger.debug(`Blockchain balance: ${currentBCHBalance} BCH, ${tokenBalance} tokens`)
 
     return {
       bchBalance: currentBCHBalance,
       tokenBalance: tokenBalance
     }
   } catch (err) {
-    console.log(`Error in getBlockchainBalances()`)
+    wlogger.error(`Error in getBlockchainBalances()`)
     throw err
   }
 }
 
+// Get a single transaction. The last confirmed transaction. 1-conf or older.
 async function getLastConfirmedTransaction (bchAddr, BITBOX) {
-  // Get an ordered list of transactions associated with this address.
-  let txs = await lastTransactionLib.getTransactions(bchAddr, BITBOX)
-  txs = lastTransactionLib.getTxConfs(txs.txs)
+  try {
+    wlogger.silly(`Entering getLastConfirmedTransaction.`)
 
-  // filter out 0-conf transactions.
-  txs = txs.filter(elem => elem.confirmations > 0)
+    // Get an ordered list of transactions associated with this address.
+    let txs = await lastTransactionLib.getTransactions(bchAddr, BITBOX)
+    txs = lastTransactionLib.getTxConfs(txs.txs)
 
-  // Retrieve the most recent 1-conf (or more) transaction.
-  const lastTransaction = txs[0].txid
-  // console.log(`lastTransaction: ${JSON.stringify(lastTransaction, null, 2)}`)
+    // filter out 0-conf transactions.
+    txs = txs.filter(elem => elem.confirmations > 0)
 
-  return lastTransaction
+    // Retrieve the most recent 1-conf (or more) transaction.
+    const lastTransaction = txs[0].txid
+    wlogger.debug(`lastTransaction: ${JSON.stringify(lastTransaction, null, 2)}`)
+
+    return lastTransaction
+  } catch (err) {
+    wlogger.error(`Error in getLastConfirmedTransaction: `, err)
+    throw err
+  }
 }
 
 // Returns an array of 1-conf transactions associated with the bch address.
 async function getLastConfirmedTransactions (bchAddr, BITBOX) {
-  // Get an ordered list of transactions associated with this address.
-  let txs = await lastTransactionLib.getTransactions(bchAddr, BITBOX)
-  txs = lastTransactionLib.getTxConfs(txs.txs)
+  try {
+    wlogger.silly(`Entering getLastConfirmedTransactions.`)
 
-  // filter out 0-conf transactions.
-  txs = txs.filter(elem => elem.confirmations === 1)
+    // Get an ordered list of transactions associated with this address.
+    let txs = await lastTransactionLib.getTransactions(bchAddr, BITBOX)
+    txs = lastTransactionLib.getTxConfs(txs.txs)
 
-  const lastTxids = []
-  for (let i = 0; i < txs.length; i++) {
-    const thisTx = txs[i]
-    lastTxids.push(thisTx.txid)
+    // filter out 0-conf transactions.
+    txs = txs.filter(elem => elem.confirmations === 1)
+
+    const lastTxids = []
+    for (let i = 0; i < txs.length; i++) {
+      const thisTx = txs[i]
+      lastTxids.push(thisTx.txid)
+    }
+
+    return lastTxids
+  } catch (err) {
+    wlogger.error(`Error in getLastConfirmedTransactions: `, err)
+    throw err
   }
-
-  return lastTxids
 }
 
 // Returns true if there are no 0 or 1-conf transactions associated with the address.
 async function only2Conf (bchAddr, BITBOX) {
   try {
-  // Get an ordered list of transactions associated with this address.
+    wlogger.silly(`Entering only2Conf.`)
+
+    // Get an ordered list of transactions associated with this address.
     let txs = await lastTransactionLib.getTransactions(bchAddr, BITBOX)
     txs = lastTransactionLib.getTxConfs(txs.txs)
 
@@ -307,17 +329,15 @@ async function only2Conf (bchAddr, BITBOX) {
 // transfer. Otherwise returns false.
 async function tokenTxInfo (txid, wormhole) {
   try {
+    wlogger.silly(`Entering tokenTxInfo().`)
+
     const retVal = await wormhole.DataRetrieval.transaction(txid)
-    console.log(`tokenTxInfo retVal: ${JSON.stringify(retVal, null, 2)}`)
+    wlogger.debug(`tokenTxInfo retVal: ${JSON.stringify(retVal, null, 2)}`)
 
     if (retVal.message === 'Not a Wormhole Protocol transaction') return false
 
     return Number(retVal.amount)
   } catch (err) {
-    // if (err.message === "Not a Wormhole Protocol transaction") return false;
-
-    console.log(`Error in tokenTxInfo.`)
-    // throw err;
     return false
   }
 }
@@ -326,6 +346,8 @@ async function tokenTxInfo (txid, wormhole) {
 // Returns a floating point number of BCH recieved. 0 if no match found.
 async function recievedBch (txid, addr, BITBOX) {
   try {
+    wlogger.silly(`Entering receivedBch().`)
+
     const txDetails = await BITBOX.Transaction.details(txid)
     // console.log(`txDetails: ${JSON.stringify(txDetails, null, 2)}`)
 
@@ -357,7 +379,7 @@ async function recievedBch (txid, addr, BITBOX) {
     // Address not found. Return zero.
     return 0
   } catch (err) {
-    console.log(`Error in recievedBch: `, err)
+    wlogger.error(`Error in recievedBch: `, err)
     throw err
   }
 }
@@ -375,9 +397,9 @@ function exchangeBCHForTokens (obj) {
 
     const tokensOut = token2 - token1
 
-    console.log(`bch1: ${bch1}, bch2: ${bch2}, token1: ${token1}, token2: ${token2}, tokensOut: ${tokensOut}`)
+    wlogger.debug(`bch1: ${bch1}, bch2: ${bch2}, token1: ${token1}, token2: ${token2}, tokensOut: ${tokensOut}`)
 
-    console.log(`${tokensOut} tokens sent in exchange for ${bchIn} BCH`)
+    wlogger.debug(`${tokensOut} tokens sent in exchange for ${bchIn} BCH`)
 
     const retObj = {
       tokensOut: Math.abs(round8(tokensOut)),
@@ -387,7 +409,7 @@ function exchangeBCHForTokens (obj) {
 
     return retObj
   } catch (err) {
-    console.log(`Error in util.js/exchangeBCHForTokens() `)
+    wlogger.error(`Error in util.js/exchangeBCHForTokens() `)
     throw err
   }
 }
@@ -400,6 +422,8 @@ function round8 (numIn) {
 // Calculates the amount of BCH to send.
 function exchangeTokensForBCH (obj) {
   try {
+    wlogger.silly(`Entering exchangeTokensForBCH.`, obj)
+
     const { tokenIn, tokenBalance, bchOriginalBalance, tokenOriginalBalance } = obj
 
     const token1 = tokenBalance - tokenOriginalBalance
@@ -410,11 +434,11 @@ function exchangeTokensForBCH (obj) {
 
     const bchOut = bch2 - bch1 - 0.00000270 // Subtract 270 satoshi tx fee
 
-    console.log(`bch1: ${bch1}, bch2: ${bch2}, token1: ${token1}, token2: ${token2}, bchOut: ${bchOut}`)
+    wlogger.debug(`bch1: ${bch1}, bch2: ${bch2}, token1: ${token1}, token2: ${token2}, bchOut: ${bchOut}`)
 
     return Math.abs(round8(bchOut))
   } catch (err) {
-    console.log(`Error in exchangeTokensForBCH().`)
+    wlogger.error(`Error in exchangeTokensForBCH().`)
     throw err
   }
 }
@@ -422,7 +446,8 @@ function exchangeTokensForBCH (obj) {
 // Queries the transaction details and returns the senders BCH address.
 async function getUserAddr (txid, BITBOX) {
   try {
-    // console.log(`txid: ${txid}`)
+    wlogger.silly(`Entering getUserAddr().`)
+    wlogger.debug(`txid: ${txid}`)
 
     const txDetails = await BITBOX.Transaction.details(txid)
 
@@ -433,24 +458,31 @@ async function getUserAddr (txid, BITBOX) {
 
     return senderAddr
   } catch (err) {
-    console.log(`Error in util.js/getUserAddr().`)
+    wlogger.debug(`Error in util.js/getUserAddr().`)
     throw err
   }
 }
 
 // Returns the utxo with the biggest balance from an array of utxos.
 function findBiggestUtxo (utxos) {
-  let largestAmount = 0
-  let largestIndex = 0
+  try {
+    wlogger.silly(`Entering findBiggestUtxo().`)
 
-  for (let i = 0; i < utxos.length; i++) {
-    const thisUtxo = utxos[i]
+    let largestAmount = 0
+    let largestIndex = 0
 
-    if (thisUtxo.satoshis > largestAmount) {
-      largestAmount = thisUtxo.satoshis
-      largestIndex = i
+    for (let i = 0; i < utxos.length; i++) {
+      const thisUtxo = utxos[i]
+
+      if (thisUtxo.satoshis > largestAmount) {
+        largestAmount = thisUtxo.satoshis
+        largestIndex = i
+      }
     }
-  }
 
-  return utxos[largestIndex]
+    return utxos[largestIndex]
+  } catch (err) {
+    wlogger.error(`Error in findBiggestUtxo().`)
+    throw err
+  }
 }

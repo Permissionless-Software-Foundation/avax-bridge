@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "NODE_ENV=test nyc --reporter=text ./node_modules/.bin/mocha --exit test/unit",
+    "test": "APP_ENV=test nyc --reporter=text ./node_modules/.bin/mocha --exit --timeout 15000 test/unit",
+    "test:integration": "APP_ENV=integration nyc --reporter=text ./node_modules/.bin/mocha --exit --timeout 25000 test/unit",
     "lint": "eslint src/**/*.js",
     "docs": "./node_modules/.bin/apidoc -i src/ -o docs",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
