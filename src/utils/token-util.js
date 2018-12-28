@@ -14,6 +14,8 @@ module.exports = {
   exchangeTokensForBCH,
   getLastConfirmedTransaction, // most recent 1-conf (or greater) transaction
   findBiggestUtxo, // Returns the utxo with the biggest balance from an array of utxos.
+  saveState,
+  readState,
   testableComponents: {
     tokenTxInfo,
     recievedBch,
@@ -23,6 +25,7 @@ module.exports = {
   }
 }
 
+const fs = require('fs')
 const util = require('util')
 util.inspect.defaultOptions = { depth: 3 }
 
@@ -484,5 +487,48 @@ function findBiggestUtxo (utxos) {
   } catch (err) {
     wlogger.error(`Error in findBiggestUtxo().`)
     throw err
+  }
+}
+
+function saveState (data) {
+  try {
+    wlogger.silly(`entering token-util.js saveState().`)
+
+    const filename = `${__dirname}/../../config/state.json`
+
+    return new Promise((resolve, reject) => {
+      fs.writeFile(filename, JSON.stringify(data, null, 2), function (err) {
+        if (err) {
+          wlogger.error(`Error in token-util.js/saveState(): `, err)
+          return reject(err)
+        }
+
+        wlogger.silly(`Successfully saved to state.json`)
+
+        // console.log(`${name}.json written successfully.`)
+        return resolve()
+      })
+    })
+  } catch (err) {
+    wlogger.debug(`Error in token-util.js/saveState()`, err)
+    throw err
+  }
+}
+
+// Open and read known-peers.json
+function readState (filename) {
+  // const filename = '../../peers/known-peers.json'
+
+  try {
+    // const filename = `${__dirname}/../../config/state.json`
+
+    // Delete the cached copy of the data.
+    delete require.cache[require.resolve(filename)]
+
+    const data = require(filename)
+    return data
+  } catch (err) {
+    wlogger.debug(`Error in token-util.js/saveState()`, err)
+    throw new Error(`Could not open ${filename}`)
   }
 }

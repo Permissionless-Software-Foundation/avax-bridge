@@ -6,7 +6,13 @@
 
 const lib = require('../src/utils/token-util.js')
 const got = require('got')
+
 const config = require('../config')
+config.bchBalance = config.BCH_QTY_ORIGINAL
+config.tokenBalance = config.TOKENS_QTY_ORIGINAL
+
+// Winston logger
+const wlogger = require('../src/utils/logging')
 
 // Used for debugging.
 const util = require('util')
@@ -35,14 +41,16 @@ async function startTokenLiquidity () {
   // Get BCH balance.
   const addressInfo = await lib.getBCHBalance(BCH_ADDR1, true, BITBOX)
   bchBalance = addressInfo.balance
-  console.log(`BCH address ${BCH_ADDR1} has a balance of ${bchBalance} BCH`)
+  config.bchBalancen = bchBalance
+  wlogger.info(`BCH address ${BCH_ADDR1} has a balance of ${bchBalance} BCH`)
 
   // Get token balance.
   const tokenInfo = await lib.getTokenBalance(BCH_ADDR1, wormhole)
-  console.log(`tokenInfo: ${JSON.stringify(tokenInfo, null, 2)}`)
+  wlogger.info(`tokenInfo: ${JSON.stringify(tokenInfo, null, 2)}`)
   const thisToken = tokenInfo.find(token => token.propertyid === TOKEN_ID)
   tokenBalance = thisToken.balance
-  console.log(`Token balance: ${tokenBalance}`)
+  config.tokenBalance = tokenBalance
+  wlogger.info(`Token balance: ${tokenBalance}`)
 
   // Get the BCH-USD exchange rate.
   let USDperBCH
@@ -51,10 +59,12 @@ async function startTokenLiquidity () {
     const jsonRate = JSON.parse(rawRate.body)
     // console.log(`jsonRate: ${JSON.stringify(jsonRate, null, 2)}`);
     USDperBCH = jsonRate.data.rates.USD
-    console.log(`USD/BCH exchange rate: $${USDperBCH}`)
+    wlogger.info(`USD/BCH exchange rate: $${USDperBCH}`)
+
+    config.usdPerBCH = USDperBCH
   } catch (err) {
-    console.log(`Coinbase exchange rate could not be retrieved!. Assuming hard coded value.`)
-    console.error(err)
+    wlogger.error(`Coinbase exchange rate could not be retrieved!. Assuming hard coded value.`)
+    wlogger.error(err)
     USDperBCH = 560
   }
 
@@ -80,13 +90,19 @@ async function startTokenLiquidity () {
     const retObj = await lib.compareLastTransaction(obj, tknLib, bchLib, wormhole)
     const newTx = retObj.lastTransaction
 
+    // Save the updated price information.
+    await lib.saveState(config)
+
     // Update the last transaction.
     if (newTx) lastTransaction = newTx
     if (retObj.bchBalance) bchBalance = retObj.bchBalance
     if (retObj.tokenBalance) tokenBalance = retObj.tokenBalance
 
     // New Balances:
-    console.log(`bchBalance: ${bchBalance}, tokenBalance: ${tokenBalance}`)
+    wlogger.info(`bchBalance: ${bchBalance}, tokenBalance: ${tokenBalance}`)
+
+    config.bchBalance = bchBalance
+    config.tokenBalance = tokenBalance
   }, 60000 * 2)
 }
 
