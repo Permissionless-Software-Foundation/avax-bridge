@@ -1,3 +1,7 @@
+/*
+  Create and launch the koa web server.
+*/
+
 const Koa = require('koa')
 const bodyParser = require('koa-bodyparser')
 const convert = require('koa-convert')
@@ -45,7 +49,7 @@ async function startServer () {
   modules(app)
 
   // Enable CORS for testing
-  // app.use(cors({origin: '*'}))
+  app.use(cors({ origin: '*' }))
 
   // MIDDLEWARE END
 
