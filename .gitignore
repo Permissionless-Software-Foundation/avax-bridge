@@ -59,3 +59,4 @@ sftp-config.json
 
 .nyc_output
 coverage
+wallet.json
