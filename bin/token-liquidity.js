@@ -22,11 +22,20 @@ util.inspect.defaultOptions = {
 }
 
 const BITBOXCli = require('bitbox-sdk/lib/bitbox-sdk').default
-const BITBOX = new BITBOXCli({ restURL: 'https://trest.bitcoin.com/v1/' })
-// const BITBOX = new BITBOXCli({ restURL: 'https://decatur.hopto.org/v1/' })
+let BITBOX
+if (config.NETWORK === `testnet`) {
+  BITBOX = new BITBOXCli({ restURL: 'https://trest.bitcoin.com/v1/' })
+} else {
+  BITBOX = new BITBOXCli({ restURL: 'https://rest.bitcoin.com/v1/' })
+}
 
 const Wormhole = require('wormhole-sdk/lib/Wormhole').default
-const wormhole = new Wormhole({ restURL: `https://trest.bitcoin.com/v1/` })
+let wormhole
+if (config.NETWORK === `testnet`) {
+  wormhole = new Wormhole({ restURL: `https://trest.bitcoin.com/v1/` })
+} else {
+  wormhole = new Wormhole({ restURL: `https://rest.bitcoin.com/v1/` })
+}
 
 const tknLib = require(`../src/utils/send-tokens.js`)
 const bchLib = require(`../src/utils/send-bch.js`)
