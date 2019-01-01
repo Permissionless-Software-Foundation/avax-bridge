@@ -1,4 +1,5 @@
-const NETWORK = `testnet`
+// Establish the network, default to 'testnet'
+const NETWORK = process.env.NETWORK ? process.env.NETWORK : `testnet`
 
 let configOut = {}
 
