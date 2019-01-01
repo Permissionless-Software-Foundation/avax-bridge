@@ -46,8 +46,8 @@ COPY wallet.json wallet.json
 VOLUME /home/token/token-liquidity/logs
 
 # Expose the port the API will be served on.
-EXPOSE 5000
-EXPOSE 5001
+#EXPOSE 5000
+EXPOSE 5100
 
 # Start the application.
 COPY start-production start-production
