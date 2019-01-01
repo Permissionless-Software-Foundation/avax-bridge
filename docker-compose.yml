@@ -9,16 +9,16 @@ token-liquidity-mongodb:
   command: mongod --smallfiles --logpath=/dev/null # -- quiet
   restart: always
 
-token-liquidity:
+token-liquidity-testnet:
   build: .
-  dockerfile: Dockerfile
+  dockerfile: testnet/Dockerfile
   links:
     - token-liquidity-mongodb
   ports:
-    - "5000:5000" # <host port>:<container port>
-    - "5100:5100"
+    - "5100:5100" # <host port>:<container port>
   volumes:
-    - ./logs:/home/token/token-liquidity/logs
+    - ./testnet/logs:/home/token/token-liquidity/logs
+    - ./testnet/state:/home/token/token-liquidity/state
 #    - ./keys:/home/coinjoin/consolidating-coinjoin/keys
 
   restart: always

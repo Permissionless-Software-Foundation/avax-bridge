@@ -1,0 +1,8 @@
+{
+  "NETWORK": "mainnet",
+  "port": 5000,
+  "TOKEN_ID": 249,
+  "BCH_ADDR": "bitcoincash:qzl6k0wvdd5ky99hewghqdgfj2jhcpqnfq8xtct0al",
+  "TOKENS_QTY_ORIGINAL": 5000,
+  "BCH_QTY_ORIGINAL": 25
+}

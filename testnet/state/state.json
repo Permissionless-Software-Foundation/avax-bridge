@@ -8,8 +8,9 @@
   "session": "secret-boilerplate-token",
   "token": "secret-jwt-token",
   "database": "mongodb://localhost:27017/psf-token-server-dev",
-  "bchBalance": 25,
+  "env": "development",
+  "bchBalance": 5.82337992,
   "tokenBalance": "12302.12989813",
   "bchBalancen": 5.82337992,
-  "usdPerBCH": "156.37"
+  "usdPerBCH": "160.205"
 }

@@ -494,7 +494,7 @@ function saveState (data) {
   try {
     wlogger.silly(`entering token-util.js saveState().`)
 
-    const filename = `${__dirname}/../../config/state.json`
+    const filename = `${__dirname}/../../state/state.json`
 
     return new Promise((resolve, reject) => {
       fs.writeFile(filename, JSON.stringify(data, null, 2), function (err) {
