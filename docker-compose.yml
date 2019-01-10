@@ -20,15 +20,15 @@ token-liquidity-testnet:
     - ./testnet/logs:/home/token/token-liquidity/logs
     - ./testnet/state:/home/token/token-liquidity/state
 
-#token-liquidity-mainnet:
-#  build: ./mainnet
-#  dockerfile: Dockerfile
-#  links:
-#    - token-liquidity-mongodb
-#  ports:
-#    - "5000:5000" # <host port>:<container port>
-#  volumes:
-#    - ./mainnet/logs:/home/token/token-liquidity/logs
-#    - ./mainnet/state:/home/token/token-liquidity/state
+token-liquidity-mainnet:
+  build: ./mainnet
+  dockerfile: Dockerfile
+  links:
+    - token-liquidity-mongodb
+  ports:
+    - "5000:5000" # <host port>:<container port>
+  volumes:
+    - ./mainnet/logs:/home/token/token-liquidity/logs
+    - ./mainnet/state:/home/token/token-liquidity/state
 
   restart: always

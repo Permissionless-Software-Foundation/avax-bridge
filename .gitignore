@@ -61,3 +61,5 @@ sftp-config.json
 coverage
 wallet.json
 database
+state.json
+**-audit.json

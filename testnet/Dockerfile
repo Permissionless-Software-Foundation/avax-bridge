@@ -54,3 +54,8 @@ COPY start-production start-production
 CMD ["./start-production"]
 
 #CMD ["npm", "start"]
+
+#Dummy app just to get the container running with docker-compose.
+#You can then enter the container with command: docker exec -it <container ID> bash
+#COPY dummyapp.js dummyapp.js
+#CMD ["node", "dummyapp.js"]

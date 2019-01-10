@@ -32,10 +32,11 @@ module.exports = {
 // Open the wallet generated with create-wallet.
 let walletInfo
 try {
-  walletInfo = require(`../../wallet.json`)
+  walletInfo = require(`${__dirname}/../../wallet.json`)
 } catch (err) {
+  //console.log(`err: `, err)
   console.log(
-    `Could not open wallet.json. Generate a wallet with create-wallet first.
+    `Could not open ${__dirname}/../../wallet.json. Generate a wallet with create-wallet first.
     Exiting.`
   )
   process.exit(0)
