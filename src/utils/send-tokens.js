@@ -4,14 +4,24 @@
 
 'use strict'
 
+const config = require('../../config')
+
 // Instantiate wormholecash
 const Wormhole = require('wormhole-sdk/lib/Wormhole').default
-// const Wormhole = require("../../wormholecash/src/node/Wormhole");
-// const wormhole = new Wormhole({ restURL: `http://localhost:3000/v1/` })
-let wormhole = new Wormhole({ restURL: `https://trest.bitcoin.com/v1/` })
+let wormhole
+if (config.NETWORK === `testnet`) {
+  wormhole = new Wormhole({ restURL: `https://trest.bitcoin.com/v1/` })
+} else {
+  wormhole = new Wormhole({ restURL: `https://rest.bitcoin.com/v1/` })
+}
 
 const BITBOXCli = require('bitbox-sdk/lib/bitbox-sdk').default
-const BITBOX = new BITBOXCli({ restURL: 'https://trest.bitcoin.com/v1/' })
+let BITBOX
+if (config.NETWORK === `testnet`) {
+  BITBOX = new BITBOXCli({ restURL: 'https://trest.bitcoin.com/v1/' })
+} else {
+  BITBOX = new BITBOXCli({ restURL: 'https://rest.bitcoin.com/v1/' })
+}
 
 const lib = require('./token-util.js')
 
@@ -22,17 +32,18 @@ module.exports = {
 // Open the wallet generated with create-wallet.
 let walletInfo
 try {
-  walletInfo = require(`../../wallet.json`)
+  walletInfo = require(`${__dirname}/../../wallet.json`)
 } catch (err) {
+  //console.log(`err: `, err)
   console.log(
-    `Could not open wallet.json. Generate a wallet with create-wallet first.
+    `Could not open ${__dirname}/../../wallet.json. Generate a wallet with create-wallet first.
     Exiting.`
   )
   process.exit(0)
 }
 
 // Change this value to match your token.
-const propertyId = 556
+const propertyId = config.TOKEN_ID
 // const RECV_ADDR = `bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pzqf`;
 
 // Issue new tokens.
@@ -50,7 +61,12 @@ async function sendTokens (obj) {
     const rootSeed = BITBOX.Mnemonic.toSeed(mnemonic)
 
     // master HDNode
-    const masterHDNode = BITBOX.HDNode.fromSeed(rootSeed, 'testnet')
+    let masterHDNode
+    if (config.NETWORK === `testnet`) {
+      masterHDNode = BITBOX.HDNode.fromSeed(rootSeed, 'testnet')
+    } else {
+      masterHDNode = BITBOX.HDNode.fromSeed(rootSeed)
+    }
 
     // HDNode of BIP44 account
     const account = BITBOX.HDNode.derivePath(masterHDNode, "m/44'/145'/0'")

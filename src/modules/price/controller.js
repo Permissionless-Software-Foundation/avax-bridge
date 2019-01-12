@@ -31,7 +31,7 @@ const lib = require('../../utils/token-util')
  */
 async function getPrice (ctx) {
   // Read the current state
-  const filename = `${__dirname}/../../../config/state.json`
+  const filename = `${__dirname}/../../../state/state.json`
   const state = lib.readState(filename)
   // console.log(`state: ${JSON.stringify(state, null, 2)}`)
 

@@ -1,19 +1,12 @@
 const app = require('../../bin/server')
-// const supertest = require('supertest')
-// const expect = require('chai').expect
-const should = require('chai').should
-// const cleanDb = require('./utils').cleanDb
-// const authUser = require('./utils').authUser
 const utils = require('./utils')
-
 const rp = require('request-promise')
 const assert = require('chai').assert
+const config = require('../../config')
 
-should()
-// const request = supertest.agent(app.listen())
 const context = {}
 
-const LOCALHOST = 'http://localhost:5000'
+const LOCALHOST = `http://localhost:${config.port}`
 
 describe('Auth', () => {
   before(async () => {

@@ -11,8 +11,8 @@ require('winston-daily-rotate-file')
 
 // Configure daily-rotation transport.
 const transport = new (winston.transports.DailyRotateFile)({
-  filename: `${__dirname}/../../logs/coinjoin-%DATE%.log`,
-  datePattern: 'YYYY-MM-DD-HH',
+  filename: `${__dirname}/../../logs/token-liquidity-%DATE%.log`,
+  datePattern: 'YYYY-MM-DD',
   zippedArchive: false,
   maxSize: '1m',
   maxFiles: '14d',

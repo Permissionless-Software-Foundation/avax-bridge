@@ -60,3 +60,6 @@ sftp-config.json
 .nyc_output
 coverage
 wallet.json
+database
+state.json
+**-audit.json

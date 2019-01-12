@@ -4,8 +4,15 @@
 
 'use strict'
 
+const config = require('../../config')
+
 const BITBOXCli = require('bitbox-sdk/lib/bitbox-sdk').default
-const BITBOX = new BITBOXCli({ restURL: 'https://trest.bitcoin.com/v1/' })
+let BITBOX
+if (config.NETWORK === `testnet`) {
+  BITBOX = new BITBOXCli({ restURL: 'https://trest.bitcoin.com/v1/' })
+} else {
+  BITBOX = new BITBOXCli({ restURL: 'https://rest.bitcoin.com/v1/' })
+}
 
 const lib = require('./token-util.js')
 
@@ -21,9 +28,9 @@ module.exports = {
 // Open the wallet generated with create-wallet.
 let walletInfo
 try {
-  walletInfo = require(`../../wallet.json`)
+  walletInfo = require(`${__dirname}/../../wallet.json`)
 } catch (err) {
-  console.log(`Could not open wallet.json. Generate a wallet with create-wallet first.`)
+  console.log(`Could not open ${__dirname}/../../wallet.json. Generate a wallet with create-wallet first.`)
   process.exit(0)
 }
 
@@ -62,7 +69,12 @@ async function sendBch (obj) {
     utxo.value = utxo.amount
 
     // instance of transaction builder
-    const transactionBuilder = new BITBOX.TransactionBuilder('testnet')
+    let transactionBuilder
+    if (config.NETWORK === `testnet`) {
+      transactionBuilder = new BITBOX.TransactionBuilder('testnet')
+    } else {
+      transactionBuilder = new BITBOX.TransactionBuilder()
+    }
 
     // const satoshisToSend = 1000;
     const originalAmount = utxo.satoshis
@@ -127,7 +139,12 @@ function changeAddrFromMnemonic (mnemonic) {
   const rootSeed = BITBOX.Mnemonic.toSeed(mnemonic)
 
   // master HDNode
-  const masterHDNode = BITBOX.HDNode.fromSeed(rootSeed, 'testnet')
+  let masterHDNode
+  if (config.NETWORK === `testnet`) {
+    masterHDNode = BITBOX.HDNode.fromSeed(rootSeed, 'testnet')
+  } else {
+    masterHDNode = BITBOX.HDNode.fromSeed(rootSeed)
+  }
 
   // HDNode of BIP44 account
   const account = BITBOX.HDNode.derivePath(masterHDNode, "m/44'/145'/0'")
