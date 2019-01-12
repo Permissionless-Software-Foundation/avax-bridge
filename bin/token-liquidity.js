@@ -50,7 +50,7 @@ async function startTokenLiquidity () {
   // Get BCH balance.
   const addressInfo = await lib.getBCHBalance(BCH_ADDR1, true, BITBOX)
   bchBalance = addressInfo.balance
-  config.bchBalancen = bchBalance
+  config.bchBalance = bchBalance
   wlogger.info(`BCH address ${BCH_ADDR1} has a balance of ${bchBalance} BCH`)
 
   // Get token balance.
