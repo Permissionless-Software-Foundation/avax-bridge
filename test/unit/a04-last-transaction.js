@@ -16,6 +16,7 @@ const { bitboxMock } = require('./mocks/bitbox')
 // Determine if this is a Unit or Integration test
 // If not specified, default to unit test.
 if (!process.env.APP_ENV) process.env.APP_ENV = 'test'
+if (!process.env.TEST_ENV) process.env.TEST_ENV = 'unit'
 
 describe('util', () => {
   let BITBOX
@@ -24,7 +25,7 @@ describe('util', () => {
 
   beforeEach(() => {
     // By default, use the mocking library instead of live calls.
-    if (process.env.APP_ENV === 'test') BITBOX = bitboxMock
+    if (process.env.TEST_ENV === 'unit') BITBOX = bitboxMock
     else BITBOX = new BITBOXSDK({ restURL: 'https://trest.bitcoin.com/v1/' })
 
     // mockedWallet = Object.assign({}, testwallet) // Clone the testwallet
