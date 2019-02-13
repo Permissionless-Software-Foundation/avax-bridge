@@ -23,6 +23,7 @@ bchLib.sendBch = sinon.stub().returns({})
 // Determine if this is a Unit or Integration test
 // If not specified, default to unit test.
 if (!process.env.APP_ENV) process.env.APP_ENV = 'test'
+if (!process.env.TEST_ENV) process.env.TEST_ENV = 'unit'
 
 describe('#token-util', () => {
   let BITBOX, wormhole
@@ -32,7 +33,7 @@ describe('#token-util', () => {
 
   beforeEach(() => {
     // By default, use the mocking library instead of live calls.
-    if (process.env.APP_ENV === 'test') {
+    if (process.env.TEST_ENV === 'unit') {
       BITBOX = bitboxMock.bitboxMock
       wormhole = wormholeMock
     } else {
@@ -117,7 +118,7 @@ describe('#token-util', () => {
   })
 
   describe('tokenTxInfo()', () => {
-    if (process.env.APP_ENV !== 'test') {
+    if (process.env.TEST_ENV !== 'unit') {
       it('should return false for a non-token TX', async () => {
         const txid = 'a77762bb47c130e755cc053db51333bbd64596eefd18baffc08a447749863fa9'
 
@@ -234,7 +235,7 @@ describe('#token-util', () => {
       assert.equal(result, true)
     })
 
-    if (process.env.APP_ENV === 'test') {
+    if (process.env.TEST_ENV === 'unit') {
       it(`should return false if confirmations are less than 2`, async () => {
         bitboxMock.mockTransactions.txs[0].confirmations = 0
         const addr = `bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pzqf`
@@ -251,7 +252,7 @@ describe('#token-util', () => {
   })
 
   // Only run these tests for a unit test.
-  if (process.env.APP_ENV === 'test') {
+  if (process.env.TEST_ENV === 'unit') {
     describe('compareLastTransaction', () => {
       /*
       it(`should return false if transactions are the same`, async () => {
