@@ -33,6 +33,9 @@ util.inspect.defaultOptions = { depth: 3 }
 const wlogger = require('./logging')
 
 const lastTransactionLib = require('./last-transaction.js')
+const SLP = require('./slp')
+const slp = new SLP()
+slp.hello()
 
 const config = require('../../config')
 const BCH_ADDR1 = config.BCH_ADDR
