@@ -10,17 +10,17 @@ const config = require('../../config')
 // Winston logger
 const wlogger = require('./logging')
 
-let SLPSDK = require('slp-sdk/lib/SLP').default
-let slpsdk
+const WH = require('wormhole-sdk/lib/Wormhole').default
+let wormhole
 if (config.NETWORK === `testnet`) {
-  slpsdk = new SLPSDK({ restURL: `https://rest.bitcoin.com/v2/` })
+  wormhole = new WH({ restURL: `https://trest.bitcoin.com/v1/` })
 } else {
-  slpsdk = new SLPSDK({ restURL: `https://trest.bitcoin.com/v2/` })
+  wormhole = new WH({ restURL: `https://rest.bitcoin.com/v1/` })
 }
 
-class SLP {
+class Wormhole {
   constructor () {
-    this.slpsdk = slpsdk
+    this.wormhole = wormhole
   }
 
   hello () {
@@ -32,7 +32,7 @@ class SLP {
     try {
       wlogger.silly(`Enter slp.getTokenBalance()`)
 
-      const result = await await this.slpsdk.Utils.balancesForAddress(addr)
+      const result = await this.wormhole.DataRetrieval.balancesForAddress(addr)
       wlogger.debug(`token balance: `, result)
 
       if (result === 'Address not found') return 0
@@ -44,4 +44,4 @@ class SLP {
   }
 }
 
-module.exports = SLP
+module.exports = Wormhole

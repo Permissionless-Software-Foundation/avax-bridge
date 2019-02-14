@@ -4,7 +4,7 @@
   "description": "BCH Wormhole Token Liquidity Web App for the Permissionless Software Foundation",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "NETWORK=mainnet node index.js",
     "test": "APP_ENV=test nyc --reporter=text ./node_modules/.bin/mocha --exit --timeout 15000 test/unit",
     "test:integration": "APP_ENV=test TEST_ENV=unit nyc --reporter=text ./node_modules/.bin/mocha --exit --timeout 25000 test/unit",
     "lint": "eslint src/**/*.js",
@@ -72,7 +72,7 @@
     "eslint-plugin-standard": "^4.0.0",
     "mocha": "^5.2.0",
     "nyc": "^13.2.0",
-    "semantic-release": "^15.12.5",
+    "semantic-release": "^15.13.3",
     "sinon": "^7.2.2"
   },
   "release": {
