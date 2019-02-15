@@ -70,19 +70,7 @@ describe('#token-util', () => {
       assert.isArray(bchBalance.transactions)
     })
   })
-  /*
-  describe('getTokenBalance', () => {
-    it('should get token balance', async () => {
-      const addr = 'bchtest:qq22ys5qz8z4jzkkex7p5jrdd9vh6q06cgrpsx2fu7'
 
-      const tokenBalance = await lib.getTokenBalance(addr, wormhole)
-      // console.log(`bchBalance: ${util.inspect(tokenBalance)}`)
-
-      assert.isArray(tokenBalance)
-      assert.hasAllKeys(tokenBalance[0], ['propertyid', 'balance', 'reserved'])
-    })
-  })
-*/
   describe('recievedBch', () => {
     it('should return 0 if address is not in TX', async () => {
       const txid = 'a77762bb47c130e755cc053db51333bbd64596eefd18baffc08a447749863fa9'

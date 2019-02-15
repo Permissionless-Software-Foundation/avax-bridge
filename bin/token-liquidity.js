@@ -58,18 +58,8 @@ async function startTokenLiquidity () {
   bchBalance = addressInfo.balance
   config.bchBalance = bchBalance
   wlogger.info(`BCH address ${BCH_ADDR1} has a balance of ${bchBalance} BCH`)
-  /*
-  // Get token balance.
-  const tokenInfo = await lib.getTokenBalance(BCH_ADDR1, wormhole)
-  wlogger.info(`tokenInfo: ${JSON.stringify(tokenInfo, null, 2)}`)
-  const thisToken = tokenInfo.find(token => token.propertyid === TOKEN_ID)
-  tokenBalance = thisToken.balance
-  config.tokenBalance = tokenBalance
-  wlogger.info(`Token balance: ${tokenBalance}`)
-*/
 
   // Get Wormhole token balance
-  // const tokenInfo2 = await lib.getTokenBalance(BCH_ADDR1, wormhole)
   const tokenInfo = await wh.getTokenBalance(BCH_ADDR1)
   wlogger.info(`tokenInfo: ${JSON.stringify(tokenInfo, null, 2)}`)
   const thisToken = tokenInfo.find(token => token.propertyid === TOKEN_ID)
