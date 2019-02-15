@@ -118,6 +118,8 @@ describe('#token-util', () => {
   })
 
   describe('tokenTxInfo()', () => {
+    // See Issue: https://github.com/Bitcoin-com/rest.bitcoin.com/issues/300
+    /*
     if (process.env.TEST_ENV !== 'unit') {
       it('should return false for a non-token TX', async () => {
         const txid = 'a77762bb47c130e755cc053db51333bbd64596eefd18baffc08a447749863fa9'
@@ -128,6 +130,7 @@ describe('#token-util', () => {
         assert.equal(result, false, 'Expecting false')
       })
     }
+    */
 
     it('should return info on a token TX', async () => {
       const txid = '3b2e9747767cf3d0070ceaffbd60ae40f1cd46f04c8dac3617659073f324f19d'
@@ -177,6 +180,8 @@ describe('#token-util', () => {
   })
 
   describe('getUserAddr', () => {
+    // See issue: https://github.com/Bitcoin-com/rest.bitcoin.com/issues/300
+    /*
     it('should should throw an error for an invalid transaction', async () => {
       try {
         const txid = `cf1b5d374e171876a625599a489a2a6cdda119fb84b6cff2a226c39e189`
@@ -189,6 +194,7 @@ describe('#token-util', () => {
         assert.include(err, '502: Bad gateway')
       }
     })
+    */
 
     it('should return senders cash address', async () => {
       const txid = `0d457cf1b5d374e171876a625599a489a2a6cdda119fb84b6cff2a226c39e189`
