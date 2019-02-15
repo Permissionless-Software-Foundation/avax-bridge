@@ -5,6 +5,10 @@
 
 'use strict'
 
+// Used for debugging and iterrogating JS objects.
+const util = require('util')
+util.inspect.defaultOptions = { depth: 1 }
+
 const config = require('../../config')
 
 // Winston logger
@@ -32,7 +36,7 @@ class SLP {
     try {
       wlogger.silly(`Enter slp.getTokenBalance()`)
 
-      const result = await await this.slpsdk.Utils.balancesForAddress(addr)
+      const result = await this.slpsdk.Utils.balancesForAddress(addr)
       wlogger.debug(`token balance: `, result)
 
       if (result === 'Address not found') return 0
