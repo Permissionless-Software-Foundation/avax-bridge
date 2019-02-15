@@ -8,7 +8,7 @@
 
 module.exports = {
   getBCHBalance, // Get the BCH balance for a given address.
-  getTokenBalance, // Get the Token balance for a given address.
+  // getTokenBalance, // Get the Token balance for a given address.
   compareLastTransaction, // Determine if any new transactions have occured involving this address.
   exchangeBCHForTokens,
   exchangeTokensForBCH,
@@ -35,7 +35,9 @@ const wlogger = require('./logging')
 const lastTransactionLib = require('./last-transaction.js')
 const SLP = require('./slp')
 const slp = new SLP()
-slp.hello()
+
+const WH = require('./wormhole')
+const wh = new WH()
 
 const config = require('../../config')
 const BCH_ADDR1 = config.BCH_ADDR
@@ -68,6 +70,7 @@ async function getBCHBalance (addr, verbose, BITBOX) {
   }
 }
 
+/*
 // Get the token balance of a BCH address
 async function getTokenBalance (addr, wormhole) {
   try {
@@ -83,6 +86,7 @@ async function getTokenBalance (addr, wormhole) {
     throw err
   }
 }
+*/
 
 // Checks the last TX associated with the BCH address. If it changed, then
 // the program reacts to it. Otherwise it exits.
@@ -251,7 +255,7 @@ async function getBlockchainBalances (bchAddr, wormhole) {
     const currentBCHBalance = addressInfo.balance
 
     // Get current token balance
-    const tokenInfo = await getTokenBalance(bchAddr, wormhole)
+    const tokenInfo = await wh.getTokenBalance(bchAddr)
     const thisToken = tokenInfo.find(token => token.propertyid === TOKEN_ID)
     const tokenBalance = thisToken.balance
 

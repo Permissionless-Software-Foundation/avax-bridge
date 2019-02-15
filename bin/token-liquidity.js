@@ -12,7 +12,6 @@ const wh = new WH()
 
 const SLP = require('../src/utils/slp')
 const slp = new SLP()
-slp.hello()
 
 const config = require('../config')
 config.bchBalance = config.BCH_QTY_ORIGINAL
