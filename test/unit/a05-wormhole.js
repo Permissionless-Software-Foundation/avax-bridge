@@ -12,7 +12,7 @@ const util = require('util')
 util.inspect.defaultOptions = { depth: 1 }
 
 // const lib = require('../../src/utils/last-transaction')
-const { bitboxMock } = require('./mocks/bitbox')
+const { wormholeMock } = require('./mocks/wormhole')
 
 // Determine if this is a Unit or Integration test
 // If not specified, default to unit test.
@@ -26,7 +26,7 @@ describe('#wormhole', () => {
 
   beforeEach(() => {
     // By default, use the mocking library instead of live calls.
-    if (process.env.TEST_ENV === 'unit') wormhole.wormhole = bitboxMock
+    if (process.env.TEST_ENV === 'unit') wormhole.wormhole = wormholeMock
 
     // mockedWallet = Object.assign({}, testwallet) // Clone the testwallet
   })
@@ -40,6 +40,31 @@ describe('#wormhole', () => {
 
       assert.isArray(tokenBalance)
       assert.hasAllKeys(tokenBalance[0], ['propertyid', 'balance', 'reserved'])
+    })
+  })
+
+  describe('#tokenTxInfo', () => {
+    // See Issue: https://github.com/Bitcoin-com/rest.bitcoin.com/issues/300
+    /*
+    if (process.env.TEST_ENV !== 'unit') {
+      it('should return false for a non-token TX', async () => {
+        const txid = 'a77762bb47c130e755cc053db51333bbd64596eefd18baffc08a447749863fa9'
+
+        const result = await wormhole.tokenTxInfo(txid)
+        console.log(`result: ${util.inspect(result)}`)
+
+        assert.equal(result, false, 'Expecting false')
+      })
+    }
+    */
+    it('should return info on a token TX', async () => {
+      const txid = '3b2e9747767cf3d0070ceaffbd60ae40f1cd46f04c8dac3617659073f324f19d'
+
+      const result = await wormhole.tokenTxInfo(txid)
+      // console.log(`result: ${util.inspect(result)}`)
+
+      assert.isNumber(result)
+      assert.equal(result, 4567)
     })
   })
 })

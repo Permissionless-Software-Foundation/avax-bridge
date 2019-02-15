@@ -290,10 +290,13 @@ describe('#token-util', () => {
         //
 
         // Force tokenTxInfo to return false
+        const oldTransaction = wormhole.DataRetrieval.transaction
         wormhole.DataRetrieval.transaction = sinon.stub().throws(new Error('some error'))
 
         const result = await lib.compareLastTransaction(obj, tknLib, bchLib, wormhole)
         // console.log(`result: ${util.inspect(result)}`)
+
+        wormhole.DataRetrieval.transaction = oldTransaction
 
         // Should return the last transactions, as well as the new balance of BCH
         // and the token.
