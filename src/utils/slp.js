@@ -46,6 +46,29 @@ class SLP {
       throw err
     }
   }
+
+  // Returns a number, representing the token quantity if the TX contains a token
+  // transfer. Otherwise returns false.
+  async tokenTxInfo (txid) {
+    try {
+      wlogger.silly(`Entering slp.tokenTxInfo().`)
+
+      console.log(`txid: ${txid}`)
+      console.log(`restURL: ${this.slpsdk.restURL}`)
+      const txDetails = await this.slpsdk.Transaction.details(txid)
+      console.log(`txDetails: ${util.inspect(txDetails)}`)
+
+      // const retVal = await this.slpsdk.Utils.balancesForAddress(slpAddress)
+      // wlogger.debug(`tokenTxInfo retVal: ${JSON.stringify(retVal, null, 2)}`)
+
+      // if (retVal.message === 'Not a Wormhole Protocol transaction') return false
+
+      // return Number(retVal.amount)
+    } catch (err) {
+      console.log(`err: ${util.inspect(err)}`)
+      return false
+    }
+  }
 }
 
 module.exports = SLP

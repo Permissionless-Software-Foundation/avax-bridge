@@ -49,7 +49,7 @@ class Wormhole {
 
   // Returns a number, representing the token quantity if the TX contains a token
   // transfer. Otherwise returns false.
-  async tokenTxInfo (txid, wormhole) {
+  async tokenTxInfo (txid) {
     try {
       wlogger.silly(`Entering tokenTxInfo().`)
 

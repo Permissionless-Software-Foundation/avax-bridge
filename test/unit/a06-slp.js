@@ -21,7 +21,7 @@ if (!process.env.APP_ENV) process.env.APP_ENV = 'test'
 if (!process.env.TEST_ENV) process.env.TEST_ENV = 'unit'
 
 describe('#slp', () => {
-  let slp = new SLP({ restURL: 'https://rest.bitcoin.com/v1/' })
+  let slp = new SLP({ restURL: 'https://trest.bitcoin.com/v2/' })
   let sandbox
 
   before(() => {})
@@ -40,15 +40,9 @@ describe('#slp', () => {
 
   describe('#getTokenBalance', () => {
     it('should get token balance', async () => {
-      /*
-      if (process.env.TEST_ENV === 'unit') {
-        sandbox.stub(slp.slpsdk.Utils, "balancesForAddress")
-        .resolves(slpMock.)
-        slp.slpsdk.Utils.
-      }
-      */
-
-      const addr = 'simpleledger:qzl6k0wvdd5ky99hewghqdgfj2jhcpqnfqtaqr70rp'
+      // const addr = 'simpleledger:qzl6k0wvdd5ky99hewghqdgfj2jhcpqnfqtaqr70rp'
+      const addr = 'slptest:qz4qnxcxwvmacgye8wlakhz0835x0w3vtvxu67w0ac'
+      console.log(`restURL: ${slp.slpsdk.restURL}`)
 
       const tokenBalance = await slp.getTokenBalance(addr)
       // console.log(`bchBalance: ${util.inspect(tokenBalance)}`)
@@ -57,4 +51,19 @@ describe('#slp', () => {
       assert.hasAllKeys(tokenBalance[0], ['tokenId', 'balance', 'decimalCount'])
     })
   })
+/*
+  describe('#tokenTxInfo', () => {
+    it('should get token balance', async () => {
+      const txid =
+        '61e71554a3dc18158f30d9e8f5c9b6641a789690b32302899f81cbea9fe3bb49'
+      console.log(`restURL: ${slp.slpsdk.restURL}`)
+
+      const tokenInfo = await slp.tokenTxInfo(txid)
+      console.log(`tokenInfo: ${util.inspect(tokenInfo)}`)
+
+      // assert.isArray(tokenBalance)
+      // assert.hasAllKeys(tokenBalance[0], ['tokenId', 'balance', 'decimalCount'])
+    })
+  })
+*/
 })
