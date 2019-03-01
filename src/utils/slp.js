@@ -5,9 +5,11 @@
 
 'use strict'
 
+const rp = require('request-promise')
+
 // Used for debugging and iterrogating JS objects.
 const util = require('util')
-util.inspect.defaultOptions = { depth: 1 }
+util.inspect.defaultOptions = { depth: 5 }
 
 const config = require('../../config')
 
@@ -21,6 +23,9 @@ if (config.NETWORK === `testnet`) {
 } else {
   slpsdk = new SLPSDK({ restURL: `https://trest.bitcoin.com/v2/` })
 }
+
+// const REST_URL = `https://trest.btctest.net/v2/`
+const REST_URL = `http://localhost:3000/v2/`
 
 class SLP {
   constructor () {
@@ -53,10 +58,28 @@ class SLP {
     try {
       wlogger.silly(`Entering slp.tokenTxInfo().`)
 
-      console.log(`txid: ${txid}`)
-      console.log(`restURL: ${this.slpsdk.restURL}`)
-      const txDetails = await this.slpsdk.Transaction.details(txid)
-      console.log(`txDetails: ${util.inspect(txDetails)}`)
+      const options = {
+        method: 'GET',
+        uri: `${REST_URL}slp/txDetails/${txid}`,
+        // resolveWithFullResponse: true,
+        json: true,
+        headers: {
+          Accept: 'application/json'
+        }
+      }
+
+      const result = await rp(options)
+      // console.log(`result: ${util.inspect(result)}`)
+      console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      let tokens = result.tokenInfo.sendOutputs[1]
+      tokens = tokens / Math.pow(10, 8)
+      console.log(`tokens transfered: ${tokens}`)
+
+      // console.log(`txid: ${txid}`)
+      // console.log(`restURL: ${this.slpsdk.restURL}`)
+      // const txDetails = await this.slpsdk.Transaction.details(txid)
+      // console.log(`txDetails: ${util.inspect(txDetails)}`)
 
       // const retVal = await this.slpsdk.Utils.balancesForAddress(slpAddress)
       // wlogger.debug(`tokenTxInfo retVal: ${JSON.stringify(retVal, null, 2)}`)
@@ -64,6 +87,7 @@ class SLP {
       // if (retVal.message === 'Not a Wormhole Protocol transaction') return false
 
       // return Number(retVal.amount)
+      return true
     } catch (err) {
       console.log(`err: ${util.inspect(err)}`)
       return false

@@ -51,7 +51,7 @@ describe('#slp', () => {
       assert.hasAllKeys(tokenBalance[0], ['tokenId', 'balance', 'decimalCount'])
     })
   })
-/*
+
   describe('#tokenTxInfo', () => {
     it('should get token balance', async () => {
       const txid =
@@ -65,5 +65,4 @@ describe('#slp', () => {
       // assert.hasAllKeys(tokenBalance[0], ['tokenId', 'balance', 'decimalCount'])
     })
   })
-*/
 })
