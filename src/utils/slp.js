@@ -24,8 +24,8 @@ if (config.NETWORK === `testnet`) {
   slpsdk = new SLPSDK({ restURL: `https://trest.bitcoin.com/v2/` })
 }
 
-// const REST_URL = `https://trest.btctest.net/v2/`
-const REST_URL = `http://localhost:3000/v2/`
+const REST_URL = `https://trest.bitcoin.com/v2/`
+// const REST_URL = `http://localhost:3000/v2/`
 
 class SLP {
   constructor () {
@@ -69,8 +69,7 @@ class SLP {
       }
 
       const result = await rp(options)
-      // console.log(`result: ${util.inspect(result)}`)
-      console.log(`result: ${JSON.stringify(result, null, 2)}`)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
       let tokens = result.tokenInfo.sendOutputs[1]
       tokens = tokens / Math.pow(10, 8)
@@ -89,7 +88,9 @@ class SLP {
       // return Number(retVal.amount)
       return true
     } catch (err) {
-      console.log(`err: ${util.inspect(err)}`)
+      // Dev Note: A non-token tx will trigger this error handler.
+
+      // console.log(`err: ${util.inspect(err)}`)
       return false
     }
   }

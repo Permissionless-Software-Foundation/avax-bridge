@@ -53,7 +53,7 @@ describe('#slp', () => {
   })
 
   describe('#tokenTxInfo', () => {
-    it('should get token balance', async () => {
+    it('should return token quantity for a token tx', async () => {
       const txid =
         '61e71554a3dc18158f30d9e8f5c9b6641a789690b32302899f81cbea9fe3bb49'
       console.log(`restURL: ${slp.slpsdk.restURL}`)
@@ -63,6 +63,17 @@ describe('#slp', () => {
 
       // assert.isArray(tokenBalance)
       // assert.hasAllKeys(tokenBalance[0], ['tokenId', 'balance', 'decimalCount'])
+    })
+
+    // it should return false for a token-tx of a different token type
+
+    it('should return false for a non-token tx', async () => {
+      const txid = 'c5834f0f29810a6bfa6325ebc5606f043875e5e0454b68b16e5fa343e6f8e8de'
+
+      const tokenInfo = await slp.tokenTxInfo(txid)
+      // console.log(`tokenInfo: ${util.inspect(tokenInfo)}`)
+
+      assert.equal(tokenInfo, false, `Expect false returned for non-token tx`)
     })
   })
 })
