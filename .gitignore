@@ -59,7 +59,8 @@ sftp-config.json
 
 .nyc_output
 coverage
-wallet.json
+wallet-main.json
+wallet-test.json
 database
 state.json
 **-audit.json
