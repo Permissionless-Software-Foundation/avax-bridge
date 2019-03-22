@@ -52,6 +52,31 @@ class SLP {
     }
   }
 
+  // Retrieves SLP TX details from rest.bitcoin.com
+  async txDetails (txid) {
+    try {
+      wlogger.silly(`Entering slp.txDetails().`)
+
+      const options = {
+        method: 'GET',
+        uri: `${REST_URL}slp/txDetails/${txid}`,
+        // resolveWithFullResponse: true,
+        json: true,
+        headers: {
+          Accept: 'application/json'
+        }
+      }
+
+      const result = await rp(options)
+      return result
+    } catch (err) {
+      wlogger.error(`Error in slp.js/txDetails()`)
+      throw err
+    }
+  }
+
+  // Retrieves token info
+
   // Returns a number, representing the token quantity if the TX contains a token
   // transfer. Otherwise returns false.
   async tokenTxInfo (txid) {
@@ -69,7 +94,7 @@ class SLP {
       }
 
       const result = await rp(options)
-      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+      console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
       let tokens = result.tokenInfo.sendOutputs[1]
       tokens = tokens / Math.pow(10, 8)

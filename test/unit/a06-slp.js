@@ -42,7 +42,6 @@ describe('#slp', () => {
     it('should get token balance', async () => {
       // const addr = 'simpleledger:qzl6k0wvdd5ky99hewghqdgfj2jhcpqnfqtaqr70rp'
       const addr = 'slptest:qz4qnxcxwvmacgye8wlakhz0835x0w3vtvxu67w0ac'
-      console.log(`restURL: ${slp.slpsdk.restURL}`)
 
       const tokenBalance = await slp.getTokenBalance(addr)
       // console.log(`bchBalance: ${util.inspect(tokenBalance)}`)
@@ -52,6 +51,28 @@ describe('#slp', () => {
     })
   })
 
+  describe('#txDetails', () => {
+    it('should return token tx details for a token tx', async () => {
+      const txid =
+        '61e71554a3dc18158f30d9e8f5c9b6641a789690b32302899f81cbea9fe3bb49'
+
+      const tokenInfo = await slp.txDetails(txid)
+      // console.log(`tokenInfo: ${util.inspect(tokenInfo)}`)
+
+      assert.equal(tokenInfo.tokenIsValid, true)
+    })
+
+    it('should return empty object for a non-token tx', async () => {
+      const txid = 'c5834f0f29810a6bfa6325ebc5606f043875e5e0454b68b16e5fa343e6f8e8de'
+
+      const tokenInfo = await slp.txDetails(txid)
+      // console.log(`tokenInfo: ${util.inspect(tokenInfo)}`)
+
+      // assert.equal(tokenInfo, false, `Expect false returned for non-token tx`)
+      assert.equal(tokenInfo.tokenIsValid, false)
+    })
+  })
+/*
   describe('#tokenTxInfo', () => {
     it('should return token quantity for a token tx', async () => {
       const txid =
@@ -76,4 +97,6 @@ describe('#slp', () => {
       assert.equal(tokenInfo, false, `Expect false returned for non-token tx`)
     })
   })
+
+*/
 })
