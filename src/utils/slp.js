@@ -122,18 +122,56 @@ class SLP {
     }
   }
 
-  async sendToken () {
-    // Open the wallet generated with create-wallet.
-    let walletInfo
+  // Send a qty of SLP tokens to an addr
+  async sendToken (addr, qty) {
     try {
-      walletInfo = require(`${__dirname}/../../wallet.json`)
+      // Open the wallet controlling the tokens
+      const walletInfo = this.openWallet()
+
+      const mnemonic = walletInfo.mnemonic
+
+      // root seed buffer
+      const rootSeed = slpsdk.Mnemonic.toSeed(mnemonic)
+
+      // master HDNode
+      let masterHDNode
+      if (config.NETWORK === `mainnet`) masterHDNode = slpsdk.HDNode.fromSeed(rootSeed)
+      else masterHDNode = slpsdk.HDNode.fromSeed(rootSeed, 'testnet') // Testnet
+
+      // HDNode of BIP44 account
+      const account = slpsdk.HDNode.derivePath(masterHDNode, "m/44'/145'/0'")
+
+      const change = slpsdk.HDNode.derivePath(account, '0/0')
+
+      // get the cash address
+      const cashAddress = slpsdk.HDNode.toCashAddress(change)
+
+      const fundingAddress = cashAddress
+      const fundingWif = slpsdk.HDNode.toWIF(change) // <-- compressed WIF format
+      const tokenReceiverAddress = addr
+      const bchChangeReceiverAddress = cashAddress
+
+      // Create a config object for minting
+      const sendConfig = {
+        fundingAddress,
+        fundingWif,
+        tokenReceiverAddress,
+        bchChangeReceiverAddress,
+        tokenId: config.SLP_TOKEN_ID,
+        amount: qty
+      }
+
+      // console.log(`createConfig: ${util.inspect(createConfig)}`)
+
+      // Generate, sign, and broadcast a hex-encoded transaction for sending
+      // the tokens.
+      const sendTxId = await slpsdk.TokenType1.send(sendConfig)
+
+      wlogger.debug(`sendTxId: ${util.inspect(sendTxId)}`)
+      console.log(`sendTxId: ${util.inspect(sendTxId)}`)
     } catch (err) {
-      // console.log(`err: `, err)
-      console.log(
-        `Could not open ${__dirname}/../../wallet.json. Generate a wallet with create-wallet first.
-        Exiting.`
-      )
-      process.exit(0)
+      wlogger.error(`Error in slp.js/sendToken()`)
+      throw err
     }
   }
 }

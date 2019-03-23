@@ -195,12 +195,13 @@ async function compareLastTransaction (obj, tknLib, bchLib, wormhole) {
           wlogger.info(`New token balance: ${newTokenBalance}`)
 
           // Send Tokens
-          const obj = {
-            recvAddr: userAddr,
-            tokensToSend: retObj.tokensOut
-          }
+          // const obj = {
+          //  recvAddr: userAddr,
+          //  tokensToSend: retObj.tokensOut
+          // }
 
-          await tknLib.sendTokens(obj)
+          // await tknLib.sendTokens(obj)
+          await slp.sendTokens(userAddr, retObj.tokensOut)
         }
 
         // Add the last transaction TXID to the seenTxs array so that it's not
