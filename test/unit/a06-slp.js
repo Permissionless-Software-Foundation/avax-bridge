@@ -62,8 +62,9 @@ describe('#slp', () => {
       assert.equal(tokenInfo.tokenIsValid, true)
     })
 
-    it('should return empty object for a non-token tx', async () => {
-      const txid = 'c5834f0f29810a6bfa6325ebc5606f043875e5e0454b68b16e5fa343e6f8e8de'
+    it('should return false for non-token tx', async () => {
+      const txid =
+        'c5834f0f29810a6bfa6325ebc5606f043875e5e0454b68b16e5fa343e6f8e8de'
 
       const tokenInfo = await slp.txDetails(txid)
       // console.log(`tokenInfo: ${util.inspect(tokenInfo)}`)
@@ -72,21 +73,17 @@ describe('#slp', () => {
       assert.equal(tokenInfo.tokenIsValid, false)
     })
   })
-/*
+
   describe('#tokenTxInfo', () => {
     it('should return token quantity for a token tx', async () => {
       const txid =
         '61e71554a3dc18158f30d9e8f5c9b6641a789690b32302899f81cbea9fe3bb49'
-      console.log(`restURL: ${slp.slpsdk.restURL}`)
 
       const tokenInfo = await slp.tokenTxInfo(txid)
-      console.log(`tokenInfo: ${util.inspect(tokenInfo)}`)
+      // console.log(`tokenInfo: ${util.inspect(tokenInfo)}`)
 
-      // assert.isArray(tokenBalance)
-      // assert.hasAllKeys(tokenBalance[0], ['tokenId', 'balance', 'decimalCount'])
+      assert.equal(tokenInfo, 10, 'Validate token transfer')
     })
-
-    // it should return false for a token-tx of a different token type
 
     it('should return false for a non-token tx', async () => {
       const txid = 'c5834f0f29810a6bfa6325ebc5606f043875e5e0454b68b16e5fa343e6f8e8de'
@@ -96,7 +93,14 @@ describe('#slp', () => {
 
       assert.equal(tokenInfo, false, `Expect false returned for non-token tx`)
     })
-  })
 
-*/
+    it('should return false for a token-tx of a different token type', async () => {
+      const txid = '37279c7dc81ceb34d12f03344b601c582e931e05d0e552c29c428bfa39d39af3'
+
+      const tokenInfo = await slp.tokenTxInfo(txid)
+      // console.log(`tokenInfo: ${util.inspect(tokenInfo)}`)
+
+      assert.equal(tokenInfo, false, `Expect false returned for non-psf token tx`)
+    })
+  })
 })

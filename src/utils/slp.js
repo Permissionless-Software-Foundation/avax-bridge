@@ -75,43 +75,23 @@ class SLP {
     }
   }
 
-  // Retrieves token info
-
   // Returns a number, representing the token quantity if the TX contains a token
   // transfer. Otherwise returns false.
   async tokenTxInfo (txid) {
     try {
       wlogger.silly(`Entering slp.tokenTxInfo().`)
 
-      const options = {
-        method: 'GET',
-        uri: `${REST_URL}slp/txDetails/${txid}`,
-        // resolveWithFullResponse: true,
-        json: true,
-        headers: {
-          Accept: 'application/json'
-        }
-      }
+      const result = await this.txDetails(txid)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
-      const result = await rp(options)
-      console.log(`result: ${JSON.stringify(result, null, 2)}`)
+      // Exit if token transfer is not the PSF token.
+      if (result.tokenInfo.tokenIdHex !== config.SLP_TOKEN_ID) { return false }
 
       let tokens = result.tokenInfo.sendOutputs[1]
       tokens = tokens / Math.pow(10, 8)
-      console.log(`tokens transfered: ${tokens}`)
+      // console.log(`tokens transfered: ${tokens}`)
 
-      // console.log(`txid: ${txid}`)
-      // console.log(`restURL: ${this.slpsdk.restURL}`)
-      // const txDetails = await this.slpsdk.Transaction.details(txid)
-      // console.log(`txDetails: ${util.inspect(txDetails)}`)
-
-      // const retVal = await this.slpsdk.Utils.balancesForAddress(slpAddress)
-      // wlogger.debug(`tokenTxInfo retVal: ${JSON.stringify(retVal, null, 2)}`)
-
-      // if (retVal.message === 'Not a Wormhole Protocol transaction') return false
-
-      // return Number(retVal.amount)
-      return true
+      return tokens
     } catch (err) {
       // Dev Note: A non-token tx will trigger this error handler.
 
