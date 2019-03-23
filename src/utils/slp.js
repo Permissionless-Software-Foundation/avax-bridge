@@ -85,7 +85,9 @@ class SLP {
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
       // Exit if token transfer is not the PSF token.
-      if (result.tokenInfo.tokenIdHex !== config.SLP_TOKEN_ID) { return false }
+      if (result.tokenInfo.tokenIdHex !== config.SLP_TOKEN_ID) {
+        return false
+      }
 
       let tokens = result.tokenInfo.sendOutputs[1]
       tokens = tokens / Math.pow(10, 8)
@@ -97,6 +99,41 @@ class SLP {
 
       // console.log(`err: ${util.inspect(err)}`)
       return false
+    }
+  }
+
+  // Opens the wallet file and returns the contents.
+  openWallet () {
+    try {
+      let walletInfo
+
+      if (config.NETWORK === 'testnet') {
+        walletInfo = require(`${__dirname}/../../wallet-test.json`)
+      } else {
+        walletInfo = require(`${__dirname}/../../wallet-main.json`)
+      }
+      // console.log(`walletInfo in slp: ${JSON.stringify(walletInfo, null, 2)}`)
+
+      return walletInfo
+    } catch (err) {
+      return {
+        error: `wallet file not found`
+      }
+    }
+  }
+
+  async sendToken () {
+    // Open the wallet generated with create-wallet.
+    let walletInfo
+    try {
+      walletInfo = require(`${__dirname}/../../wallet.json`)
+    } catch (err) {
+      // console.log(`err: `, err)
+      console.log(
+        `Could not open ${__dirname}/../../wallet.json. Generate a wallet with create-wallet first.
+        Exiting.`
+      )
+      process.exit(0)
     }
   }
 }

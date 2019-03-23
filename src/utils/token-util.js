@@ -131,7 +131,8 @@ async function compareLastTransaction (obj, tknLib, bchLib, wormhole) {
         }
 
         // Process new txid.
-        const isTokenTx = await tokenTxInfo(lastTransaction, wormhole)
+        // const isTokenTx = await tokenTxInfo(lastTransaction, wormhole)
+        const isTokenTx = await slp.tokenTxInfo(lastTransaction)
         wlogger.debug(`isTokenTx: ${isTokenTx}`)
 
         // User sent tokens.

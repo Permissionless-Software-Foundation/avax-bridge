@@ -103,4 +103,17 @@ describe('#slp', () => {
       assert.equal(tokenInfo, false, `Expect false returned for non-psf token tx`)
     })
   })
+
+  describe('#openWallet', () => {
+    it('should open wallet file or report that wallet file does not exist', async () => {
+      const walletInfo = await slp.openWallet()
+      // console.log(`walletInfo: ${JSON.stringify(walletInfo, null, 2)}`)
+
+      if (walletInfo.error) {
+        assert.include(walletInfo.error, 'wallet file not found', 'Wallet file not found')
+      } else {
+        assert.equal(walletInfo.cashAddress, 'bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pzqf')
+      }
+    })
+  })
 })
