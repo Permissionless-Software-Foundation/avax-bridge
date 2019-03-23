@@ -83,7 +83,7 @@ async function getBCHBalance (addr, verbose, BITBOX) {
 // ---if the user sent BCH...
 // ----calculate and send tokens
 // ---Calculate the new BCH and token balances and return them.
-async function compareLastTransaction (obj, tknLib, bchLib, wormhole) {
+async function compareLastTransaction (obj, bchLib, wormhole) {
   try {
     const { bchAddr, txid, bchBalance, tokenBalance } = obj
 

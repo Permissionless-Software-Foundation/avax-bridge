@@ -19,9 +19,9 @@ const wlogger = require('./logging')
 let SLPSDK = require('slp-sdk/lib/SLP').default
 let slpsdk
 if (config.NETWORK === `testnet`) {
-  slpsdk = new SLPSDK({ restURL: `https://rest.bitcoin.com/v2/` })
-} else {
   slpsdk = new SLPSDK({ restURL: `https://trest.bitcoin.com/v2/` })
+} else {
+  slpsdk = new SLPSDK({ restURL: `https://rest.bitcoin.com/v2/` })
 }
 
 const REST_URL = `https://trest.bitcoin.com/v2/`
@@ -70,7 +70,9 @@ class SLP {
       const result = await rp(options)
       return result
     } catch (err) {
-      wlogger.error(`Error in slp.js/txDetails()`)
+      // This catch will activate on non-token txs.
+      // wlogger.error(`Error in slp.js/txDetails()`)
+      wlogger.debug(`Not a token tx`, err)
       throw err
     }
   }
@@ -123,7 +125,7 @@ class SLP {
   }
 
   // Send a qty of SLP tokens to an addr
-  async sendToken (addr, qty) {
+  async sendTokens (addr, qty) {
     try {
       // Open the wallet controlling the tokens
       const walletInfo = this.openWallet()

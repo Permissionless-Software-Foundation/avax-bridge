@@ -43,7 +43,7 @@ if (config.NETWORK === `testnet`) {
   wormhole = new Wormhole({ restURL: `https://rest.bitcoin.com/v1/` })
 }
 
-const tknLib = require(`../src/utils/send-tokens.js`)
+// const tknLib = require(`../src/utils/send-tokens.js`)
 const bchLib = require(`../src/utils/send-bch.js`)
 
 const BCH_ADDR1 = config.BCH_ADDR
@@ -106,7 +106,7 @@ async function startTokenLiquidity () {
       tokenBalance: tokenBalance
     }
 
-    const retObj = await lib.compareLastTransaction(obj, tknLib, bchLib, wormhole)
+    const retObj = await lib.compareLastTransaction(obj, bchLib, wormhole)
     const newTx = retObj.lastTransaction
 
     // Save the updated price information.
