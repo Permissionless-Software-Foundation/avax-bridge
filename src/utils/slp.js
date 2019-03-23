@@ -17,15 +17,14 @@ const config = require('../../config')
 const wlogger = require('./logging')
 
 let SLPSDK = require('slp-sdk/lib/SLP').default
-let slpsdk
+let slpsdk, REST_URL
 if (config.NETWORK === `testnet`) {
-  slpsdk = new SLPSDK({ restURL: `https://trest.bitcoin.com/v2/` })
+  REST_URL = `https://trest.bitcoin.com/v2/`
+  slpsdk = new SLPSDK({ restURL: REST_URL })
 } else {
-  slpsdk = new SLPSDK({ restURL: `https://rest.bitcoin.com/v2/` })
+  REST_URL = `https://rest.bitcoin.com/v2/`
+  slpsdk = new SLPSDK({ restURL: REST_URL })
 }
-
-const REST_URL = `https://trest.bitcoin.com/v2/`
-// const REST_URL = `http://localhost:3000/v2/`
 
 class SLP {
   constructor () {
