@@ -16,7 +16,7 @@ const config = require('../../config')
 // Winston logger
 const wlogger = require('./logging')
 
-let SLPSDK = require('slp-sdk/lib/SLP').default
+let SLPSDK = require('slp-sdk')
 let slpsdk, REST_URL
 if (config.NETWORK === `testnet`) {
   REST_URL = `https://trest.bitcoin.com/v2/`

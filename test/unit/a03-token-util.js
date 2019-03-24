@@ -6,7 +6,7 @@ const sinon = require('sinon')
 const util = require('util')
 util.inspect.defaultOptions = { depth: 1 }
 
-const BITBOXSDK = require('bitbox-sdk/lib/bitbox-sdk').default
+const BITBOXSDK = require('bitbox-sdk')
 const Wormhole = require('wormhole-sdk/lib/Wormhole').default
 
 const lib = require('../../src/utils/token-util')
@@ -272,7 +272,7 @@ describe('#token-util', () => {
           tokenBalance: 100000
         }
 
-        const result = await lib.compareLastTransaction(obj, tknLib, bchLib, BITBOX)
+        const result = await lib.compareLastTransaction(obj, bchLib, BITBOX)
         // console.log(`result: ${util.inspect(result)}`)
 
         // Should return the last transactions, as well as the new balance of BCH
@@ -293,7 +293,7 @@ describe('#token-util', () => {
         const oldTransaction = wormhole.DataRetrieval.transaction
         wormhole.DataRetrieval.transaction = sinon.stub().throws(new Error('some error'))
 
-        const result = await lib.compareLastTransaction(obj, tknLib, bchLib, wormhole)
+        const result = await lib.compareLastTransaction(obj, bchLib, wormhole)
         // console.log(`result: ${util.inspect(result)}`)
 
         wormhole.DataRetrieval.transaction = oldTransaction
