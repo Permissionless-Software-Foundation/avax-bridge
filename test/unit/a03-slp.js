@@ -24,14 +24,13 @@ if (!process.env.APP_ENV) process.env.APP_ENV = 'test'
 if (!process.env.TEST_ENV) process.env.TEST_ENV = 'unit'
 
 describe('#slp', () => {
-  let slp = new SLP({ restURL: 'https://trest.bitcoin.com/v2/' })
+  let slp
   let sandbox
 
   before(() => {})
 
   beforeEach(() => {
-    // By default, use the mocking library instead of live calls.
-    if (process.env.TEST_ENV === 'unit') slp.slpsdk = slpMock
+    slp = new SLP()
 
     // mockedWallet = Object.assign({}, testwallet) // Clone the testwallet
     sandbox = sinon.createSandbox()
@@ -43,6 +42,9 @@ describe('#slp', () => {
 
   describe('#getTokenBalance', () => {
     it('should get token balance', async () => {
+      // By default, use the mocking library instead of live calls.
+      if (process.env.TEST_ENV === 'unit') slp.slpsdk = slpMock
+
       // const addr = 'simpleledger:qzl6k0wvdd5ky99hewghqdgfj2jhcpqnfqtaqr70rp'
       const addr = 'slptest:qz4qnxcxwvmacgye8wlakhz0835x0w3vtvxu67w0ac'
 
@@ -50,10 +52,32 @@ describe('#slp', () => {
       // console.log(`bchBalance: ${util.inspect(tokenBalance)}`)
 
       assert.isArray(tokenBalance)
-      assert.hasAllKeys(tokenBalance[0], ['tokenId', 'balance', 'decimalCount'])
+      assert.hasAnyKeys(tokenBalance[0], ['tokenId', 'balance', 'slpAddress'])
+    })
+
+    it(`should throw an error for an invalid address`, async () => {
+      if (process.env.TEST_ENV === 'unit') {
+        // slp.slpsdk.Utils.balancesForAddress = sandbox.throws()
+        sandbox.stub(slp.slpsdk.Utils, 'balancesForAddress').throws({
+          error:
+            'Invalid BCH address. Double check your address is valid: slptest:qz4qnxcxwvmacgye8wlakhz0835x0w3vtvxu67aaaa'
+        })
+      }
+
+      try {
+        const addr = 'slptest:qz4qnxcxwvmacgye8wlakhz0835x0w3vtvxu67aaaa'
+
+        await slp.getTokenBalance(addr)
+
+        assert.equal(true, false, 'Unexpected result')
+      } catch (err) {
+        // console.log(`Error obj: ${util.inspect(err)}`)
+
+        assert.include(err.error, 'Invalid BCH address', 'Error message expected.')
+      }
     })
   })
-/*
+
   describe('#txDetails', () => {
     it('should return token tx details for a token tx', async () => {
       const txid =
@@ -76,7 +100,7 @@ describe('#slp', () => {
       assert.equal(tokenInfo.tokenIsValid, false)
     })
   })
-
+  /*
   describe('#tokenTxInfo', () => {
     it('should return token quantity for a token tx', async () => {
       const txid =
