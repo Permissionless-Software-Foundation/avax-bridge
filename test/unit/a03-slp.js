@@ -1,5 +1,7 @@
 /*
   Unit and integration tests for slp.js library.
+  TODO:
+  - Incorporate slp-sdk-mock
 */
 
 'use strict'
