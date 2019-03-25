@@ -67,6 +67,8 @@ class SLP {
       }
 
       const result = await rp(options)
+      // console.log(`txDetails: ${util.inspect(result)}`)
+
       return result
     } catch (err) {
       // This catch will activate on non-token txs.

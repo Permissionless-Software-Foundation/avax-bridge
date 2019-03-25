@@ -1,7 +1,5 @@
 /*
   Unit and integration tests for slp.js library.
-  TODO:
-  - Incorporate slp-sdk-mock
 */
 
 'use strict'
@@ -9,6 +7,7 @@
 const assert = require('chai').assert
 const sinon = require('sinon')
 const SLP = require('../../src/utils/slp')
+const nock = require('nock')
 
 // Used for debugging.
 const util = require('util')
@@ -22,6 +21,8 @@ const slpMock = require('slp-sdk-mock')
 // If not specified, default to unit test.
 if (!process.env.APP_ENV) process.env.APP_ENV = 'test'
 if (!process.env.TEST_ENV) process.env.TEST_ENV = 'unit'
+
+const REST_URL = `https://trest.bitcoin.com/v2/`
 
 describe('#slp', () => {
   let slp
@@ -73,19 +74,24 @@ describe('#slp', () => {
       } catch (err) {
         // console.log(`Error obj: ${util.inspect(err)}`)
 
-        assert.include(err.error, 'Invalid BCH address', 'Error message expected.')
+        assert.include(
+          err.error,
+          'Invalid BCH address',
+          'Error message expected.'
+        )
       }
     })
 
     it('should handle address with zero balance', async () => {
       if (process.env.TEST_ENV === 'unit') {
-        sandbox.stub(slp.slpsdk.Utils, 'balancesForAddress').resolves('No balance for this address')
+        sandbox
+          .stub(slp.slpsdk.Utils, 'balancesForAddress')
+          .resolves('No balance for this address')
       }
 
       const addr = 'bchtest:qphvf5z3h24e8n2cexyr56g0tyrcrlc8wuaatqhg7z'
 
       const result = await slp.getTokenBalance(addr)
-      // console.log(`result: ${util.inspect(result)}`)
 
       assert.equal(result, 0)
     })
@@ -93,6 +99,40 @@ describe('#slp', () => {
 
   describe('#txDetails', () => {
     it('should return token tx details for a token tx', async () => {
+      if (process.env.TEST_ENV === 'unit') {
+        const testData = {
+          txid:
+            '61e71554a3dc18158f30d9e8f5c9b6641a789690b32302899f81cbea9fe3bb49',
+          version: 2,
+          locktime: 0,
+          vin: [{}, {}],
+          vout: [{}, {}, {}, {}],
+          blockhash:
+            '0000000095869fd09aaf838a3ab6f49c3c864518dca8f8115942672088bacfdd',
+          blockheight: 1286350,
+          confirmations: 8997,
+          time: 1550269692,
+          blocktime: 1550269692,
+          valueOut: 0.09998613,
+          size: 480,
+          valueIn: 0.09999095,
+          fees: 0.00000482,
+          tokenInfo: {
+            versionType: 1,
+            transactionType: 'SEND',
+            tokenIdHex:
+              '7ac7f4bb50b019fe0f5c81e3fc13fc0720e130282ea460768cafb49785eb2796',
+            sendOutputs: [Array]
+          },
+          tokenIsValid: true
+        }
+
+        // Mock the http call to rest.
+        nock(REST_URL)
+          .get(uri => uri.includes('/'))
+          .reply(200, testData)
+      }
+
       const txid =
         '61e71554a3dc18158f30d9e8f5c9b6641a789690b32302899f81cbea9fe3bb49'
 
