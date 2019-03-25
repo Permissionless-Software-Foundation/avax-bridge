@@ -70,8 +70,8 @@
     "eslint-plugin-node": "^8.0.0",
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
-    "mocha": "^6.0.0",
-    "nyc": "^13.2.0",
+    "mocha": "^6.0.2",
+    "nyc": "^13.3.0",
     "semantic-release": "^15.13.3",
     "sinon": "^7.2.2",
     "slp-sdk-mock": "^1.0.1"
