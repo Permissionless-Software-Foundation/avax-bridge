@@ -73,7 +73,8 @@
     "mocha": "^6.0.0",
     "nyc": "^13.2.0",
     "semantic-release": "^15.13.3",
-    "sinon": "^7.2.2"
+    "sinon": "^7.2.2",
+    "slp-sdk-mock": "^1.0.1"
   },
   "release": {
     "publish": [
