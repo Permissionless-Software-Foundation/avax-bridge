@@ -15,7 +15,8 @@ const util = require('util')
 util.inspect.defaultOptions = { depth: 1 }
 
 // Mocking-data
-const { slpMock } = require('./mocks/slp')
+// const { slpMock } = require('./mocks/slp')
+const slpMock = require('slp-sdk-mock')
 
 // Determine if this is a Unit or Integration test
 // If not specified, default to unit test.
@@ -52,7 +53,7 @@ describe('#slp', () => {
       assert.hasAllKeys(tokenBalance[0], ['tokenId', 'balance', 'decimalCount'])
     })
   })
-
+/*
   describe('#txDetails', () => {
     it('should return token tx details for a token tx', async () => {
       const txid =
@@ -118,4 +119,5 @@ describe('#slp', () => {
       }
     })
   })
+*/
 })
