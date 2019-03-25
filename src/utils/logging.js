@@ -40,7 +40,7 @@ const wlogger = winston.createLogger({
 })
 
 // Add simple logging to the console.
-if (process.env.COINJOIN_ENV !== 'test') {
+if (process.env.APP_ENV !== 'test') {
   wlogger.add(new winston.transports.Console({
     format: winston.format.simple(),
     level: 'info'
