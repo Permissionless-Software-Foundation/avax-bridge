@@ -7,6 +7,12 @@
 const lib = require('../src/utils/token-util.js')
 const got = require('got')
 
+const WH = require('../src/utils/wormhole')
+const wh = new WH()
+
+const SLP = require('../src/utils/slp')
+const slp = new SLP()
+
 const config = require('../config')
 config.bchBalance = config.BCH_QTY_ORIGINAL
 config.tokenBalance = config.TOKENS_QTY_ORIGINAL
@@ -37,7 +43,7 @@ if (config.NETWORK === `testnet`) {
   wormhole = new Wormhole({ restURL: `https://rest.bitcoin.com/v1/` })
 }
 
-const tknLib = require(`../src/utils/send-tokens.js`)
+// const tknLib = require(`../src/utils/send-tokens.js`)
 const bchLib = require(`../src/utils/send-bch.js`)
 
 const BCH_ADDR1 = config.BCH_ADDR
@@ -53,13 +59,17 @@ async function startTokenLiquidity () {
   config.bchBalance = bchBalance
   wlogger.info(`BCH address ${BCH_ADDR1} has a balance of ${bchBalance} BCH`)
 
-  // Get token balance.
-  const tokenInfo = await lib.getTokenBalance(BCH_ADDR1, wormhole)
+  // Get Wormhole token balance
+  const tokenInfo = await wh.getTokenBalance(BCH_ADDR1)
   wlogger.info(`tokenInfo: ${JSON.stringify(tokenInfo, null, 2)}`)
   const thisToken = tokenInfo.find(token => token.propertyid === TOKEN_ID)
   tokenBalance = thisToken.balance
   config.tokenBalance = tokenBalance
   wlogger.info(`Token balance: ${tokenBalance}`)
+
+  // Get SLP token balance
+  const slpTokenInfo = await slp.getTokenBalance(BCH_ADDR1)
+  wlogger.info(`SLP token: ${JSON.stringify(slpTokenInfo, null, 2)}`)
 
   // Get the BCH-USD exchange rate.
   let USDperBCH
@@ -96,7 +106,7 @@ async function startTokenLiquidity () {
       tokenBalance: tokenBalance
     }
 
-    const retObj = await lib.compareLastTransaction(obj, tknLib, bchLib, wormhole)
+    const retObj = await lib.compareLastTransaction(obj, bchLib, wormhole)
     const newTx = retObj.lastTransaction
 
     // Save the updated price information.

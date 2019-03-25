@@ -20,12 +20,18 @@ module.exports = {
   getTxConfs
 }
 
+// Used for debugging and iterrogating JS objects.
+const util = require('util')
+util.inspect.defaultOptions = { depth: 1 }
+
 // const BITBOXSDK = require('bitbox-sdk/lib/bitbox-sdk').default
 // const BITBOX = new BITBOXSDK({ restURL: 'https://trest.bitcoin.com/v1/' })
 
 // Get the transactions associated with an address
 async function getTransactions (addr, BITBOX) {
   try {
+    // console.log(`BITBOX.Address: ${util.inspect(BITBOX.Address)}`)
+
     const txdata = BITBOX.Address.transactions(addr)
     // console.log(`txids: ${JSON.stringify(txids, null, 2)}`)
 

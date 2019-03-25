@@ -8,7 +8,6 @@
 
 module.exports = {
   getBCHBalance, // Get the BCH balance for a given address.
-  getTokenBalance, // Get the Token balance for a given address.
   compareLastTransaction, // Determine if any new transactions have occured involving this address.
   exchangeBCHForTokens,
   exchangeTokensForBCH,
@@ -33,6 +32,11 @@ util.inspect.defaultOptions = { depth: 3 }
 const wlogger = require('./logging')
 
 const lastTransactionLib = require('./last-transaction.js')
+const SLP = require('./slp')
+const slp = new SLP()
+
+const WH = require('./wormhole')
+const wh = new WH()
 
 const config = require('../../config')
 const BCH_ADDR1 = config.BCH_ADDR
@@ -65,22 +69,6 @@ async function getBCHBalance (addr, verbose, BITBOX) {
   }
 }
 
-// Get the token balance of a BCH address
-async function getTokenBalance (addr, wormhole) {
-  try {
-    wlogger.silly(`Enter getTokenBalance()`)
-
-    const result = await wormhole.DataRetrieval.balancesForAddress(addr)
-    wlogger.debug(`token balance: `, result)
-
-    if (result === 'Address not found') return 0
-    return result
-  } catch (err) {
-    wlogger.error(`Error in util.js/getTokenBalance: `, err)
-    throw err
-  }
-}
-
 // Checks the last TX associated with the BCH address. If it changed, then
 // the program reacts to it. Otherwise it exits.
 // Here is the general flow of this function:
@@ -95,7 +83,7 @@ async function getTokenBalance (addr, wormhole) {
 // ---if the user sent BCH...
 // ----calculate and send tokens
 // ---Calculate the new BCH and token balances and return them.
-async function compareLastTransaction (obj, tknLib, bchLib, wormhole) {
+async function compareLastTransaction (obj, bchLib, wormhole) {
   try {
     const { bchAddr, txid, bchBalance, tokenBalance } = obj
 
@@ -143,7 +131,8 @@ async function compareLastTransaction (obj, tknLib, bchLib, wormhole) {
         }
 
         // Process new txid.
-        const isTokenTx = await tokenTxInfo(lastTransaction, wormhole)
+        // const isTokenTx = await tokenTxInfo(lastTransaction, wormhole)
+        const isTokenTx = await slp.tokenTxInfo(lastTransaction)
         wlogger.debug(`isTokenTx: ${isTokenTx}`)
 
         // User sent tokens.
@@ -206,12 +195,13 @@ async function compareLastTransaction (obj, tknLib, bchLib, wormhole) {
           wlogger.info(`New token balance: ${newTokenBalance}`)
 
           // Send Tokens
-          const obj = {
-            recvAddr: userAddr,
-            tokensToSend: retObj.tokensOut
-          }
+          // const obj = {
+          //  recvAddr: userAddr,
+          //  tokensToSend: retObj.tokensOut
+          // }
 
-          await tknLib.sendTokens(obj)
+          // await tknLib.sendTokens(obj)
+          await slp.sendTokens(userAddr, retObj.tokensOut)
         }
 
         // Add the last transaction TXID to the seenTxs array so that it's not
@@ -248,7 +238,7 @@ async function getBlockchainBalances (bchAddr, wormhole) {
     const currentBCHBalance = addressInfo.balance
 
     // Get current token balance
-    const tokenInfo = await getTokenBalance(bchAddr, wormhole)
+    const tokenInfo = await wh.getTokenBalance(bchAddr)
     const thisToken = tokenInfo.find(token => token.propertyid === TOKEN_ID)
     const tokenBalance = thisToken.balance
 

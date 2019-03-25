@@ -1,5 +1,5 @@
 /*
-  Send SLP tokens to a BCH address.
+  Send Wormhole tokens to a BCH address.
 */
 
 'use strict'
