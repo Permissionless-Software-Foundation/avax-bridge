@@ -43,7 +43,7 @@ class SLP {
       const result = await this.slpsdk.Utils.balancesForAddress(addr)
       wlogger.debug(`token balance: `, result)
 
-      if (result === 'Address not found') return 0
+      if (result === 'No balance for this address') return 0
       return result
     } catch (err) {
       wlogger.error(`Error in util.js/getTokenBalance: `, err)

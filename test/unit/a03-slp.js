@@ -76,6 +76,19 @@ describe('#slp', () => {
         assert.include(err.error, 'Invalid BCH address', 'Error message expected.')
       }
     })
+
+    it('should handle address with zero balance', async () => {
+      if (process.env.TEST_ENV === 'unit') {
+        sandbox.stub(slp.slpsdk.Utils, 'balancesForAddress').resolves('No balance for this address')
+      }
+
+      const addr = 'bchtest:qphvf5z3h24e8n2cexyr56g0tyrcrlc8wuaatqhg7z'
+
+      const result = await slp.getTokenBalance(addr)
+      // console.log(`result: ${util.inspect(result)}`)
+
+      assert.equal(result, 0)
+    })
   })
 
   describe('#txDetails', () => {
