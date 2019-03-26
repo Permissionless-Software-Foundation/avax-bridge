@@ -1,6 +1,6 @@
 // const User = require('../../models/users')
 
-const lib = require('../../utils/token-util')
+const lib = require('../../lib/token-util')
 
 /**
  * @api {get} /users Get all users

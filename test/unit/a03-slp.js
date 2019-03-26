@@ -6,7 +6,7 @@
 
 const assert = require('chai').assert
 const sinon = require('sinon')
-const SLP = require('../../src/utils/slp')
+const SLP = require('../../src/lib/slp')
 const nock = require('nock')
 
 // Used for debugging.

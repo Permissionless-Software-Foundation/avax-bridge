@@ -29,7 +29,7 @@ const util = require('util')
 util.inspect.defaultOptions = { depth: 3 }
 
 // Winston logger
-const wlogger = require('./logging')
+const wlogger = require('../utils/logging')
 
 const lastTransactionLib = require('./last-transaction.js')
 const SLP = require('./slp')

@@ -4,13 +4,13 @@
 
 'use strict'
 
-const lib = require('../src/utils/token-util.js')
+const lib = require('../src/lib/token-util.js')
 const got = require('got')
 
-const WH = require('../src/utils/wormhole')
+const WH = require('../src/lib/wormhole')
 const wh = new WH()
 
-const SLP = require('../src/utils/slp')
+const SLP = require('../src/lib/slp')
 const slp = new SLP()
 
 const config = require('../config')
@@ -44,7 +44,7 @@ if (config.NETWORK === `testnet`) {
 }
 
 // const tknLib = require(`../src/utils/send-tokens.js`)
-const bchLib = require(`../src/utils/send-bch.js`)
+const bchLib = require(`../src/lib/send-bch.js`)
 
 const BCH_ADDR1 = config.BCH_ADDR
 const TOKEN_ID = config.TOKEN_ID

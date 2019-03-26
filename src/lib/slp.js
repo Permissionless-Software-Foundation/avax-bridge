@@ -14,7 +14,7 @@ util.inspect.defaultOptions = { depth: 5 }
 const config = require('../../config')
 
 // Winston logger
-const wlogger = require('./logging')
+const wlogger = require('../utils/logging')
 
 let SLPSDK = require('slp-sdk')
 let slpsdk, REST_URL

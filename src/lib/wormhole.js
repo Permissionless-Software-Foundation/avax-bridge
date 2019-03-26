@@ -8,7 +8,7 @@
 const config = require('../../config')
 
 // Winston logger
-const wlogger = require('./logging')
+const wlogger = require('../utils/logging')
 
 // Used for debugging and iterrogating JS objects.
 const util = require('util')
