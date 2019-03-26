@@ -14,7 +14,7 @@ const util = require('util')
 util.inspect.defaultOptions = { depth: 1 }
 
 // Mocking-data
-// const { slpMock } = require('./mocks/slp')
+const slpMockData = require('./mocks/slp')
 const slpMock = require('slp-sdk-mock')
 
 // Determine if this is a Unit or Integration test
@@ -27,6 +27,7 @@ const REST_URL = `https://trest.bitcoin.com/v2/`
 describe('#slp', () => {
   let slp
   let sandbox
+  let slpMockDataCopy
 
   before(() => {})
 
@@ -38,6 +39,8 @@ describe('#slp', () => {
 
     // Activate nock if it's inactive.
     if (!nock.isActive()) nock.activate()
+
+    slpMockDataCopy = Object.assign({}, slpMockData)
   })
 
   afterEach(() => {
@@ -188,18 +191,24 @@ describe('#slp', () => {
       assert.equal(tokenInfo.tokenIsValid, false)
     })
   })
-  /*
+
   describe('#tokenTxInfo', () => {
     it('should return token quantity for a token tx', async () => {
+      if (process.env.TEST_ENV === 'unit') {
+        // console.log(`slpMockDataCopy: ${util.inspect(slpMockDataCopy)}`)
+        slpMockDataCopy.txDetails.tokenInfo.tokenIdHex = '7ac7f4bb50b019fe0f5c81e3fc13fc0720e130282ea460768cafb49785eb2796'
+        sandbox.stub(slp, 'txDetails').resolves(slpMockDataCopy.txDetails)
+      }
+
       const txid =
         '61e71554a3dc18158f30d9e8f5c9b6641a789690b32302899f81cbea9fe3bb49'
 
       const tokenInfo = await slp.tokenTxInfo(txid)
       // console.log(`tokenInfo: ${util.inspect(tokenInfo)}`)
 
-      assert.equal(tokenInfo, 10, 'Validate token transfer')
+      assert.equal(tokenInfo, 1, 'Validate token transfer')
     })
-
+    /*
     it('should return false for a non-token tx', async () => {
       const txid = 'c5834f0f29810a6bfa6325ebc5606f043875e5e0454b68b16e5fa343e6f8e8de'
 
@@ -217,8 +226,9 @@ describe('#slp', () => {
 
       assert.equal(tokenInfo, false, `Expect false returned for non-psf token tx`)
     })
+*/
   })
-
+  /*
   describe('#openWallet', () => {
     it('should open wallet file or report that wallet file does not exist', async () => {
       const walletInfo = await slp.openWallet()

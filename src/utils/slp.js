@@ -85,7 +85,7 @@ class SLP {
       wlogger.silly(`Entering slp.tokenTxInfo().`)
 
       const result = await this.txDetails(txid)
-      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+      // console.log(`tokenTxInfo: ${JSON.stringify(result, null, 2)}`)
 
       // Exit if token transfer is not the PSF token.
       if (result.tokenInfo.tokenIdHex !== config.SLP_TOKEN_ID) {
