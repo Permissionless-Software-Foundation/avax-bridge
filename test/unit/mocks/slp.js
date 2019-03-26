@@ -185,9 +185,111 @@ const nonTokenTx = {
   'tokenIsValid': false
 }
 
+const otherTokenTx = {
+  'txid': '37279c7dc81ceb34d12f03344b601c582e931e05d0e552c29c428bfa39d39af3',
+  'version': 2,
+  'locktime': 0,
+  'vin': [
+    {
+      'txid': '06a6cd845cdd698b027d5c06659ef753d3330f010481a149aef3fd7b51603497',
+      'vout': 0,
+      'sequence': 4294967295,
+      'n': 0,
+      'scriptSig': {
+        'hex': '483045022100a931ef52ba396c067e7b5f9558ea177f53dfc46cd7207e6b0c4f0af28ec2f1c1022014f6c93c5ee119c2706dd0b5448ebe7a7b8110a6ec27dcfedc8291ec0fe9f42841210382609a74eac74d5e026dbbf7b9aab339ba6c068184e0364b4eb49ad2cb9cced6',
+        'asm': '3045022100a931ef52ba396c067e7b5f9558ea177f53dfc46cd7207e6b0c4f0af28ec2f1c1022014f6c93c5ee119c2706dd0b5448ebe7a7b8110a6ec27dcfedc8291ec0fe9f428[ALL|FORKID] 0382609a74eac74d5e026dbbf7b9aab339ba6c068184e0364b4eb49ad2cb9cced6'
+      },
+      'value': 10000,
+      'legacyAddress': 'mzQ4FDMh8YsU5hew3w4Z3DxpLw9jHc7nPH',
+      'cashAddress': 'bchtest:qr83cu3p7yg9yac7qthwm0nul2ev2kukvsm07ttmdj'
+    }
+  ],
+  'vout': [
+    {
+      'value': '0.00000000',
+      'n': 0,
+      'scriptPubKey': {
+        'hex': '6a04534c500001010747454e4553495306534c5053444b1c534c502053444b206578616d706c65207573696e6720424954424f5815646576656c6f7065722e626974636f696e2e636f6d4c0001080102080000001cbb369200',
+        'asm': 'OP_RETURN 5262419 1 47454e45534953 534c5053444b 534c502053444b206578616d706c65207573696e6720424954424f58 646576656c6f7065722e626974636f696e2e636f6d 0 8 2 0000001cbb369200'
+      },
+      'spentTxId': null,
+      'spentIndex': null,
+      'spentHeight': null
+    },
+    {
+      'value': '0.00000546',
+      'n': 1,
+      'scriptPubKey': {
+        'hex': '76a914cf1c7221f11052771e02eeedbe7cfab2c55b966488ac',
+        'asm': 'OP_DUP OP_HASH160 cf1c7221f11052771e02eeedbe7cfab2c55b9664 OP_EQUALVERIFY OP_CHECKSIG',
+        'addresses': [
+          'bchtest:qr83cu3p7yg9yac7qthwm0nul2ev2kukvsm07ttmdj'
+        ],
+        'type': 'pubkeyhash'
+      },
+      'spentTxId': null,
+      'spentIndex': null,
+      'spentHeight': null
+    },
+    {
+      'value': '0.00000546',
+      'n': 2,
+      'scriptPubKey': {
+        'hex': '76a914cf1c7221f11052771e02eeedbe7cfab2c55b966488ac',
+        'asm': 'OP_DUP OP_HASH160 cf1c7221f11052771e02eeedbe7cfab2c55b9664 OP_EQUALVERIFY OP_CHECKSIG',
+        'addresses': [
+          'bchtest:qr83cu3p7yg9yac7qthwm0nul2ev2kukvsm07ttmdj'
+        ],
+        'type': 'pubkeyhash'
+      },
+      'spentTxId': null,
+      'spentIndex': null,
+      'spentHeight': null
+    },
+    {
+      'value': '0.00008549',
+      'n': 3,
+      'scriptPubKey': {
+        'hex': '76a914cf1c7221f11052771e02eeedbe7cfab2c55b966488ac',
+        'asm': 'OP_DUP OP_HASH160 cf1c7221f11052771e02eeedbe7cfab2c55b9664 OP_EQUALVERIFY OP_CHECKSIG',
+        'addresses': [
+          'bchtest:qr83cu3p7yg9yac7qthwm0nul2ev2kukvsm07ttmdj'
+        ],
+        'type': 'pubkeyhash'
+      },
+      'spentTxId': null,
+      'spentIndex': null,
+      'spentHeight': null
+    }
+  ],
+  'blockhash': '00000000000002c17af44d85a94755a4f13ad50cc6b13de797760d4c8b215cc0',
+  'blockheight': 1294960,
+  'confirmations': 555,
+  'time': 1553351742,
+  'blocktime': 1553351742,
+  'valueOut': 0.00009641,
+  'size': 358,
+  'valueIn': 0.0001,
+  'fees': 0.00000359,
+  'tokenInfo': {
+    'versionType': 1,
+    'transactionType': 'GENESIS',
+    'symbol': 'SLPSDK',
+    'name': 'SLP SDK example using BITBOX',
+    'documentUri': 'developer.bitcoin.com',
+    'documentSha256': null,
+    'decimals': 8,
+    'batonVout': 2,
+    'containsBaton': true,
+    'genesisOrMintQuantity': '123400000000'
+  },
+  'tokenIsValid': true
+}
+
 const slpMockData = {
   tokenTx,
-  nonTokenTx
+  nonTokenTx,
+  otherTokenTx
 }
 
 module.exports = slpMockData

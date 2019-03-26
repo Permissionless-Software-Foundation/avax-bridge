@@ -220,8 +220,12 @@ describe('#slp', () => {
 
       assert.equal(tokenInfo, false, `Expect false returned for non-token tx`)
     })
-    /*
+
     it('should return false for a token-tx of a different token type', async () => {
+      if (process.env.TEST_ENV === 'unit') {
+        sandbox.stub(slp, 'txDetails').resolves(slpMockData.otherTokenTx)
+      }
+
       const txid = '37279c7dc81ceb34d12f03344b601c582e931e05d0e552c29c428bfa39d39af3'
 
       const tokenInfo = await slp.tokenTxInfo(txid)
@@ -229,7 +233,6 @@ describe('#slp', () => {
 
       assert.equal(tokenInfo, false, `Expect false returned for non-psf token tx`)
     })
-*/
   })
   /*
   describe('#openWallet', () => {
