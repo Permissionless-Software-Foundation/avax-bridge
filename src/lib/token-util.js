@@ -7,7 +7,6 @@
 'use strict'
 
 module.exports = {
-  getBCHBalance, // Get the BCH balance for a given address.
   compareLastTransaction, // Determine if any new transactions have occured involving this address.
   exchangeBCHForTokens,
   exchangeTokensForBCH,
@@ -35,6 +34,9 @@ const lastTransactionLib = require('./last-transaction.js')
 const SLP = require('./slp')
 const slp = new SLP()
 
+const BCH = require('./bch')
+const bch = new BCH()
+
 const WH = require('./wormhole')
 const wh = new WH()
 
@@ -45,29 +47,6 @@ const TOKENS_QTY_ORIGINAL = config.TOKENS_QTY_ORIGINAL
 const BCH_QTY_ORIGINAL = config.BCH_QTY_ORIGINAL
 
 const seenTxs = [] // Track processed TXIDs
-
-// Get the balance in BCH of a BCH address.
-// Returns an object containing balance information.
-// The verbose flag determins if the results are written to the console or not.
-async function getBCHBalance (addr, verbose, BITBOX) {
-  try {
-    const result = await BITBOX.Address.details([addr])
-
-    if (verbose) {
-      const resultToDisplay = result[0]
-      resultToDisplay.transactions = []
-      console.log(resultToDisplay)
-    }
-
-    const bchBalance = result[0]
-
-    return bchBalance
-  } catch (err) {
-    wlogger.error(`Error in getBCHBalance: `, err)
-    wlogger.error(`addr: ${addr}`)
-    throw err
-  }
-}
 
 // Checks the last TX associated with the BCH address. If it changed, then
 // the program reacts to it. Otherwise it exits.
@@ -234,7 +213,7 @@ async function compareLastTransaction (obj, bchLib, wormhole) {
 async function getBlockchainBalances (bchAddr, wormhole) {
   try {
     // Get BCH balance from the blockchain
-    const addressInfo = await getBCHBalance(bchAddr, false, wormhole)
+    const addressInfo = await bch.getBCHBalance(bchAddr, false)
     const currentBCHBalance = addressInfo.balance
 
     // Get current token balance

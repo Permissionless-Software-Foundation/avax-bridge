@@ -13,6 +13,9 @@ const wh = new WH()
 const SLP = require('../src/lib/slp')
 const slp = new SLP()
 
+const BCH = require('../src/lib/bch')
+const bch = new BCH()
+
 const config = require('../config')
 config.bchBalance = config.BCH_QTY_ORIGINAL
 config.tokenBalance = config.TOKENS_QTY_ORIGINAL
@@ -27,7 +30,7 @@ util.inspect.defaultOptions = {
   colors: true
 }
 
-const BITBOXCli = require('bitbox-sdk/lib/bitbox-sdk').default
+const BITBOXCli = require('bitbox-sdk')
 let BITBOX
 if (config.NETWORK === `testnet`) {
   BITBOX = new BITBOXCli({ restURL: 'https://trest.bitcoin.com/v1/' })
@@ -54,7 +57,7 @@ let tokenBalance
 
 async function startTokenLiquidity () {
   // Get BCH balance.
-  const addressInfo = await lib.getBCHBalance(BCH_ADDR1, true, BITBOX)
+  const addressInfo = await bch.getBCHBalance(BCH_ADDR1, true)
   bchBalance = addressInfo.balance
   config.bchBalance = bchBalance
   wlogger.info(`BCH address ${BCH_ADDR1} has a balance of ${bchBalance} BCH`)

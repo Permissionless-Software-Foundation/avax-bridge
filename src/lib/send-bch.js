@@ -6,7 +6,7 @@
 
 const config = require('../../config')
 
-const BITBOXCli = require('bitbox-sdk/lib/bitbox-sdk').default
+const BITBOXCli = require('bitbox-sdk')
 let BITBOX
 if (config.NETWORK === `testnet`) {
   BITBOX = new BITBOXCli({ restURL: 'https://trest.bitcoin.com/v1/' })
