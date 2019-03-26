@@ -195,21 +195,24 @@ describe('#slp', () => {
   describe('#tokenTxInfo', () => {
     it('should return token quantity for a token tx', async () => {
       if (process.env.TEST_ENV === 'unit') {
-        // console.log(`slpMockDataCopy: ${util.inspect(slpMockDataCopy)}`)
-        slpMockDataCopy.txDetails.tokenInfo.tokenIdHex = '7ac7f4bb50b019fe0f5c81e3fc13fc0720e130282ea460768cafb49785eb2796'
-        sandbox.stub(slp, 'txDetails').resolves(slpMockDataCopy.txDetails)
+        slpMockDataCopy.tokenTx.tokenInfo.tokenIdHex = '7ac7f4bb50b019fe0f5c81e3fc13fc0720e130282ea460768cafb49785eb2796'
+        sandbox.stub(slp, 'txDetails').resolves(slpMockDataCopy.tokenTx)
       }
 
       const txid =
-        '61e71554a3dc18158f30d9e8f5c9b6641a789690b32302899f81cbea9fe3bb49'
+        '62fff39843860bb3aa1e37ae22a7a99abab16d34c7a0b64bfdc23493ea97f24d'
 
       const tokenInfo = await slp.tokenTxInfo(txid)
       // console.log(`tokenInfo: ${util.inspect(tokenInfo)}`)
 
       assert.equal(tokenInfo, 1, 'Validate token transfer')
     })
-    /*
+
     it('should return false for a non-token tx', async () => {
+      if (process.env.TEST_ENV === 'unit') {
+        sandbox.stub(slp, 'txDetails').resolves(slpMockData.nonTokenTx)
+      }
+
       const txid = 'c5834f0f29810a6bfa6325ebc5606f043875e5e0454b68b16e5fa343e6f8e8de'
 
       const tokenInfo = await slp.tokenTxInfo(txid)
@@ -217,7 +220,7 @@ describe('#slp', () => {
 
       assert.equal(tokenInfo, false, `Expect false returned for non-token tx`)
     })
-
+    /*
     it('should return false for a token-tx of a different token type', async () => {
       const txid = '37279c7dc81ceb34d12f03344b601c582e931e05d0e552c29c428bfa39d39af3'
 

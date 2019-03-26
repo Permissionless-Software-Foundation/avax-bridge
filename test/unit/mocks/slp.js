@@ -1,11 +1,8 @@
 /*
-  Contains mock of SLP SDK, which extends the BITBOX SDK mock.
+  Contains mock data for testing the slp.js library.
 */
 
 'use strict'
-
-// const sinon = require('sinon')
-// const { bitboxMock } = require('./bitbox')
 
 // Inspect JS Objects.
 const util = require('util')
@@ -13,27 +10,8 @@ util.inspect.defaultOptions = {
   showHidden: true,
   colors: true
 }
-/*
-const slpMock = bitboxMock
 
-const mockBalance = [
-  {
-    tokenId: '38e97c5d7d3585a2cbf3f9580c82ca33985f9cb0845d4dcce220cb709f9538b0',
-    balance: '19882.09163133',
-    decimalCount: 8
-  }
-]
-
-slpMock.Utils = {
-  balancesForAddress: sinon.stub().resolves(mockBalance)
-}
-
-module.exports = {
-  slpMock
-}
-*/
-
-const txDetails = {
+const tokenTx = {
   'txid': '3f027a0006e28db49cfa24820d1cab67c3591e975791e46af689c319819bf8d0',
   'version': 2,
   'locktime': 0,
@@ -158,8 +136,58 @@ const txDetails = {
   'tokenIsValid': true
 }
 
+const nonTokenTx = {
+  'txid': 'c5834f0f29810a6bfa6325ebc5606f043875e5e0454b68b16e5fa343e6f8e8de',
+  'version': 2,
+  'locktime': 0,
+  'vin': [
+    {
+      'txid': '51a2362613468fd9fd2acc2b3e517517af0271f905c0da43d0d2aed91ce4a20e',
+      'vout': 1,
+      'sequence': 4294967295,
+      'n': 0,
+      'scriptSig': {
+        'hex': '47304402201a25caa655813c52796f80832d74a7f14dd915abf0bf3fbdcc0d7dc81c18680502206a858bbca81d58feebb55c04b9d05e3676818e9c02d71234d545c6facb8648d6412102fcddceee3cdd3e71aa2b87c2a56f6d0238c2740d15f0ccb4ebd29d96cb7d9c72',
+        'asm': '304402201a25caa655813c52796f80832d74a7f14dd915abf0bf3fbdcc0d7dc81c18680502206a858bbca81d58feebb55c04b9d05e3676818e9c02d71234d545c6facb8648d6[ALL|FORKID] 02fcddceee3cdd3e71aa2b87c2a56f6d0238c2740d15f0ccb4ebd29d96cb7d9c72'
+      },
+      'value': 20003057,
+      'legacyAddress': 'mkrUSxSXPsskrjibBdWwQbvnJHJBFzpxak',
+      'cashAddress': 'bchtest:qqagnvlmugyxcc8dyz4q4ddtlzx7l6ktzqv2j4jkpy'
+    }
+  ],
+  'vout': [
+    {
+      'value': '0.20002845',
+      'n': 0,
+      'scriptPubKey': {
+        'hex': '76a9140b0038e549e2057d8c8b03b2342807f4767ce5cc88ac',
+        'asm': 'OP_DUP OP_HASH160 0b0038e549e2057d8c8b03b2342807f4767ce5cc OP_EQUALVERIFY OP_CHECKSIG',
+        'addresses': [
+          'bchtest:qq9sqw89f83q2lvv3vpmydpgql68vl89esfthq0hp9'
+        ],
+        'type': 'pubkeyhash'
+      },
+      'spentTxId': '06a6cd845cdd698b027d5c06659ef753d3330f010481a149aef3fd7b51603497',
+      'spentIndex': 0,
+      'spentHeight': 1294960
+    }
+  ],
+  'blockhash': '00000000620398a0b58971cd64bff9aba9c7912d0eb1248a44af851cd97421fe',
+  'blockheight': 1292573,
+  'confirmations': 2941,
+  'time': 1552533771,
+  'blocktime': 1552533771,
+  'valueOut': 0.20002845,
+  'size': 191,
+  'valueIn': 0.20003057,
+  'fees': 0.00000212,
+  'tokenInfo': null,
+  'tokenIsValid': false
+}
+
 const slpMockData = {
-  txDetails
+  tokenTx,
+  nonTokenTx
 }
 
 module.exports = slpMockData
