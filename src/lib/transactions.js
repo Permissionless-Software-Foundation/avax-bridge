@@ -40,7 +40,7 @@ class Transactions {
 
       return txdata
     } catch (err) {
-      wlogger.error(`Error in bch.js/getTransactions().`)
+      wlogger.error(`Error in transactions.js/getTransactions().`)
       throw err
     }
   }
@@ -74,6 +74,54 @@ class Transactions {
 
       return sortedArray
     } catch (err) {
+      throw err
+    }
+  }
+
+  // Get a single transaction. The last confirmed transaction. 1-conf or older.
+  async getLastConfirmedTransaction (bchAddr) {
+    try {
+      wlogger.silly(`Entering getLastConfirmedTransaction.`)
+
+      // Get an ordered list of transactions associated with this address.
+      let txs = await this.getTransactions(bchAddr)
+      txs = this.getTxConfs(txs.txs)
+
+      // filter out 0-conf transactions.
+      txs = txs.filter(elem => elem.confirmations > 0)
+
+      // Retrieve the most recent 1-conf (or more) transaction.
+      const lastTransaction = txs[0].txid
+      wlogger.debug(`lastTransaction: ${JSON.stringify(lastTransaction, null, 2)}`)
+
+      return lastTransaction
+    } catch (err) {
+      wlogger.error(`Error in transactions.js/getLastConfirmedTransaction().`)
+      throw err
+    }
+  }
+
+  // Returns an array of 1-conf transactions associated with the bch address.
+  async getLastConfirmedTransactions (bchAddr) {
+    try {
+      wlogger.silly(`Entering getLastConfirmedTransactions.`)
+
+      // Get an ordered list of transactions associated with this address.
+      let txs = await this.getTransactions(bchAddr)
+      txs = this.getTxConfs(txs.txs)
+
+      // filter out 0-conf transactions.
+      txs = txs.filter(elem => elem.confirmations === 1)
+
+      const lastTxids = []
+      for (let i = 0; i < txs.length; i++) {
+        const thisTx = txs[i]
+        lastTxids.push(thisTx.txid)
+      }
+
+      return lastTxids
+    } catch (err) {
+      wlogger.error(`Error in getLastConfirmedTransactions()`)
       throw err
     }
   }
