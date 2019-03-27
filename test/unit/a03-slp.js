@@ -195,7 +195,8 @@ describe('#slp', () => {
   describe('#tokenTxInfo', () => {
     it('should return token quantity for a token tx', async () => {
       if (process.env.TEST_ENV === 'unit') {
-        slpMockDataCopy.tokenTx.tokenInfo.tokenIdHex = '7ac7f4bb50b019fe0f5c81e3fc13fc0720e130282ea460768cafb49785eb2796'
+        slpMockDataCopy.tokenTx.tokenInfo.tokenIdHex =
+          '7ac7f4bb50b019fe0f5c81e3fc13fc0720e130282ea460768cafb49785eb2796'
         sandbox.stub(slp, 'txDetails').resolves(slpMockDataCopy.tokenTx)
       }
 
@@ -213,7 +214,8 @@ describe('#slp', () => {
         sandbox.stub(slp, 'txDetails').resolves(slpMockData.nonTokenTx)
       }
 
-      const txid = 'c5834f0f29810a6bfa6325ebc5606f043875e5e0454b68b16e5fa343e6f8e8de'
+      const txid =
+        'c5834f0f29810a6bfa6325ebc5606f043875e5e0454b68b16e5fa343e6f8e8de'
 
       const tokenInfo = await slp.tokenTxInfo(txid)
       // console.log(`tokenInfo: ${util.inspect(tokenInfo)}`)
@@ -226,12 +228,17 @@ describe('#slp', () => {
         sandbox.stub(slp, 'txDetails').resolves(slpMockData.otherTokenTx)
       }
 
-      const txid = '37279c7dc81ceb34d12f03344b601c582e931e05d0e552c29c428bfa39d39af3'
+      const txid =
+        '37279c7dc81ceb34d12f03344b601c582e931e05d0e552c29c428bfa39d39af3'
 
       const tokenInfo = await slp.tokenTxInfo(txid)
       // console.log(`tokenInfo: ${util.inspect(tokenInfo)}`)
 
-      assert.equal(tokenInfo, false, `Expect false returned for non-psf token tx`)
+      assert.equal(
+        tokenInfo,
+        false,
+        `Expect false returned for non-psf token tx`
+      )
     })
   })
 
@@ -241,11 +248,37 @@ describe('#slp', () => {
       // console.log(`walletInfo: ${JSON.stringify(walletInfo, null, 2)}`)
 
       if (walletInfo.error) {
-        assert.include(walletInfo.error, 'wallet file not found', 'Wallet file not found')
+        assert.include(
+          walletInfo.error,
+          'wallet file not found',
+          'Wallet file not found'
+        )
       } else {
         // assert.equal(walletInfo.cashAddress, 'bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pzqf')
-        assert.equal(walletInfo.cashAddress, 'bchtest:qz4qnxcxwvmacgye8wlakhz0835x0w3vtvaga95c09')
+        assert.equal(
+          walletInfo.cashAddress,
+          'bchtest:qz4qnxcxwvmacgye8wlakhz0835x0w3vtvaga95c09'
+        )
       }
+    })
+  })
+
+  describe('#createTokenTx', () => {
+    it('should generate a SLP config object', () => {
+      const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
+      const qty = 1
+
+      const result = slp.createTokenTx(addr, qty)
+      // console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, [
+        'fundingAddress',
+        'fundingWif',
+        'tokenReceiverAddress',
+        'bchChangeReceiverAddress',
+        'tokenId',
+        'amount'
+      ])
     })
   })
 })

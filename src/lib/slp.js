@@ -125,6 +125,54 @@ class SLP {
     }
   }
 
+  // Generate TX hex for sending tokens to an address. Returns a config object
+  // ready to be broadcast to the BCH network with the SLP SDK TokenType1.send()
+  // method.
+  createTokenTx (addr, qty) {
+    try {
+      // Open the wallet controlling the tokens
+      const walletInfo = this.openWallet()
+
+      const mnemonic = walletInfo.mnemonic
+
+      // root seed buffer
+      const rootSeed = slpsdk.Mnemonic.toSeed(mnemonic)
+
+      // master HDNode
+      let masterHDNode
+      if (config.NETWORK === `mainnet`) masterHDNode = slpsdk.HDNode.fromSeed(rootSeed)
+      else masterHDNode = slpsdk.HDNode.fromSeed(rootSeed, 'testnet') // Testnet
+
+      // HDNode of BIP44 account
+      const account = slpsdk.HDNode.derivePath(masterHDNode, "m/44'/145'/0'")
+
+      const change = slpsdk.HDNode.derivePath(account, '0/0')
+
+      // get the cash address
+      const cashAddress = slpsdk.HDNode.toCashAddress(change)
+
+      const fundingAddress = cashAddress
+      const fundingWif = slpsdk.HDNode.toWIF(change) // <-- compressed WIF format
+      const tokenReceiverAddress = addr
+      const bchChangeReceiverAddress = cashAddress
+
+      // Create a config object for minting
+      const sendConfig = {
+        fundingAddress,
+        fundingWif,
+        tokenReceiverAddress,
+        bchChangeReceiverAddress,
+        tokenId: config.SLP_TOKEN_ID,
+        amount: qty
+      }
+
+      return sendConfig
+    } catch (err) {
+      wlogger.error(`Error in slp.js/createTokenTx()`)
+      throw err
+    }
+  }
+
   // Send a qty of SLP tokens to an addr
   async sendTokens (addr, qty) {
     try {
