@@ -180,7 +180,8 @@ async function compareLastTransaction (obj, bchLib, wormhole) {
           // }
 
           // await tknLib.sendTokens(obj)
-          await slp.sendTokens(userAddr, retObj.tokensOut)
+          const tokenConfig = await slp.createTokenTx(userAddr, retObj.tokensOut)
+          await slp.broadcastTokenTx(tokenConfig)
         }
 
         // Add the last transaction TXID to the seenTxs array so that it's not

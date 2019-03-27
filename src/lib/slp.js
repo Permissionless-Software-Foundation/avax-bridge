@@ -173,55 +173,18 @@ class SLP {
     }
   }
 
-  // Send a qty of SLP tokens to an addr
-  async sendTokens (addr, qty) {
+  // Submit the SLP config object and broadcast the token transaction to the
+  // BCH network.
+  async broadcastTokenTx (config) {
     try {
-      // Open the wallet controlling the tokens
-      const walletInfo = this.openWallet()
-
-      const mnemonic = walletInfo.mnemonic
-
-      // root seed buffer
-      const rootSeed = slpsdk.Mnemonic.toSeed(mnemonic)
-
-      // master HDNode
-      let masterHDNode
-      if (config.NETWORK === `mainnet`) masterHDNode = slpsdk.HDNode.fromSeed(rootSeed)
-      else masterHDNode = slpsdk.HDNode.fromSeed(rootSeed, 'testnet') // Testnet
-
-      // HDNode of BIP44 account
-      const account = slpsdk.HDNode.derivePath(masterHDNode, "m/44'/145'/0'")
-
-      const change = slpsdk.HDNode.derivePath(account, '0/0')
-
-      // get the cash address
-      const cashAddress = slpsdk.HDNode.toCashAddress(change)
-
-      const fundingAddress = cashAddress
-      const fundingWif = slpsdk.HDNode.toWIF(change) // <-- compressed WIF format
-      const tokenReceiverAddress = addr
-      const bchChangeReceiverAddress = cashAddress
-
-      // Create a config object for minting
-      const sendConfig = {
-        fundingAddress,
-        fundingWif,
-        tokenReceiverAddress,
-        bchChangeReceiverAddress,
-        tokenId: config.SLP_TOKEN_ID,
-        amount: qty
-      }
-
-      // console.log(`createConfig: ${util.inspect(createConfig)}`)
-
       // Generate, sign, and broadcast a hex-encoded transaction for sending
       // the tokens.
-      const sendTxId = await slpsdk.TokenType1.send(sendConfig)
+      const sendTxId = await slpsdk.TokenType1.send(config)
 
       wlogger.debug(`sendTxId: ${util.inspect(sendTxId)}`)
       console.log(`sendTxId: ${util.inspect(sendTxId)}`)
     } catch (err) {
-      wlogger.error(`Error in slp.js/sendToken()`)
+      wlogger.error(`Error in slp.js/broadcastTokenTx()`)
       throw err
     }
   }
