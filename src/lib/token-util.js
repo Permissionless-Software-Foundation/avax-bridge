@@ -13,8 +13,7 @@ module.exports = {
   saveState,
   readState,
   testableComponents: {
-    round8,
-    only2Conf
+    round8
   }
 }
 
@@ -71,7 +70,7 @@ async function compareLastTransaction (obj, bchLib, wormhole) {
     const lastTransactions = await txs.getLastConfirmedTransactions(bchAddr, wormhole)
 
     // If there are no 0 or 1-conf transactions.
-    const isOnly2Conf = await only2Conf(BCH_ADDR1, wormhole)
+    const isOnly2Conf = await txs.only2Conf(BCH_ADDR1, wormhole)
     if (isOnly2Conf) {
       // Retrieve the balances from the blockchain.
       const retObj2 = await getBlockchainBalances(BCH_ADDR1, wormhole)
@@ -229,24 +228,6 @@ async function getBlockchainBalances (bchAddr, wormhole) {
   } catch (err) {
     wlogger.error(`Error in getBlockchainBalances()`)
     throw err
-  }
-}
-
-// Returns true if there are no 0 or 1-conf transactions associated with the address.
-async function only2Conf (bchAddr, BITBOX) {
-  try {
-    wlogger.silly(`Entering only2Conf.`)
-
-    // Get an ordered list of transactions associated with this address.
-    let txs = await bch.getTransactions(bchAddr, BITBOX)
-    txs = bch.getTxConfs(txs.txs)
-
-    if (txs[0].confirmations > 1) return true
-
-    return false
-  } catch (err) {
-    console.log(`Error in only2Conf().`)
-    return false
   }
 }
 
