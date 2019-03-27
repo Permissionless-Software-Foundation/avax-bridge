@@ -14,7 +14,7 @@ const nock = require('nock')
 const Transactions = require('../../src/lib/transactions')
 
 const bitboxMock = require('bitbox-mock')
-// const bchMockData = require('./mocks/bch')
+const txMockData = require('./mocks/transactions')
 
 // Used for debugging.
 const util = require('util')
@@ -180,21 +180,22 @@ describe('#transactions', () => {
       assert.equal(result, true)
     })
 
-    /*
+    // This test should only run as a unit test, not an integration test.
     if (process.env.TEST_ENV === 'unit') {
       it(`should return false if confirmations are less than 2`, async () => {
-        bitboxMock.mockTransactions.txs[0].confirmations = 0
+        // Mock out the data needed for this test.
+        txMockData.mockTransactions.txs[0].confirmations = 0
+        sandbox.stub(txs.BITBOX.Address, 'transactions')
+          .resolves(txMockData.mockTransactions)
+
         const addr = `bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pzqf`
         // console.log(`blah: ${util.inspect(blah.txs[0].confirmations)}`)
 
         const result = await txs.only2Conf(addr)
         // console.log(`result: ${util.inspect(result)}`)
 
-        bitboxMock.mockTransactions.txs[0].confirmations = 30
-
         assert.equal(result, false)
       })
     }
-*/
   })
 })
