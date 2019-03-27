@@ -1,5 +1,8 @@
 /*
   Unit and integration tests for bch.js library.
+
+  TODO:
+  - Fix unit test for only2Conf()
 */
 
 'use strict'
@@ -132,5 +135,66 @@ describe('#transactions', () => {
 
       assert.isArray(result)
     })
+  })
+
+  describe('getUserAddr', () => {
+    // See issue: https://github.com/Bitcoin-com/rest.bitcoin.com/issues/300
+    /*
+    it('should should throw an error for an invalid transaction', async () => {
+      try {
+        const txid = `cf1b5d374e171876a625599a489a2a6cdda119fb84b6cff2a226c39e189`
+
+        await txs.getUserAddr(txid)
+
+        assert(true, false, 'Unexpected result')
+      } catch (err) {
+        console.log(`err: `, err)
+        assert.include(err, '502: Bad gateway')
+      }
+    })
+    */
+
+    it('should return senders cash address', async () => {
+      // If unit test, use the mocking library instead of live calls.
+      if (process.env.TEST_ENV === 'unit') {
+        txs.BITBOX = bitboxMock
+      }
+
+      const txid = `0d457cf1b5d374e171876a625599a489a2a6cdda119fb84b6cff2a226c39e189`
+
+      const senderAddr = await txs.getUserAddr(txid)
+      // console.log(`senderAddr: ${util.inspect(senderAddr)}`)
+
+      assert.isString(senderAddr)
+      assert.equal(senderAddr, 'bchtest:qqafk2cvztl8yt70v5akaawucwrn94hl2yups7rzfn')
+    })
+  })
+
+  describe(`only2Conf()`, () => {
+    it(`should return true if confirmations are greater than 1`, async () => {
+      const addr = `bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pzqf`
+
+      const result = await txs.only2Conf(addr)
+      // console.log(`result: ${util.inspect(result)}`)
+
+      assert.equal(result, true)
+    })
+
+    /*
+    if (process.env.TEST_ENV === 'unit') {
+      it(`should return false if confirmations are less than 2`, async () => {
+        bitboxMock.mockTransactions.txs[0].confirmations = 0
+        const addr = `bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pzqf`
+        // console.log(`blah: ${util.inspect(blah.txs[0].confirmations)}`)
+
+        const result = await txs.only2Conf(addr)
+        // console.log(`result: ${util.inspect(result)}`)
+
+        bitboxMock.mockTransactions.txs[0].confirmations = 30
+
+        assert.equal(result, false)
+      })
+    }
+*/
   })
 })

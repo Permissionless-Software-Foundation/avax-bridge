@@ -125,6 +125,44 @@ class Transactions {
       throw err
     }
   }
+
+  // Queries the transaction details and returns the senders BCH address.
+  async getUserAddr (txid) {
+    try {
+      wlogger.silly(`Entering getUserAddr().`)
+      wlogger.debug(`txid: ${txid}`)
+
+      const txDetails = await this.BITBOX.Transaction.details(txid)
+
+      // Assumption: There is only 1 vin element, or the senders address exists in
+      // the first vin element.
+      const vin = txDetails.vin[0]
+      const senderAddr = vin.cashAddress
+
+      return senderAddr
+    } catch (err) {
+      wlogger.debug(`Error in bch.js/getUserAddr().`)
+      throw err
+    }
+  }
+
+  // Returns true if there are no 0 or 1-conf transactions associated with the address.
+  async only2Conf (bchAddr) {
+    try {
+      wlogger.silly(`Entering only2Conf.`)
+
+      // Get an ordered list of transactions associated with this address.
+      let txs = await this.getTransactions(bchAddr)
+      txs = this.getTxConfs(txs.txs)
+
+      if (txs[0].confirmations > 1) return true
+
+      return false
+    } catch (err) {
+      console.log(`Error in only2Conf().`)
+      return false
+    }
+  }
 }
 
 module.exports = Transactions

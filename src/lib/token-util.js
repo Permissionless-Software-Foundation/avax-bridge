@@ -13,9 +13,7 @@ module.exports = {
   saveState,
   readState,
   testableComponents: {
-    recievedBch,
     round8,
-    getUserAddr,
     only2Conf
   }
 }
@@ -93,7 +91,7 @@ async function compareLastTransaction (obj, bchLib, wormhole) {
         wlogger.info(`New TXID ${lastTransaction} detected.`)
 
         // Get the sender's address for this transaction.
-        const userAddr = await getUserAddr(lastTransaction, wormhole)
+        const userAddr = await txs.getUserAddr(lastTransaction, wormhole)
         wlogger.info(`userAddr: ${util.inspect(userAddr)}`)
 
         // Exit if the userAddr is the same as the bchAddr for this app.
@@ -149,7 +147,7 @@ async function compareLastTransaction (obj, bchLib, wormhole) {
         // User sent BCH
         } else {
           // Get the BCH send amount.
-          const bchQty = await recievedBch(lastTransaction, BCH_ADDR1, wormhole)
+          const bchQty = await bch.recievedBch(lastTransaction, BCH_ADDR1, wormhole)
           wlogger.info(`${bchQty} BCH recieved.`)
 
           // Exchange BCH for tokens
@@ -252,48 +250,6 @@ async function only2Conf (bchAddr, BITBOX) {
   }
 }
 
-// Calculates the amount of BCH was sent to this app from a TX.
-// Returns a floating point number of BCH recieved. 0 if no match found.
-async function recievedBch (txid, addr, BITBOX) {
-  try {
-    wlogger.silly(`Entering receivedBch().`)
-
-    const txDetails = await BITBOX.Transaction.details(txid)
-    // console.log(`txDetails: ${JSON.stringify(txDetails, null, 2)}`)
-
-    const vout = txDetails.vout
-
-    // Loop through each vout in the TX.
-    for (let i = 0; i < vout.length; i++) {
-      const thisVout = vout[i]
-      // console.log(`thisVout: ${JSON.stringify(thisVout, null, 2)}`);
-      const value = thisVout.value
-
-      // Skip if value is zero.
-      if (Number(thisVout.value) === 0.0) continue
-
-      // Skip if vout has no addresses field.
-      if (thisVout.scriptPubKey.addresses) {
-        const addresses = thisVout.scriptPubKey.addresses
-        // console.log(`addresses: ${JSON.stringify(addresses, null, 2)}`);
-
-        // Note: Assuming addresses[] only has 1 element.
-        // Not sure how there can be multiple addresses if the value is not an array.
-        let address = addresses[0] // Legacy address
-        address = BITBOX.Address.toCashAddress(address)
-
-        if (address === addr) return Number(value)
-      }
-    }
-
-    // Address not found. Return zero.
-    return 0
-  } catch (err) {
-    wlogger.error(`Error in recievedBch: `, err)
-    throw err
-  }
-}
-
 // Calculates the numbers of tokens to send.
 function exchangeBCHForTokens (obj) {
   try {
@@ -349,26 +305,6 @@ function exchangeTokensForBCH (obj) {
     return Math.abs(round8(bchOut))
   } catch (err) {
     wlogger.error(`Error in exchangeTokensForBCH().`)
-    throw err
-  }
-}
-
-// Queries the transaction details and returns the senders BCH address.
-async function getUserAddr (txid, BITBOX) {
-  try {
-    wlogger.silly(`Entering getUserAddr().`)
-    wlogger.debug(`txid: ${txid}`)
-
-    const txDetails = await BITBOX.Transaction.details(txid)
-
-    // Assumption: There is only 1 vin element, or the senders address exists in
-    // the first vin element.
-    const vin = txDetails.vin[0]
-    const senderAddr = vin.cashAddress
-
-    return senderAddr
-  } catch (err) {
-    wlogger.debug(`Error in util.js/getUserAddr().`)
     throw err
   }
 }
