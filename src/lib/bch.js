@@ -80,6 +80,48 @@ class BCH {
       throw err
     }
   }
+
+  // Calculates the amount of BCH was sent to this app from a TX.
+  // Returns a floating point number of BCH recieved. 0 if no match found.
+  async recievedBch (txid, addr) {
+    try {
+      wlogger.silly(`Entering receivedBch().`)
+
+      const txDetails = await this.BITBOX.Transaction.details(txid)
+      // console.log(`txDetails: ${JSON.stringify(txDetails, null, 2)}`)
+
+      const vout = txDetails.vout
+
+      // Loop through each vout in the TX.
+      for (let i = 0; i < vout.length; i++) {
+        const thisVout = vout[i]
+        // console.log(`thisVout: ${JSON.stringify(thisVout, null, 2)}`);
+        const value = thisVout.value
+
+        // Skip if value is zero.
+        if (Number(thisVout.value) === 0.0) continue
+
+        // Skip if vout has no addresses field.
+        if (thisVout.scriptPubKey.addresses) {
+          const addresses = thisVout.scriptPubKey.addresses
+          // console.log(`addresses: ${JSON.stringify(addresses, null, 2)}`);
+
+          // Note: Assuming addresses[] only has 1 element.
+          // Not sure how there can be multiple addresses if the value is not an array.
+          let address = addresses[0] // Legacy address
+          address = this.BITBOX.Address.toCashAddress(address)
+
+          if (address === addr) return Number(value)
+        }
+      }
+
+      // Address not found. Return zero.
+      return 0
+    } catch (err) {
+      wlogger.error(`Error in recievedBch: `, err)
+      throw err
+    }
+  }
 }
 
 module.exports = BCH

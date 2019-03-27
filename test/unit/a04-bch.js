@@ -93,4 +93,38 @@ describe('#bch', () => {
       assert.equal(result.satoshis, 20, `bigger utxo value expected`)
     })
   })
+
+  describe('recievedBch', () => {
+    it('should return 0 if address is not in TX', async () => {
+      // If unit test, use the mocking library instead of live calls.
+      if (process.env.TEST_ENV === 'unit') {
+        bch.BITBOX = bitboxMock
+      }
+
+      const txid =
+        'a77762bb47c130e755cc053db51333bbd64596eefd18baffc08a447749863fa9'
+      const addr = `bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pabc`
+
+      const value = await bch.recievedBch(txid, addr)
+
+      assert.isNumber(value)
+      assert.equal(value, 0, 'Expect 0')
+    })
+
+    it('should calculate amount of BCH recieved from a TX', async () => {
+      // If unit test, use the mocking library instead of live calls.
+      if (process.env.TEST_ENV === 'unit') {
+        bch.BITBOX = bitboxMock
+      }
+
+      const txid = 'a77762bb47c130e755cc053db51333bbd64596eefd18baffc08a447749863fa9'
+      const addr = `bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pzqf`
+
+      const value = await bch.recievedBch(txid, addr)
+      // console.log(`value: ${util.inspect(value)}`)
+
+      assert.isNumber(value)
+      assert.equal(value, 0.0001)
+    })
+  })
 })
