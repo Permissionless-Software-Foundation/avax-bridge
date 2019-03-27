@@ -15,7 +15,6 @@ module.exports = {
   saveState,
   readState,
   testableComponents: {
-    tokenTxInfo,
     recievedBch,
     round8,
     getUserAddr,
@@ -30,7 +29,7 @@ util.inspect.defaultOptions = { depth: 3 }
 // Winston logger
 const wlogger = require('../utils/logging')
 
-const lastTransactionLib = require('./last-transaction.js')
+// const lastTransactionLib = require('./last-transaction.js')
 const SLP = require('./slp')
 const slp = new SLP()
 
@@ -240,8 +239,8 @@ async function getLastConfirmedTransaction (bchAddr, BITBOX) {
     wlogger.silly(`Entering getLastConfirmedTransaction.`)
 
     // Get an ordered list of transactions associated with this address.
-    let txs = await lastTransactionLib.getTransactions(bchAddr, BITBOX)
-    txs = lastTransactionLib.getTxConfs(txs.txs)
+    let txs = await bch.getTransactions(bchAddr, BITBOX)
+    txs = bch.getTxConfs(txs.txs)
 
     // filter out 0-conf transactions.
     txs = txs.filter(elem => elem.confirmations > 0)
@@ -263,8 +262,8 @@ async function getLastConfirmedTransactions (bchAddr, BITBOX) {
     wlogger.silly(`Entering getLastConfirmedTransactions.`)
 
     // Get an ordered list of transactions associated with this address.
-    let txs = await lastTransactionLib.getTransactions(bchAddr, BITBOX)
-    txs = lastTransactionLib.getTxConfs(txs.txs)
+    let txs = await bch.getTransactions(bchAddr, BITBOX)
+    txs = bch.getTxConfs(txs.txs)
 
     // filter out 0-conf transactions.
     txs = txs.filter(elem => elem.confirmations === 1)
@@ -288,31 +287,14 @@ async function only2Conf (bchAddr, BITBOX) {
     wlogger.silly(`Entering only2Conf.`)
 
     // Get an ordered list of transactions associated with this address.
-    let txs = await lastTransactionLib.getTransactions(bchAddr, BITBOX)
-    txs = lastTransactionLib.getTxConfs(txs.txs)
+    let txs = await bch.getTransactions(bchAddr, BITBOX)
+    txs = bch.getTxConfs(txs.txs)
 
     if (txs[0].confirmations > 1) return true
 
     return false
   } catch (err) {
     console.log(`Error in only2Conf().`)
-    return false
-  }
-}
-
-// Returns a number, representing the token quantity if the TX contains a token
-// transfer. Otherwise returns false.
-async function tokenTxInfo (txid, wormhole) {
-  try {
-    wlogger.silly(`Entering tokenTxInfo().`)
-
-    const retVal = await wormhole.DataRetrieval.transaction(txid)
-    wlogger.debug(`tokenTxInfo retVal: ${JSON.stringify(retVal, null, 2)}`)
-
-    if (retVal.message === 'Not a Wormhole Protocol transaction') return false
-
-    return Number(retVal.amount)
-  } catch (err) {
     return false
   }
 }
