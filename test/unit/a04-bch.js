@@ -80,4 +80,17 @@ describe('#bch', () => {
       assert.isArray(bchBalance.transactions)
     })
   })
+
+  describe(`findBiggestUtxo()`, () => {
+    it(`should return the bigger utxo`, () => {
+      const utxo1 = { satoshis: 10 }
+      const utxo2 = { satoshis: 20 }
+      const utxos = [utxo1, utxo2]
+
+      const result = bch.findBiggestUtxo(utxos)
+      // console.log(`result: ${util.inspect(result)}`)
+
+      assert.equal(result.satoshis, 20, `bigger utxo value expected`)
+    })
+  })
 })

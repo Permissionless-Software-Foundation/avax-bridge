@@ -56,6 +56,30 @@ class BCH {
       throw err
     }
   }
+
+  // Returns the utxo with the biggest balance from an array of utxos.
+  findBiggestUtxo (utxos) {
+    try {
+      wlogger.silly(`Entering findBiggestUtxo().`)
+
+      let largestAmount = 0
+      let largestIndex = 0
+
+      for (let i = 0; i < utxos.length; i++) {
+        const thisUtxo = utxos[i]
+
+        if (thisUtxo.satoshis > largestAmount) {
+          largestAmount = thisUtxo.satoshis
+          largestIndex = i
+        }
+      }
+
+      return utxos[largestIndex]
+    } catch (err) {
+      wlogger.error(`Error in findBiggestUtxo().`)
+      throw err
+    }
+  }
 }
 
 module.exports = BCH
