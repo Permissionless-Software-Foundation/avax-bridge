@@ -53,7 +53,7 @@ describe('#slp', () => {
 
   describe('#getTokenBalance', () => {
     it('should get token balance', async () => {
-      // By default, use the mocking library instead of live calls.
+      // If unit test, use the mocking library instead of live calls.
       if (process.env.TEST_ENV === 'unit') slp.slpsdk = slpMock
 
       // const addr = 'simpleledger:qzl6k0wvdd5ky99hewghqdgfj2jhcpqnfqtaqr70rp'

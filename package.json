@@ -63,6 +63,7 @@
   },
   "devDependencies": {
     "ajv": "^5.5.2",
+    "bitbox-mock": "^1.0.1",
     "chai": "^4.1.2",
     "coveralls": "^3.0.2",
     "eslint": "^4.19.1",
