@@ -10,7 +10,6 @@ module.exports = {
   compareLastTransaction, // Determine if any new transactions have occured involving this address.
   exchangeBCHForTokens,
   exchangeTokensForBCH,
-  getLastConfirmedTransaction, // most recent 1-conf (or greater) transaction
   findBiggestUtxo, // Returns the utxo with the biggest balance from an array of utxos.
   saveState,
   readState,
@@ -35,6 +34,9 @@ const slp = new SLP()
 
 const BCH = require('./bch')
 const bch = new BCH()
+
+const Transactions = require('./transactions')
+const txs = new Transactions()
 
 const WH = require('./wormhole')
 const wh = new WH()
@@ -69,7 +71,7 @@ async function compareLastTransaction (obj, bchLib, wormhole) {
     let newTokenBalance = tokenBalance
 
     // Get an array of 1-conf transactions
-    const lastTransactions = await getLastConfirmedTransactions(bchAddr, wormhole)
+    const lastTransactions = await txs.getLastConfirmedTransactions(bchAddr, wormhole)
 
     // If there are no 0 or 1-conf transactions.
     const isOnly2Conf = await only2Conf(BCH_ADDR1, wormhole)
@@ -229,54 +231,6 @@ async function getBlockchainBalances (bchAddr, wormhole) {
     }
   } catch (err) {
     wlogger.error(`Error in getBlockchainBalances()`)
-    throw err
-  }
-}
-
-// Get a single transaction. The last confirmed transaction. 1-conf or older.
-async function getLastConfirmedTransaction (bchAddr, BITBOX) {
-  try {
-    wlogger.silly(`Entering getLastConfirmedTransaction.`)
-
-    // Get an ordered list of transactions associated with this address.
-    let txs = await bch.getTransactions(bchAddr, BITBOX)
-    txs = bch.getTxConfs(txs.txs)
-
-    // filter out 0-conf transactions.
-    txs = txs.filter(elem => elem.confirmations > 0)
-
-    // Retrieve the most recent 1-conf (or more) transaction.
-    const lastTransaction = txs[0].txid
-    wlogger.debug(`lastTransaction: ${JSON.stringify(lastTransaction, null, 2)}`)
-
-    return lastTransaction
-  } catch (err) {
-    wlogger.error(`Error in getLastConfirmedTransaction: `, err)
-    throw err
-  }
-}
-
-// Returns an array of 1-conf transactions associated with the bch address.
-async function getLastConfirmedTransactions (bchAddr, BITBOX) {
-  try {
-    wlogger.silly(`Entering getLastConfirmedTransactions.`)
-
-    // Get an ordered list of transactions associated with this address.
-    let txs = await bch.getTransactions(bchAddr, BITBOX)
-    txs = bch.getTxConfs(txs.txs)
-
-    // filter out 0-conf transactions.
-    txs = txs.filter(elem => elem.confirmations === 1)
-
-    const lastTxids = []
-    for (let i = 0; i < txs.length; i++) {
-      const thisTx = txs[i]
-      lastTxids.push(thisTx.txid)
-    }
-
-    return lastTxids
-  } catch (err) {
-    wlogger.error(`Error in getLastConfirmedTransactions: `, err)
     throw err
   }
 }

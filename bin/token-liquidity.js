@@ -16,6 +16,9 @@ const slp = new SLP()
 const BCH = require('../src/lib/bch')
 const bch = new BCH()
 
+const Transactions = require('../src/lib/transactions')
+const txs = new Transactions()
+
 const config = require('../config')
 config.bchBalance = config.BCH_QTY_ORIGINAL
 config.tokenBalance = config.TOKENS_QTY_ORIGINAL
@@ -97,7 +100,7 @@ async function startTokenLiquidity () {
   console.log(`Token spot price: $${price}`)
 
   // Get the last transaction associated with this address.
-  let lastTransaction = await lib.getLastConfirmedTransaction(BCH_ADDR1, BITBOX)
+  let lastTransaction = await txs.getLastConfirmedTransaction(BCH_ADDR1, BITBOX)
 
   // Periodically check the last transaction.
   setInterval(async function () {
