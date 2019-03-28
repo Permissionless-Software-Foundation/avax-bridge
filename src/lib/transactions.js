@@ -23,11 +23,11 @@ if (config.NETWORK === `testnet`) {
   BITBOX = new BITBOXCli({ restURL: REST_URL })
 }
 
-let _this
+// let _this
 
 class Transactions {
   constructor () {
-    _this = this
+    // _this = this
 
     this.BITBOX = BITBOX
   }

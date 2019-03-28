@@ -44,6 +44,7 @@ if (config.NETWORK === `testnet`) {
   BITBOX = new BITBOXCli({ restURL: 'https://rest.bitcoin.com/v1/' })
 }
 
+/*
 const Wormhole = require('wormhole-sdk/lib/Wormhole').default
 let wormhole
 if (config.NETWORK === `testnet`) {
@@ -51,6 +52,7 @@ if (config.NETWORK === `testnet`) {
 } else {
   wormhole = new Wormhole({ restURL: `https://rest.bitcoin.com/v1/` })
 }
+*/
 
 // const tknLib = require(`../src/utils/send-tokens.js`)
 const bchLib = require(`../src/lib/send-bch.js`)
