@@ -9,6 +9,8 @@
 // const config = require('../../config')
 const fs = require('fs')
 
+const config = require('../../config')
+
 // Winston logger
 const wlogger = require('../utils/logging')
 
@@ -57,6 +59,26 @@ class TLUtils {
     } catch (err) {
       wlogger.debug(`Error in util.js/readState()`)
       throw new Error(`Could not open ${filename}`)
+    }
+  }
+
+  // Opens the wallet file and returns the contents.
+  openWallet () {
+    try {
+      let walletInfo
+
+      if (config.NETWORK === 'testnet') {
+        walletInfo = require(`${__dirname}/../../wallet-test.json`)
+      } else {
+        walletInfo = require(`${__dirname}/../../wallet-main.json`)
+      }
+      // console.log(`walletInfo in slp: ${JSON.stringify(walletInfo, null, 2)}`)
+
+      return walletInfo
+    } catch (err) {
+      return {
+        error: `wallet file not found`
+      }
     }
   }
 }

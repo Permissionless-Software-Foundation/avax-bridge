@@ -242,27 +242,6 @@ describe('#slp', () => {
     })
   })
 
-  describe('#openWallet', () => {
-    it('should open wallet file or report that wallet file does not exist', async () => {
-      const walletInfo = await slp.openWallet()
-      // console.log(`walletInfo: ${JSON.stringify(walletInfo, null, 2)}`)
-
-      if (walletInfo.error) {
-        assert.include(
-          walletInfo.error,
-          'wallet file not found',
-          'Wallet file not found'
-        )
-      } else {
-        // assert.equal(walletInfo.cashAddress, 'bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pzqf')
-        assert.equal(
-          walletInfo.cashAddress,
-          'bchtest:qz4qnxcxwvmacgye8wlakhz0835x0w3vtvaga95c09'
-        )
-      }
-    })
-  })
-
   describe('#createTokenTx', () => {
     it('should generate a SLP config object', () => {
       const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'

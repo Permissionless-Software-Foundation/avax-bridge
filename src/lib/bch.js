@@ -4,7 +4,7 @@
 
 'use strict'
 
-const rp = require('request-promise')
+// const rp = require('request-promise')
 
 // Used for debugging and iterrogating JS objects.
 const util = require('util')
@@ -25,11 +25,11 @@ if (config.NETWORK === `testnet`) {
   BITBOX = new BITBOXCli({ restURL: REST_URL })
 }
 
-let _this
+// let _this
 
 class BCH {
   constructor () {
-    _this = this
+    // _this = this
 
     this.BITBOX = BITBOX
   }
@@ -121,6 +121,126 @@ class BCH {
       wlogger.error(`Error in recievedBch: `, err)
       throw err
     }
+  }
+
+  // Send BCH to an address.
+  async sendBch (obj) {
+    try {
+      const RECV_ADDR = obj.recvAddr
+      const satoshisToSend = obj.satoshisToSend
+
+      wlogger.silly(`Starting sendBch()...`)
+
+      const balance = await this.getBCHBalance(config.BCH_ADDR, false)
+      wlogger.verbose(`balance: ${JSON.stringify(balance, null, 2)}`)
+      wlogger.verbose(`Balance of sending address ${config.BCH_ADDR} is ${balance} BCH.`)
+
+      if (balance <= 0.0) {
+        console.log(`Balance of sending address is zero. Exiting.`)
+        process.exit(0)
+      }
+
+      const SEND_ADDR_LEGACY = BITBOX.Address.toLegacyAddress(config.BCH_ADDR)
+      const RECV_ADDR_LEGACY = BITBOX.Address.toLegacyAddress(RECV_ADDR)
+      wlogger.verbose(`Sender Legacy Address: ${SEND_ADDR_LEGACY}`)
+      wlogger.verbose(`Receiver Legacy Address: ${RECV_ADDR_LEGACY}`)
+
+      // const balance2 = await this.getBCHBalance(RECV_ADDR, false)
+      // console.log(`Balance of recieving address ${RECV_ADDR} is ${balance2} BCH.`)
+
+      // const utxo = await BITBOX.Address.utxo(SEND_ADDR);
+      // console.log(`utxo: ${JSON.stringify(utxo, null, 2)}`);
+
+      const utxos = await this.BITBOX.Address.utxo(config.BCH_ADDR)
+      const utxo = this.findBiggestUtxo(utxos)
+      utxo.value = utxo.amount
+
+      // instance of transaction builder
+      let transactionBuilder
+      if (config.NETWORK === `testnet`) {
+        transactionBuilder = new BITBOX.TransactionBuilder('testnet')
+      } else {
+        transactionBuilder = new BITBOX.TransactionBuilder()
+      }
+
+      // const satoshisToSend = 1000;
+      const originalAmount = utxo.satoshis
+      const vout = utxo.vout
+      const txid = utxo.txid
+
+      // add input with txid and index of vout
+      transactionBuilder.addInput(txid, vout)
+
+      // get byte count to calculate fee. paying 1 sat/byte
+      const byteCount = BITBOX.BitcoinCash.getByteCount({ P2PKH: 1 }, { P2PKH: 2 })
+      wlogger.verbose(`byteCount: ${byteCount}`)
+      const satoshisPerByte = 1.0
+      const txFee = Math.floor(satoshisPerByte * byteCount)
+      wlogger.verbose(`txFee: ${txFee}`)
+
+      // amount to send back to the sending address. It's the original amount - 1 sat/byte for tx size
+      const remainder = originalAmount - satoshisToSend - txFee
+      wlogger.verbose(`remainder: ${remainder}`)
+
+      // add output w/ address and amount to send
+      transactionBuilder.addOutput(BITBOX.Address.toLegacyAddress(RECV_ADDR), satoshisToSend)
+      transactionBuilder.addOutput(BITBOX.Address.toLegacyAddress(config.BCH_ADDR), remainder)
+
+      // Generate a change address from a Mnemonic of a private key.
+      const change = this.changeAddrFromMnemonic(SEND_MNEMONIC)
+
+      // Generate a keypair from the change address.
+      const keyPair = BITBOX.HDNode.toKeyPair(change)
+
+      // Sign the transaction with the HD node.
+      let redeemScript
+      transactionBuilder.sign(
+        0,
+        keyPair,
+        redeemScript,
+        transactionBuilder.hashTypes.SIGHASH_ALL,
+        originalAmount
+      )
+
+      // build tx
+      const tx = transactionBuilder.build()
+      // output rawhex
+      const hex = tx.toHex()
+      // console.log(`Transaction raw hex: `);
+      // console.log(`${hex}`);
+
+      // sendRawTransaction to running BCH node
+      const broadcast = await BITBOX.RawTransactions.sendRawTransaction(hex)
+      console.log(`Transaction ID: ${broadcast}`)
+
+      console.log(`...Ending sendBch()`)
+      */
+    } catch (err) {
+      console.log(`Error in sendBch: `, err)
+      throw err
+    }
+  }
+
+  // Generate a change address from a Mnemonic of a private key.
+  changeAddrFromMnemonic (mnemonic) {
+    // root seed buffer
+    const rootSeed = BITBOX.Mnemonic.toSeed(mnemonic)
+
+    // master HDNode
+    let masterHDNode
+    if (config.NETWORK === `testnet`) {
+      masterHDNode = BITBOX.HDNode.fromSeed(rootSeed, 'testnet')
+    } else {
+      masterHDNode = BITBOX.HDNode.fromSeed(rootSeed)
+    }
+
+    // HDNode of BIP44 account
+    const account = BITBOX.HDNode.derivePath(masterHDNode, "m/44'/145'/0'")
+
+    // derive the first external change address HDNode which is going to spend utxo
+    const change = BITBOX.HDNode.derivePath(account, '0/0')
+
+    return change
   }
 }
 

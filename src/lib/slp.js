@@ -13,6 +13,9 @@ util.inspect.defaultOptions = { depth: 5 }
 
 const config = require('../../config')
 
+const TLUtils = require('./util')
+const tlUtils = new TLUtils()
+
 // Winston logger
 const wlogger = require('../utils/logging')
 
@@ -105,33 +108,13 @@ class SLP {
     }
   }
 
-  // Opens the wallet file and returns the contents.
-  openWallet () {
-    try {
-      let walletInfo
-
-      if (config.NETWORK === 'testnet') {
-        walletInfo = require(`${__dirname}/../../wallet-test.json`)
-      } else {
-        walletInfo = require(`${__dirname}/../../wallet-main.json`)
-      }
-      // console.log(`walletInfo in slp: ${JSON.stringify(walletInfo, null, 2)}`)
-
-      return walletInfo
-    } catch (err) {
-      return {
-        error: `wallet file not found`
-      }
-    }
-  }
-
   // Generate TX hex for sending tokens to an address. Returns a config object
   // ready to be broadcast to the BCH network with the SLP SDK TokenType1.send()
   // method.
   createTokenTx (addr, qty) {
     try {
       // Open the wallet controlling the tokens
-      const walletInfo = this.openWallet()
+      const walletInfo = tlUtils.openWallet()
 
       const mnemonic = walletInfo.mnemonic
 
