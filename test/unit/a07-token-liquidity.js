@@ -77,9 +77,75 @@ describe('#token-liquidity', () => {
       // console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ['tokensOut', 'bch2', 'token2'])
-      assert.equal(Math.floor(result.tokensOut), 500, `Should match spreadsheet`)
+      assert.equal(
+        Math.floor(result.tokensOut),
+        500,
+        `Should match spreadsheet`
+      )
       assert.isNumber(result.bch2)
       assert.isNumber(result.token2)
     })
   })
+
+  // Only run these tests for a unit test.
+  if (process.env.TEST_ENV === 'unit') {
+    describe('compareLastTransaction', () => {
+      /*
+        it(`should return false if transactions are the same`, async () => {
+          const obj = {
+            bchAddr: `bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pzqf`,
+            txid: `9f56ba221d862e41f33b564e49ddffc66ec9b5bcaf4669d40e1d890ade4817bc`,
+            bchBalance: 25,
+            tokenBalance: 5000
+          }
+
+          const result = await lib.compareLastTransaction(obj, tknLib, bchLib, BITBOX)
+          console.log(`result: ${util.inspect(result)}`)
+
+          assert.equal(result, false, 'return false expected')
+        })
+        */
+
+      it('should send BCH in exchange for tokens', async () => {
+        const obj = {
+          bchAddr: `bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pzqf`,
+          txid: `298e9186a2113443f3b2064ee0bf0ae1973434ae48e9ec3c3e27bfea41d41b05`,
+          bchBalance: 7.68905269,
+          tokenBalance: 100000
+        }
+
+        const result = await lib.compareLastTransaction(obj)
+        // console.log(`result: ${util.inspect(result)}`)
+
+        // Should return the last transactions, as well as the new balance of BCH
+        // and the token.
+        assert.hasAllKeys(result, [
+          'lastTransaction',
+          'bchBalance'
+          // 'tokenBalance'
+        ])
+      })
+
+      it('should send tokens in exchange for BCH', async () => {
+        const obj = {
+          bchAddr: `bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pzqf`,
+          txid: `a77762bb47c130e755cc053db51333bbd64596eefd18baffc08a447749863fa9`,
+          bchBalance: 7.68905269,
+          tokenBalance: 100000
+        }
+        //
+
+        const result = await lib.compareLastTransaction(obj)
+        // console.log(`result: ${util.inspect(result)}`)
+
+        // Should return the last transactions, as well as the new balance of BCH
+        // and the token.
+        assert.hasAllKeys(result, [
+          'lastTransaction',
+          'bchBalance'
+          // 'tokenBalance'
+        ])
+      })
+    })
+  }
 })

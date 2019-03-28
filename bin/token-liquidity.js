@@ -115,7 +115,7 @@ async function startTokenLiquidity () {
       tokenBalance: tokenBalance
     }
 
-    const retObj = await lib.compareLastTransaction(obj, bchLib, wormhole)
+    const retObj = await lib.compareLastTransaction(obj, bchLib)
     const newTx = retObj.lastTransaction
 
     // Save the updated price information.

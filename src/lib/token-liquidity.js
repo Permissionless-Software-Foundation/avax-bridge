@@ -22,6 +22,8 @@ const bch = new BCH()
 const Transactions = require('./transactions')
 const txs = new Transactions()
 
+const bchLib = require('./send-bch')
+
 // Winston logger
 const wlogger = require('../utils/logging')
 
@@ -56,7 +58,7 @@ class TokenLiquidity {
   // ---if the user sent BCH...
   // ----calculate and send tokens
   // ---Calculate the new BCH and token balances and return them.
-  async compareLastTransaction (obj, bchLib) {
+  async compareLastTransaction (obj) {
     try {
       const { bchAddr, txid, bchBalance, tokenBalance } = obj
 
