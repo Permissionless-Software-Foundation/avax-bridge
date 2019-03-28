@@ -7,14 +7,15 @@
 // const lib = require('../src/lib/token-util.js')
 const got = require('got')
 
-const WH = require('../src/lib/wormhole')
-const wh = new WH()
-
 const SLP = require('../src/lib/slp')
 const slp = new SLP()
 
 const BCH = require('../src/lib/bch')
 const bch = new BCH()
+
+// App utility functions library.
+const TLUtils = require('../src/lib/util')
+const tlUtil = new TLUtils()
 
 const Transactions = require('../src/lib/transactions')
 const txs = new Transactions()
@@ -71,16 +72,20 @@ async function startTokenLiquidity () {
   wlogger.info(`BCH address ${BCH_ADDR1} has a balance of ${bchBalance} BCH`)
 
   // Get Wormhole token balance
-  const tokenInfo = await wh.getTokenBalance(BCH_ADDR1)
-  wlogger.info(`tokenInfo: ${JSON.stringify(tokenInfo, null, 2)}`)
-  const thisToken = tokenInfo.find(token => token.propertyid === TOKEN_ID)
-  tokenBalance = thisToken.balance
-  config.tokenBalance = tokenBalance
-  wlogger.info(`Token balance: ${tokenBalance}`)
+  // const tokenInfo = await wh.getTokenBalance(BCH_ADDR1)
+  // wlogger.info(`tokenInfo: ${JSON.stringify(tokenInfo, null, 2)}`)
+  // const thisToken = tokenInfo.find(token => token.propertyid === TOKEN_ID)
+  // tokenBalance = thisToken.balance
+  // config.tokenBalance = tokenBalance
+  // wlogger.info(`Token balance: ${tokenBalance}`)
 
   // Get SLP token balance
   const slpTokenInfo = await slp.getTokenBalance(BCH_ADDR1)
   wlogger.info(`SLP token: ${JSON.stringify(slpTokenInfo, null, 2)}`)
+  const thisToken = slpTokenInfo.find(token => token.tokenId === config.SLP_TOKEN_ID)
+  tokenBalance = thisToken.balance
+  config.tokenBalance = tokenBalance
+  wlogger.info(`Token balance: ${tokenBalance}`)
 
   // Get the BCH-USD exchange rate.
   let USDperBCH
@@ -121,7 +126,7 @@ async function startTokenLiquidity () {
     const newTx = retObj.lastTransaction
 
     // Save the updated price information.
-    await lib.saveState(config)
+    await tlUtil.saveState(config)
 
     // Update the last transaction.
     if (newTx) lastTransaction = newTx

@@ -159,7 +159,7 @@ class Transactions {
 
       return false
     } catch (err) {
-      console.log(`Error in only2Conf().`)
+      wlogger.error(`Error in transactions.js/only2Conf()`)
       return false
     }
   }

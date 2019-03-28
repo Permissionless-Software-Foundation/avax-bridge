@@ -200,9 +200,14 @@ class TokenLiquidity {
       wlogger.debug(`compareLastTransaction returning false.`)
       return false
     } catch (err) {
+      if (err.code === 'ENETUNREACH') {
+        console.log(`Could not connect to rest.bitcoin.com. Will try again.`)
+        return
+      }
+
       wlogger.error(`Error in compareLastTransaction: `, err)
       wlogger.error(`obj: ${JSON.stringify(obj, null, 2)}`)
-      throw err
+      // throw err
     }
   }
 
