@@ -10,6 +10,18 @@ const config = require('../../config')
 const TLUtils = require('./util')
 const tlUtil = new TLUtils()
 
+// SLP Token library
+const SLP = require('./slp')
+const slp = new SLP()
+
+// BCH library
+const BCH = require('./bch')
+const bch = new BCH()
+
+// Transactions library
+const Transactions = require('./transactions')
+const txs = new Transactions()
+
 // Winston logger
 const wlogger = require('../utils/logging')
 
@@ -18,14 +30,17 @@ const util = require('util')
 util.inspect.defaultOptions = { depth: 5 }
 
 const BCH_ADDR1 = config.BCH_ADDR
-const TOKEN_ID = config.TOKEN_ID
+// const TOKEN_ID = config.TOKEN_ID
 const TOKENS_QTY_ORIGINAL = config.TOKENS_QTY_ORIGINAL
 const BCH_QTY_ORIGINAL = config.BCH_QTY_ORIGINAL
 
 const seenTxs = [] // Track processed TXIDs
+let _this
 
 class TokenLiquidity {
-  // constructor () {}
+  constructor () {
+    _this = this
+  }
 
   // Checks the last TX associated with the BCH address. If it changed, then
   // the program reacts to it. Otherwise it exits.
@@ -55,7 +70,7 @@ class TokenLiquidity {
       const isOnly2Conf = await txs.only2Conf(BCH_ADDR1, wormhole)
       if (isOnly2Conf) {
         // Retrieve the balances from the blockchain.
-        const retObj2 = await getBlockchainBalances(BCH_ADDR1, wormhole)
+        const retObj2 = await _this.getBlockchainBalances(BCH_ADDR1, wormhole)
         retObj2.lastTransaction = txid
         return retObj2
       }
@@ -105,7 +120,7 @@ class TokenLiquidity {
               tokenOriginalBalance: TOKENS_QTY_ORIGINAL
             }
 
-            const bchOut = exchangeTokensForBCH(exchangeObj)
+            const bchOut = _this.exchangeTokensForBCH(exchangeObj)
             wlogger.info(
               `Ready to send ${bchOut} BCH in exchange for ${isTokenTx} tokens`
             )
@@ -138,7 +153,7 @@ class TokenLiquidity {
               bchOriginalBalance: BCH_QTY_ORIGINAL,
               tokenOriginalBalance: TOKENS_QTY_ORIGINAL
             }
-            const retObj = exchangeBCHForTokens(exchangeObj)
+            const retObj = _this.exchangeBCHForTokens(exchangeObj)
 
             wlogger.info(
               `Ready to send ${retObj.tokensOut} tokens in exchange for ${bchQty} BCH`
@@ -251,15 +266,15 @@ class TokenLiquidity {
       const currentBCHBalance = addressInfo.balance
 
       // Get current token balance
-      const tokenInfo = await wh.getTokenBalance(bchAddr)
-      const thisToken = tokenInfo.find(token => token.propertyid === TOKEN_ID)
-      const tokenBalance = thisToken.balance
+      // const tokenInfo = await wh.getTokenBalance(bchAddr)
+      // const thisToken = tokenInfo.find(token => token.propertyid === TOKEN_ID)
+      // const tokenBalance = thisToken.balance
 
-      wlogger.debug(`Blockchain balance: ${currentBCHBalance} BCH, ${tokenBalance} tokens`)
+      wlogger.debug(`Blockchain balance: ${currentBCHBalance} BCH`)
 
       return {
-        bchBalance: currentBCHBalance,
-        tokenBalance: tokenBalance
+        bchBalance: currentBCHBalance
+        // tokenBalance: tokenBalance
       }
     } catch (err) {
       wlogger.error(`Error in getBlockchainBalances()`)
