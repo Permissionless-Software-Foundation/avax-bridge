@@ -14,7 +14,12 @@ if (config.NETWORK === `testnet`) {
   BITBOX = new BITBOXCli({ restURL: 'https://rest.bitcoin.com/v1/' })
 }
 
-const lib = require('./token-util.js')
+// const lib = require('./token-util.js')
+
+// const TLUtils = require('../../src/lib/util')
+// const tlUtils = new TLUtils()
+const BCH = require('./bch')
+const bch = new BCH()
 
 module.exports = {
   sendBch
@@ -65,7 +70,7 @@ async function sendBch (obj) {
     // const utxo = await BITBOX.Address.utxo(SEND_ADDR);
     // console.log(`utxo: ${JSON.stringify(utxo, null, 2)}`);
     const u = await BITBOX.Address.utxo([SEND_ADDR])
-    const utxo = lib.findBiggestUtxo(u[0])
+    const utxo = bch.findBiggestUtxo(u[0])
     utxo.value = utxo.amount
 
     // instance of transaction builder

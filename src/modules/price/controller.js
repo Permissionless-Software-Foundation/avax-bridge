@@ -1,6 +1,8 @@
 // const User = require('../../models/users')
 
-const lib = require('../../lib/token-util')
+// const lib = require('../../lib/token-util')
+const TLUtils = require('../../lib/util')
+const tlUtils = new TLUtils()
 
 /**
  * @api {get} /users Get all users
@@ -32,12 +34,12 @@ const lib = require('../../lib/token-util')
 async function getPrice (ctx) {
   // Read the current state
   const filename = `${__dirname}/../../../state/state.json`
-  const state = lib.readState(filename)
+  const state = tlUtils.readState(filename)
   // console.log(`state: ${JSON.stringify(state, null, 2)}`)
 
   // Calculate exchange rate spot price.;
   const marketCap = state.usdPerBCH * state.bchBalance
-  const price = lib.testableComponents.round8(marketCap / state.tokenBalance)
+  const price = tlUtils.round8(marketCap / state.tokenBalance)
 
   // const retObj = {
   //  bchPrice:

@@ -4,7 +4,7 @@
 
 'use strict'
 
-const lib = require('../src/lib/token-util.js')
+// const lib = require('../src/lib/token-util.js')
 const got = require('got')
 
 const WH = require('../src/lib/wormhole')
@@ -18,6 +18,9 @@ const bch = new BCH()
 
 const Transactions = require('../src/lib/transactions')
 const txs = new Transactions()
+
+const TokenLiquidity = require('../src/lib/token-liquidity')
+const lib = new TokenLiquidity()
 
 const config = require('../config')
 config.bchBalance = config.BCH_QTY_ORIGINAL

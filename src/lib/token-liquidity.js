@@ -56,7 +56,7 @@ class TokenLiquidity {
   // ---if the user sent BCH...
   // ----calculate and send tokens
   // ---Calculate the new BCH and token balances and return them.
-  async compareLastTransaction (obj, bchLib, wormhole) {
+  async compareLastTransaction (obj, bchLib) {
     try {
       const { bchAddr, txid, bchBalance, tokenBalance } = obj
 
@@ -64,13 +64,13 @@ class TokenLiquidity {
       let newTokenBalance = tokenBalance
 
       // Get an array of 1-conf transactions
-      const lastTransactions = await txs.getLastConfirmedTransactions(bchAddr, wormhole)
+      const lastTransactions = await txs.getLastConfirmedTransactions(bchAddr)
 
       // If there are no 0 or 1-conf transactions.
-      const isOnly2Conf = await txs.only2Conf(BCH_ADDR1, wormhole)
+      const isOnly2Conf = await txs.only2Conf(BCH_ADDR1)
       if (isOnly2Conf) {
         // Retrieve the balances from the blockchain.
-        const retObj2 = await _this.getBlockchainBalances(BCH_ADDR1, wormhole)
+        const retObj2 = await _this.getBlockchainBalances(BCH_ADDR1)
         retObj2.lastTransaction = txid
         return retObj2
       }
@@ -87,7 +87,7 @@ class TokenLiquidity {
           wlogger.info(`New TXID ${lastTransaction} detected.`)
 
           // Get the sender's address for this transaction.
-          const userAddr = await txs.getUserAddr(lastTransaction, wormhole)
+          const userAddr = await txs.getUserAddr(lastTransaction)
           wlogger.info(`userAddr: ${util.inspect(userAddr)}`)
 
           // Exit if the userAddr is the same as the bchAddr for this app.
@@ -143,7 +143,7 @@ class TokenLiquidity {
           // User sent BCH
           } else {
             // Get the BCH send amount.
-            const bchQty = await bch.recievedBch(lastTransaction, BCH_ADDR1, wormhole)
+            const bchQty = await bch.recievedBch(lastTransaction, BCH_ADDR1)
             wlogger.info(`${bchQty} BCH recieved.`)
 
             // Exchange BCH for tokens
@@ -259,7 +259,7 @@ class TokenLiquidity {
   }
 
   // Retrieve the current BCH and token balances from the blockchain.
-  async getBlockchainBalances (bchAddr, wormhole) {
+  async getBlockchainBalances (bchAddr) {
     try {
       // Get BCH balance from the blockchain
       const addressInfo = await bch.getBCHBalance(bchAddr, false)
