@@ -23,7 +23,7 @@ if (!process.env.APP_ENV) process.env.APP_ENV = 'test'
 if (!process.env.TEST_ENV) process.env.TEST_ENV = 'unit'
 // const REST_URL = `https://trest.bitcoin.com/v2/`
 
-describe('#transactions', () => {
+describe('#utils', () => {
   let sandbox
   let tlUtils
 
