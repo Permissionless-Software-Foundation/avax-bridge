@@ -12,6 +12,9 @@ util.inspect.defaultOptions = { depth: 5 }
 
 const config = require('../../config')
 
+const TLUtils = require('./util')
+const tlUtils = new TLUtils()
+
 // Winston logger
 const wlogger = require('../utils/logging')
 
@@ -123,16 +126,21 @@ class BCH {
     }
   }
 
-  // Send BCH to an address.
-  async sendBch (obj) {
+  // Generates a hex-encoded transaction for sending BCH. Returns the hex that
+  // is ready to broadcast to the BCH network.
+  async createBchTx (obj) {
     try {
+      wlogger.silly(`Starting sendBch()...`)
+
       const RECV_ADDR = obj.recvAddr
       const satoshisToSend = obj.satoshisToSend
 
-      wlogger.silly(`Starting sendBch()...`)
+      const walletInfo = tlUtils.openWallet()
 
-      const balance = await this.getBCHBalance(config.BCH_ADDR, false)
-      wlogger.verbose(`balance: ${JSON.stringify(balance, null, 2)}`)
+      const addrDetails = await this.getBCHBalance(config.BCH_ADDR, false)
+      wlogger.debug(`addrDetails: ${JSON.stringify(addrDetails, null, 2)}`)
+
+      const balance = addrDetails.balance
       wlogger.verbose(`Balance of sending address ${config.BCH_ADDR} is ${balance} BCH.`)
 
       if (balance <= 0.0) {
@@ -142,8 +150,8 @@ class BCH {
 
       const SEND_ADDR_LEGACY = BITBOX.Address.toLegacyAddress(config.BCH_ADDR)
       const RECV_ADDR_LEGACY = BITBOX.Address.toLegacyAddress(RECV_ADDR)
-      wlogger.verbose(`Sender Legacy Address: ${SEND_ADDR_LEGACY}`)
-      wlogger.verbose(`Receiver Legacy Address: ${RECV_ADDR_LEGACY}`)
+      wlogger.debug(`Sender Legacy Address: ${SEND_ADDR_LEGACY}`)
+      wlogger.debug(`Receiver Legacy Address: ${RECV_ADDR_LEGACY}`)
 
       // const balance2 = await this.getBCHBalance(RECV_ADDR, false)
       // console.log(`Balance of recieving address ${RECV_ADDR} is ${balance2} BCH.`)
@@ -158,9 +166,9 @@ class BCH {
       // instance of transaction builder
       let transactionBuilder
       if (config.NETWORK === `testnet`) {
-        transactionBuilder = new BITBOX.TransactionBuilder('testnet')
+        transactionBuilder = new this.BITBOX.TransactionBuilder('testnet')
       } else {
-        transactionBuilder = new BITBOX.TransactionBuilder()
+        transactionBuilder = new this.BITBOX.TransactionBuilder()
       }
 
       // const satoshisToSend = 1000;
@@ -172,7 +180,7 @@ class BCH {
       transactionBuilder.addInput(txid, vout)
 
       // get byte count to calculate fee. paying 1 sat/byte
-      const byteCount = BITBOX.BitcoinCash.getByteCount({ P2PKH: 1 }, { P2PKH: 2 })
+      const byteCount = this.BITBOX.BitcoinCash.getByteCount({ P2PKH: 1 }, { P2PKH: 2 })
       wlogger.verbose(`byteCount: ${byteCount}`)
       const satoshisPerByte = 1.0
       const txFee = Math.floor(satoshisPerByte * byteCount)
@@ -183,14 +191,14 @@ class BCH {
       wlogger.verbose(`remainder: ${remainder}`)
 
       // add output w/ address and amount to send
-      transactionBuilder.addOutput(BITBOX.Address.toLegacyAddress(RECV_ADDR), satoshisToSend)
-      transactionBuilder.addOutput(BITBOX.Address.toLegacyAddress(config.BCH_ADDR), remainder)
+      transactionBuilder.addOutput(this.BITBOX.Address.toLegacyAddress(RECV_ADDR), satoshisToSend)
+      transactionBuilder.addOutput(this.BITBOX.Address.toLegacyAddress(config.BCH_ADDR), remainder)
 
       // Generate a change address from a Mnemonic of a private key.
-      const change = this.changeAddrFromMnemonic(SEND_MNEMONIC)
+      const change = this.changeAddrFromMnemonic(walletInfo.mnemonic)
 
       // Generate a keypair from the change address.
-      const keyPair = BITBOX.HDNode.toKeyPair(change)
+      const keyPair = this.BITBOX.HDNode.toKeyPair(change)
 
       // Sign the transaction with the HD node.
       let redeemScript
@@ -206,17 +214,27 @@ class BCH {
       const tx = transactionBuilder.build()
       // output rawhex
       const hex = tx.toHex()
+
+      return hex
       // console.log(`Transaction raw hex: `);
       // console.log(`${hex}`);
-
-      // sendRawTransaction to running BCH node
-      const broadcast = await BITBOX.RawTransactions.sendRawTransaction(hex)
-      console.log(`Transaction ID: ${broadcast}`)
-
-      console.log(`...Ending sendBch()`)
-      */
     } catch (err) {
-      console.log(`Error in sendBch: `, err)
+      console.log(`Error in createBchTx: `)
+      throw err
+    }
+  }
+
+  // Broadcasts a hex-encoded transaction to the BCH network. Expects output
+  // from createBchTx().
+  async broadcastBchTx (hex) {
+    try {
+      // sendRawTransaction to running BCH node
+      const broadcast = await this.BITBOX.RawTransactions.sendRawTransaction(hex)
+      wlogger.verbose(`Transaction ID: ${broadcast}`)
+
+      return broadcast
+    } catch (err) {
+      wlogger.error(`Error in broadcastBchTx`)
       throw err
     }
   }

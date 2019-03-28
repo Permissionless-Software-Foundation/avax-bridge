@@ -28,7 +28,10 @@ describe('#bch', () => {
         satoshisToSend: 1000
       }
 
-      await bch.sendBch(obj)
+      const hex = await bch.createBchTx(obj)
+      // console.log(hex)
+
+      assert.isString(hex)
     })
   })
 })
