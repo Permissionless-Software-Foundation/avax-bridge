@@ -21,10 +21,10 @@ const wlogger = require('../utils/logging')
 const BITBOXCli = require('bitbox-sdk')
 let BITBOX, REST_URL
 if (config.NETWORK === `testnet`) {
-  REST_URL = 'https://trest.bitcoin.com/v1/'
+  REST_URL = 'https://trest.bitcoin.com/v2/'
   BITBOX = new BITBOXCli({ restURL: REST_URL })
 } else {
-  REST_URL = 'https://rest.bitcoin.com/v1/'
+  REST_URL = 'https://rest.bitcoin.com/v2/'
   BITBOX = new BITBOXCli({ restURL: REST_URL })
 }
 
@@ -43,6 +43,7 @@ class BCH {
   async getBCHBalance (addr, verbose) {
     try {
       const result = await this.BITBOX.Address.details(addr)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
       if (verbose) {
         const resultToDisplay = result

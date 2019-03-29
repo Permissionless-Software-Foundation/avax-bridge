@@ -21,7 +21,7 @@ util.inspect.defaultOptions = { depth: 1 }
 // If not specified, default to unit test.
 if (!process.env.APP_ENV) process.env.APP_ENV = 'test'
 if (!process.env.TEST_ENV) process.env.TEST_ENV = 'unit'
-const REST_URL = `https://trest.bitcoin.com/v2/`
+// const REST_URL = `https://trest.bitcoin.com/v2/`
 
 describe('#bch', () => {
   let sandbox
@@ -75,7 +75,9 @@ describe('#bch', () => {
         'txApperances',
         'transactions',
         'legacyAddress',
-        'cashAddress'
+        'cashAddress',
+        'currentPage',
+        'pagesTotal'
       ])
       assert.isArray(bchBalance.transactions)
     })

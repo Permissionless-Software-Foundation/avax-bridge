@@ -14,7 +14,7 @@ const nock = require('nock')
 const Transactions = require('../../src/lib/transactions')
 
 const bitboxMock = require('bitbox-mock')
-const txMockData = require('./mocks/transactions')
+// const txMockData = require('./mocks/transactions')
 
 // Used for debugging.
 const util = require('util')
@@ -72,7 +72,7 @@ describe('#transactions', () => {
       assert.isArray(txids.txs)
     })
   })
-/*
+  /*
   describe('getTxConfs', () => {
     it('throws error for non-array input', () => {
       try {
