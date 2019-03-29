@@ -154,14 +154,9 @@ class BCH {
       wlogger.debug(`Sender Legacy Address: ${SEND_ADDR_LEGACY}`)
       wlogger.debug(`Receiver Legacy Address: ${RECV_ADDR_LEGACY}`)
 
-      // const balance2 = await this.getBCHBalance(RECV_ADDR, false)
-      // console.log(`Balance of recieving address ${RECV_ADDR} is ${balance2} BCH.`)
-
-      // const utxo = await BITBOX.Address.utxo(SEND_ADDR);
-      // console.log(`utxo: ${JSON.stringify(utxo, null, 2)}`);
-
       const utxos = await this.BITBOX.Address.utxo(config.BCH_ADDR)
-      const utxo = this.findBiggestUtxo(utxos)
+      const utxo = this.findBiggestUtxo(utxos.utxos)
+      wlogger.debug(`selected utxo`, utxo)
       utxo.value = utxo.amount
 
       // instance of transaction builder
@@ -220,7 +215,7 @@ class BCH {
       // console.log(`Transaction raw hex: `);
       // console.log(`${hex}`);
     } catch (err) {
-      console.log(`Error in createBchTx: `)
+      wlogger.error(`Error in createBchTx.`)
       throw err
     }
   }

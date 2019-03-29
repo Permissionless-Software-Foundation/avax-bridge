@@ -27,8 +27,41 @@ const addressDetails = {
   'pagesTotal': 1
 }
 
+const utxos = {
+  'utxos': [
+    {
+      'txid': '44b61963a5cc4485a3f37c1257af94e51d8a6ee78c6a850d82a240317914c622',
+      'vout': 0,
+      'amount': 5.48330146,
+      'satoshis': 548330146,
+      'height': 1279681,
+      'confirmations': 16277
+    },
+    {
+      'txid': 'e038c8e519ee465864cc26ba83026a58e2856095809d64db98ffd9b76537b7ea',
+      'vout': 0,
+      'amount': 0.01,
+      'satoshis': 1000000,
+      'height': 1279680,
+      'confirmations': 16278
+    },
+    {
+      'txid': '67e9bf196362e00325d2ac458204a33c23f55651e2956647bc357ce2e67f7006',
+      'vout': 0,
+      'amount': 0.01,
+      'satoshis': 1000000,
+      'height': 1275999,
+      'confirmations': 19959
+    }
+  ],
+  'legacyAddress': 'mgscFRQyQAFpmxDjp1FGX7ALhGa11iqMbU',
+  'cashAddress': 'bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pzqf',
+  'scriptPubKey': '76a9140ee020c07f39526ac5505c54fa1ab98490979b8388ac'
+}
+
 const bchMockData = {
-  addressDetails
+  addressDetails,
+  utxos
 }
 
 module.exports = bchMockData

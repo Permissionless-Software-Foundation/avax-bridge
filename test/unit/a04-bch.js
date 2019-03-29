@@ -13,6 +13,8 @@ const BCH = require('../../src/lib/bch')
 const bitboxMock = require('bitbox-mock')
 const bchMockData = require('./mocks/bch')
 
+const config = require('../../config')
+
 // Used for debugging.
 const util = require('util')
 util.inspect.defaultOptions = { depth: 1 }
@@ -127,6 +129,30 @@ describe('#bch', () => {
 
       assert.isNumber(value)
       assert.equal(value, 0.0001)
+    })
+  })
+
+  describe('#createBchTx', () => {
+    it('should send BCH', async () => {
+      // If unit test, use the mocking library instead of live network calls.
+      if (process.env.TEST_ENV === 'unit') {
+        sandbox
+          .stub(bch, 'getBCHBalance')
+          .resolves(bchMockData.addressDetails)
+
+        sandbox.stub(bch.BITBOX.Address, 'utxo')
+          .resolves(bchMockData.utxos)
+      }
+
+      const obj = {
+        recvAddr: config.BCH_ADDR,
+        satoshisToSend: 1000
+      }
+
+      const hex = await bch.createBchTx(obj)
+      // console.log(hex)
+
+      assert.isString(hex)
     })
   })
 })
