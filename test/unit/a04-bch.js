@@ -155,4 +155,15 @@ describe('#bch', () => {
       assert.isString(hex)
     })
   })
+
+  describe('#changeAddrFromMnemonic', () => {
+    it('should return a change address', () => {
+      const mnemonic = 'space waste topic swing park enrich disease release razor solution wait school'
+
+      const result = bch.changeAddrFromMnemonic(mnemonic)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.hasAllKeys(result, ['keyPair', 'chainCode', 'depth', 'index', 'parentFingerprint'])
+    })
+  })
 })
