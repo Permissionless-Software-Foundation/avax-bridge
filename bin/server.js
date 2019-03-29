@@ -20,7 +20,6 @@ const errorMiddleware = require('../src/middleware')
 const wlogger = require('../src/utils/logging')
 
 async function startServer () {
-  console.log(`Using environment: ${process.env.APP_ENV}`)
   console.log(`Using network: ${config.NETWORK}`)
 
   // Create a Koa instance.

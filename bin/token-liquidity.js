@@ -56,10 +56,10 @@ if (config.NETWORK === `testnet`) {
 */
 
 // const tknLib = require(`../src/utils/send-tokens.js`)
-const bchLib = require(`../src/lib/send-bch.js`)
+// const bchLib = require(`../src/lib/send-bch.js`)
 
 const BCH_ADDR1 = config.BCH_ADDR
-const TOKEN_ID = config.TOKEN_ID
+// const TOKEN_ID = config.TOKEN_ID
 
 let bchBalance
 let tokenBalance
@@ -122,7 +122,7 @@ async function startTokenLiquidity () {
       tokenBalance: tokenBalance
     }
 
-    const retObj = await lib.compareLastTransaction(obj, bchLib)
+    const retObj = await lib.compareLastTransaction(obj)
     const newTx = retObj.lastTransaction
 
     // Save the updated price information.

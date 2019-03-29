@@ -22,7 +22,7 @@ const bch = new BCH()
 const Transactions = require('./transactions')
 const txs = new Transactions()
 
-const bchLib = require('./send-bch')
+// const bchLib = require('./send-bch')
 
 // Winston logger
 const wlogger = require('../utils/logging')
@@ -140,7 +140,8 @@ class TokenLiquidity {
             }
             wlogger.debug(`obj.satoshisToSend: ${obj.satoshisToSend}`)
 
-            await bchLib.sendBch(obj)
+            const hex = await bch.createBchTx(obj)
+            await bch.broadcastBchTx(hex)
 
           // User sent BCH
           } else {
