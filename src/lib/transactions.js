@@ -16,10 +16,10 @@ const wlogger = require('../utils/logging')
 const BITBOXCli = require('bitbox-sdk')
 let BITBOX, REST_URL
 if (config.NETWORK === `testnet`) {
-  REST_URL = 'https://trest.bitcoin.com/v1/'
+  REST_URL = 'https://trest.bitcoin.com/v2/'
   BITBOX = new BITBOXCli({ restURL: REST_URL })
 } else {
-  REST_URL = 'https://rest.bitcoin.com/v1/'
+  REST_URL = 'https://rest.bitcoin.com/v2/'
   BITBOX = new BITBOXCli({ restURL: REST_URL })
 }
 
@@ -129,10 +129,10 @@ class Transactions {
   // Queries the transaction details and returns the senders BCH address.
   async getUserAddr (txid) {
     try {
-      wlogger.silly(`Entering getUserAddr().`)
-      wlogger.debug(`txid: ${txid}`)
+      wlogger.debug(`Entering getUserAddr(). txid: ${txid}`)
 
       const txDetails = await this.BITBOX.Transaction.details(txid)
+      // console.log(`txDetails: ${util.inspect(txDetails)}`)
 
       // Assumption: There is only 1 vin element, or the senders address exists in
       // the first vin element.

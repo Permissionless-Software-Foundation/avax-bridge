@@ -105,7 +105,7 @@ describe('#token-liquidity', () => {
           assert.equal(result, false, 'return false expected')
         })
         */
-
+      /*
       it('should send BCH in exchange for tokens', async () => {
         const obj = {
           bchAddr: `bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pzqf`,
@@ -146,6 +146,7 @@ describe('#token-liquidity', () => {
           // 'tokenBalance'
         ])
       })
+      */
     })
   }
 })

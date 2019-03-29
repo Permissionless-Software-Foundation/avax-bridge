@@ -6,7 +6,7 @@
   "scripts": {
     "start": "NETWORK=mainnet node index.js",
     "test": "APP_ENV=test nyc --reporter=text ./node_modules/.bin/mocha --exit --timeout 15000 test/unit",
-    "test:integration": "APP_ENV=test TEST_ENV=integration nyc --reporter=text ./node_modules/.bin/mocha --exit --timeout 25000 test/unit",
+    "test:integration": "APP_ENV=test TEST_ENV=integration nyc --reporter=text ./node_modules/.bin/mocha --exit --timeout 30000 test/unit",
     "lint": "eslint src/**/*.js",
     "docs": "./node_modules/.bin/apidoc -i src/ -o docs",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
@@ -63,7 +63,7 @@
   },
   "devDependencies": {
     "ajv": "^5.5.2",
-    "bitbox-mock": "^1.0.1",
+    "bitbox-mock": "^1.0.3",
     "chai": "^4.1.2",
     "coveralls": "^3.0.2",
     "eslint": "^4.19.1",
