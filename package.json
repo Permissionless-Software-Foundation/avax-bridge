@@ -65,7 +65,7 @@
     "bitbox-mock": "^1.0.3",
     "chai": "^4.1.2",
     "coveralls": "^3.0.2",
-    "eslint": "^4.19.1",
+    "eslint": "^5.16.0",
     "eslint-config-promise": "^2.0.0",
     "eslint-config-standard": "^12.0.0",
     "eslint-plugin-import": "^2.14.0",
