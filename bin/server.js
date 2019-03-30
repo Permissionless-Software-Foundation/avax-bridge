@@ -20,6 +20,8 @@ const errorMiddleware = require('../src/middleware')
 const wlogger = require('../src/utils/logging')
 
 async function startServer () {
+  console.log(`Using network: ${config.NETWORK}`)
+
   // Create a Koa instance.
   const app = new Koa()
   app.keys = [config.session]

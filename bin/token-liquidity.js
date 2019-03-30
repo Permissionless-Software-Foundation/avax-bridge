@@ -4,14 +4,24 @@
 
 'use strict'
 
-const lib = require('../src/utils/token-util.js')
+// const lib = require('../src/lib/token-util.js')
 const got = require('got')
 
-const WH = require('../src/utils/wormhole')
-const wh = new WH()
-
-const SLP = require('../src/utils/slp')
+const SLP = require('../src/lib/slp')
 const slp = new SLP()
+
+const BCH = require('../src/lib/bch')
+const bch = new BCH()
+
+// App utility functions library.
+const TLUtils = require('../src/lib/util')
+const tlUtil = new TLUtils()
+
+const Transactions = require('../src/lib/transactions')
+const txs = new Transactions()
+
+const TokenLiquidity = require('../src/lib/token-liquidity')
+const lib = new TokenLiquidity()
 
 const config = require('../config')
 config.bchBalance = config.BCH_QTY_ORIGINAL
@@ -27,7 +37,7 @@ util.inspect.defaultOptions = {
   colors: true
 }
 
-const BITBOXCli = require('bitbox-sdk/lib/bitbox-sdk').default
+const BITBOXCli = require('bitbox-sdk')
 let BITBOX
 if (config.NETWORK === `testnet`) {
   BITBOX = new BITBOXCli({ restURL: 'https://trest.bitcoin.com/v1/' })
@@ -35,6 +45,7 @@ if (config.NETWORK === `testnet`) {
   BITBOX = new BITBOXCli({ restURL: 'https://rest.bitcoin.com/v1/' })
 }
 
+/*
 const Wormhole = require('wormhole-sdk/lib/Wormhole').default
 let wormhole
 if (config.NETWORK === `testnet`) {
@@ -42,34 +53,39 @@ if (config.NETWORK === `testnet`) {
 } else {
   wormhole = new Wormhole({ restURL: `https://rest.bitcoin.com/v1/` })
 }
+*/
 
 // const tknLib = require(`../src/utils/send-tokens.js`)
-const bchLib = require(`../src/utils/send-bch.js`)
+// const bchLib = require(`../src/lib/send-bch.js`)
 
 const BCH_ADDR1 = config.BCH_ADDR
-const TOKEN_ID = config.TOKEN_ID
+// const TOKEN_ID = config.TOKEN_ID
 
 let bchBalance
 let tokenBalance
 
 async function startTokenLiquidity () {
   // Get BCH balance.
-  const addressInfo = await lib.getBCHBalance(BCH_ADDR1, true, BITBOX)
+  const addressInfo = await bch.getBCHBalance(BCH_ADDR1, true)
   bchBalance = addressInfo.balance
   config.bchBalance = bchBalance
   wlogger.info(`BCH address ${BCH_ADDR1} has a balance of ${bchBalance} BCH`)
 
   // Get Wormhole token balance
-  const tokenInfo = await wh.getTokenBalance(BCH_ADDR1)
-  wlogger.info(`tokenInfo: ${JSON.stringify(tokenInfo, null, 2)}`)
-  const thisToken = tokenInfo.find(token => token.propertyid === TOKEN_ID)
-  tokenBalance = thisToken.balance
-  config.tokenBalance = tokenBalance
-  wlogger.info(`Token balance: ${tokenBalance}`)
+  // const tokenInfo = await wh.getTokenBalance(BCH_ADDR1)
+  // wlogger.info(`tokenInfo: ${JSON.stringify(tokenInfo, null, 2)}`)
+  // const thisToken = tokenInfo.find(token => token.propertyid === TOKEN_ID)
+  // tokenBalance = thisToken.balance
+  // config.tokenBalance = tokenBalance
+  // wlogger.info(`Token balance: ${tokenBalance}`)
 
   // Get SLP token balance
   const slpTokenInfo = await slp.getTokenBalance(BCH_ADDR1)
   wlogger.info(`SLP token: ${JSON.stringify(slpTokenInfo, null, 2)}`)
+  const thisToken = slpTokenInfo.find(token => token.tokenId === config.SLP_TOKEN_ID)
+  tokenBalance = thisToken.balance
+  config.tokenBalance = tokenBalance
+  wlogger.info(`Token balance: ${tokenBalance}`)
 
   // Get the BCH-USD exchange rate.
   let USDperBCH
@@ -94,7 +110,7 @@ async function startTokenLiquidity () {
   console.log(`Token spot price: $${price}`)
 
   // Get the last transaction associated with this address.
-  let lastTransaction = await lib.getLastConfirmedTransaction(BCH_ADDR1, BITBOX)
+  let lastTransaction = await txs.getLastConfirmedTransaction(BCH_ADDR1, BITBOX)
 
   // Periodically check the last transaction.
   setInterval(async function () {
@@ -106,11 +122,11 @@ async function startTokenLiquidity () {
       tokenBalance: tokenBalance
     }
 
-    const retObj = await lib.compareLastTransaction(obj, bchLib, wormhole)
+    const retObj = await lib.compareLastTransaction(obj)
     const newTx = retObj.lastTransaction
 
     // Save the updated price information.
-    await lib.saveState(config)
+    await tlUtil.saveState(config)
 
     // Update the last transaction.
     if (newTx) lastTransaction = newTx

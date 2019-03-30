@@ -13,8 +13,11 @@ util.inspect.defaultOptions = { depth: 5 }
 
 const config = require('../../config')
 
+const TLUtils = require('./util')
+const tlUtils = new TLUtils()
+
 // Winston logger
-const wlogger = require('./logging')
+const wlogger = require('../utils/logging')
 
 let SLPSDK = require('slp-sdk')
 let slpsdk, REST_URL
@@ -43,7 +46,7 @@ class SLP {
       const result = await this.slpsdk.Utils.balancesForAddress(addr)
       wlogger.debug(`token balance: `, result)
 
-      if (result === 'Address not found') return 0
+      if (result === 'No balance for this address') return 0
       return result
     } catch (err) {
       wlogger.error(`Error in util.js/getTokenBalance: `, err)
@@ -67,6 +70,8 @@ class SLP {
       }
 
       const result = await rp(options)
+      // console.log(`txDetails: ${util.inspect(result)}`)
+
       return result
     } catch (err) {
       // This catch will activate on non-token txs.
@@ -83,7 +88,7 @@ class SLP {
       wlogger.silly(`Entering slp.tokenTxInfo().`)
 
       const result = await this.txDetails(txid)
-      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+      // console.log(`tokenTxInfo: ${JSON.stringify(result, null, 2)}`)
 
       // Exit if token transfer is not the PSF token.
       if (result.tokenInfo.tokenIdHex !== config.SLP_TOKEN_ID) {
@@ -103,31 +108,13 @@ class SLP {
     }
   }
 
-  // Opens the wallet file and returns the contents.
-  openWallet () {
-    try {
-      let walletInfo
-
-      if (config.NETWORK === 'testnet') {
-        walletInfo = require(`${__dirname}/../../wallet-test.json`)
-      } else {
-        walletInfo = require(`${__dirname}/../../wallet-main.json`)
-      }
-      // console.log(`walletInfo in slp: ${JSON.stringify(walletInfo, null, 2)}`)
-
-      return walletInfo
-    } catch (err) {
-      return {
-        error: `wallet file not found`
-      }
-    }
-  }
-
-  // Send a qty of SLP tokens to an addr
-  async sendTokens (addr, qty) {
+  // Generate TX hex for sending tokens to an address. Returns a config object
+  // ready to be broadcast to the BCH network with the SLP SDK TokenType1.send()
+  // method.
+  createTokenTx (addr, qty) {
     try {
       // Open the wallet controlling the tokens
-      const walletInfo = this.openWallet()
+      const walletInfo = tlUtils.openWallet()
 
       const mnemonic = walletInfo.mnemonic
 
@@ -162,16 +149,25 @@ class SLP {
         amount: qty
       }
 
-      // console.log(`createConfig: ${util.inspect(createConfig)}`)
+      return sendConfig
+    } catch (err) {
+      wlogger.error(`Error in slp.js/createTokenTx()`)
+      throw err
+    }
+  }
 
+  // Submit the SLP config object and broadcast the token transaction to the
+  // BCH network.
+  async broadcastTokenTx (config) {
+    try {
       // Generate, sign, and broadcast a hex-encoded transaction for sending
       // the tokens.
-      const sendTxId = await slpsdk.TokenType1.send(sendConfig)
+      const sendTxId = await slpsdk.TokenType1.send(config)
 
       wlogger.debug(`sendTxId: ${util.inspect(sendTxId)}`)
       console.log(`sendTxId: ${util.inspect(sendTxId)}`)
     } catch (err) {
-      wlogger.error(`Error in slp.js/sendToken()`)
+      wlogger.error(`Error in slp.js/broadcastTokenTx()`)
       throw err
     }
   }
