@@ -38,7 +38,7 @@ class SLP {
     console.log(`Hello world!`)
   }
 
-  // Get the token balance of a BCH address
+  // Get the token balance of an address.
   async getTokenBalance (addr) {
     try {
       wlogger.silly(`Enter slp.getTokenBalance()`)
@@ -47,7 +47,12 @@ class SLP {
       wlogger.debug(`token balance: `, result)
 
       if (result === 'No balance for this address') return 0
-      return result
+
+      // Get the token information that matches the token-ID for PSF tokens.
+      const tokenInfo = result.find(token => token.tokenId === config.SLP_TOKEN_ID)
+      // console.log(`tokenInfo: ${JSON.stringify(tokenInfo, null, 2)}`)
+
+      return parseFloat(tokenInfo.balance)
     } catch (err) {
       wlogger.error(`Error in util.js/getTokenBalance: `, err)
       throw err
@@ -127,7 +132,7 @@ class SLP {
       else masterHDNode = slpsdk.HDNode.fromSeed(rootSeed, 'testnet') // Testnet
 
       // HDNode of BIP44 account
-      const account = slpsdk.HDNode.derivePath(masterHDNode, "m/44'/145'/0'")
+      const account = slpsdk.HDNode.derivePath(masterHDNode, "m/44'/245'/0'")
 
       const change = slpsdk.HDNode.derivePath(account, '0/0')
 

@@ -37,27 +37,6 @@ util.inspect.defaultOptions = {
   colors: true
 }
 
-const BITBOXCli = require('bitbox-sdk')
-let BITBOX
-if (config.NETWORK === `testnet`) {
-  BITBOX = new BITBOXCli({ restURL: 'https://trest.bitcoin.com/v1/' })
-} else {
-  BITBOX = new BITBOXCli({ restURL: 'https://rest.bitcoin.com/v1/' })
-}
-
-/*
-const Wormhole = require('wormhole-sdk/lib/Wormhole').default
-let wormhole
-if (config.NETWORK === `testnet`) {
-  wormhole = new Wormhole({ restURL: `https://trest.bitcoin.com/v1/` })
-} else {
-  wormhole = new Wormhole({ restURL: `https://rest.bitcoin.com/v1/` })
-}
-*/
-
-// const tknLib = require(`../src/utils/send-tokens.js`)
-// const bchLib = require(`../src/lib/send-bch.js`)
-
 const BCH_ADDR1 = config.BCH_ADDR
 // const TOKEN_ID = config.TOKEN_ID
 
@@ -66,26 +45,15 @@ let tokenBalance
 
 async function startTokenLiquidity () {
   // Get BCH balance.
-  const addressInfo = await bch.getBCHBalance(BCH_ADDR1, true)
+  const addressInfo = await bch.getBCHBalance(config.BCH_ADDR, false)
   bchBalance = addressInfo.balance
   config.bchBalance = bchBalance
-  wlogger.info(`BCH address ${BCH_ADDR1} has a balance of ${bchBalance} BCH`)
-
-  // Get Wormhole token balance
-  // const tokenInfo = await wh.getTokenBalance(BCH_ADDR1)
-  // wlogger.info(`tokenInfo: ${JSON.stringify(tokenInfo, null, 2)}`)
-  // const thisToken = tokenInfo.find(token => token.propertyid === TOKEN_ID)
-  // tokenBalance = thisToken.balance
-  // config.tokenBalance = tokenBalance
-  // wlogger.info(`Token balance: ${tokenBalance}`)
+  wlogger.info(`BCH address ${config.BCH_ADDR} has a balance of ${bchBalance} BCH`)
 
   // Get SLP token balance
-  const slpTokenInfo = await slp.getTokenBalance(BCH_ADDR1)
-  wlogger.info(`SLP token: ${JSON.stringify(slpTokenInfo, null, 2)}`)
-  const thisToken = slpTokenInfo.find(token => token.tokenId === config.SLP_TOKEN_ID)
-  tokenBalance = thisToken.balance
+  tokenBalance = await slp.getTokenBalance(config.SLP_ADDR)
+  wlogger.info(`SLP token address ${config.SLP_ADDR} has a balance of: ${tokenBalance}`)
   config.tokenBalance = tokenBalance
-  wlogger.info(`Token balance: ${tokenBalance}`)
 
   // Get the BCH-USD exchange rate.
   let USDperBCH
@@ -110,7 +78,7 @@ async function startTokenLiquidity () {
   console.log(`Token spot price: $${price}`)
 
   // Get the last transaction associated with this address.
-  let lastTransaction = await txs.getLastConfirmedTransaction(BCH_ADDR1, BITBOX)
+  let lastTransaction = await txs.getLastConfirmedTransaction(BCH_ADDR1)
 
   // Periodically check the last transaction.
   setInterval(async function () {

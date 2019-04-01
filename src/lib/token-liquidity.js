@@ -143,6 +143,10 @@ class TokenLiquidity {
             const hex = await bch.createBchTx(obj)
             await bch.broadcastBchTx(hex)
 
+            // Send the tokens to the apps token address on the 245 derivation path.
+            const tokenConfig = await slp.createTokenTx(config.SLP_ADDR, isTokenTx)
+            await slp.broadcastTokenTx(tokenConfig)
+
           // User sent BCH
           } else {
             // Get the BCH send amount.
@@ -272,11 +276,6 @@ class TokenLiquidity {
       // Get BCH balance from the blockchain
       const addressInfo = await bch.getBCHBalance(bchAddr, false)
       const currentBCHBalance = addressInfo.balance
-
-      // Get current token balance
-      // const tokenInfo = await wh.getTokenBalance(bchAddr)
-      // const thisToken = tokenInfo.find(token => token.propertyid === TOKEN_ID)
-      // const tokenBalance = thisToken.balance
 
       wlogger.debug(`Blockchain balance: ${currentBCHBalance} BCH`)
 
