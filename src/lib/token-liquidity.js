@@ -273,11 +273,6 @@ class TokenLiquidity {
       const addressInfo = await bch.getBCHBalance(bchAddr, false)
       const currentBCHBalance = addressInfo.balance
 
-      // Get current token balance
-      // const tokenInfo = await wh.getTokenBalance(bchAddr)
-      // const thisToken = tokenInfo.find(token => token.propertyid === TOKEN_ID)
-      // const tokenBalance = thisToken.balance
-
       wlogger.debug(`Blockchain balance: ${currentBCHBalance} BCH`)
 
       return {
