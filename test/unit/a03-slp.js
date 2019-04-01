@@ -15,7 +15,7 @@ util.inspect.defaultOptions = { depth: 1 }
 
 // Mocking-data
 const slpMockData = require('./mocks/slp')
-const slpMock = require('slp-sdk-mock')
+// const slpMock = require('slp-sdk-mock')
 
 // Determine if this is a Unit or Integration test
 // If not specified, default to unit test.
@@ -54,16 +54,24 @@ describe('#slp', () => {
   describe('#getTokenBalance', () => {
     it('should get token balance', async () => {
       // If unit test, use the mocking library instead of live calls.
-      if (process.env.TEST_ENV === 'unit') slp.slpsdk = slpMock
+      if (process.env.TEST_ENV === 'unit') {
+        sandbox.stub(slp.slpsdk.Utils, 'balancesForAddress')
+          .resolves([
+            {
+              tokenId: '7ac7f4bb50b019fe0f5c81e3fc13fc0720e130282ea460768cafb49785eb2796',
+              balance: '19882.09163133',
+              decimalCount: 8
+            }
+          ])
+      }
 
       // const addr = 'simpleledger:qzl6k0wvdd5ky99hewghqdgfj2jhcpqnfqtaqr70rp'
-      const addr = 'slptest:qz4qnxcxwvmacgye8wlakhz0835x0w3vtvxu67w0ac'
+      const addr = 'slptest:qz2uhf4dj7a56m6cacpwwrkz4c4jwknqsgzv37ktge'
 
       const tokenBalance = await slp.getTokenBalance(addr)
-      // console.log(`bchBalance: ${util.inspect(tokenBalance)}`)
+      // console.log(`tokenBalance: ${util.inspect(tokenBalance)}`)
 
-      assert.isArray(tokenBalance)
-      assert.hasAnyKeys(tokenBalance[0], ['tokenId', 'balance', 'slpAddress'])
+      assert.isNumber(tokenBalance)
     })
 
     it(`should throw an error for an invalid address`, async () => {

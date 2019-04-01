@@ -7,7 +7,6 @@ if (NETWORK === `mainnet`) {
   configOut = {
     NETWORK: `mainnet`,
     port: process.env.PORT || 5000,
-    // TOKEN_ID: 249,
     BCH_ADDR: `bitcoincash:qzl6k0wvdd5ky99hewghqdgfj2jhcpqnfq8xtct0al`,
     SLP_ADDR: `simpleledger:qz9l5w0fvp670a8r48apsv0xqek840320c90neac9g`,
     TOKENS_QTY_ORIGINAL: 5000,
@@ -18,9 +17,8 @@ if (NETWORK === `mainnet`) {
   configOut = {
     NETWORK: `testnet`,
     port: process.env.PORT || 5100,
-    // TOKEN_ID: 556,
-    BCH_ADDR: `bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pzqf`,
-    SLP_ADDR: `slptest:qz2uhf4dj7a56m6cacpwwrkz4c4jwknqsgzv37ktge`,
+    BCH_ADDR: `bchtest:qz4qnxcxwvmacgye8wlakhz0835x0w3vtvaga95c09`,
+    SLP_ADDR: `slptest:qr8tqc5ucmwrrls5upyc32hhpmjp5a7sxyt4vpush5`,
     TOKENS_QTY_ORIGINAL: 5000,
     BCH_QTY_ORIGINAL: 25,
     SLP_TOKEN_ID: '7ac7f4bb50b019fe0f5c81e3fc13fc0720e130282ea460768cafb49785eb2796'

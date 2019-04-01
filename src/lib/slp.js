@@ -52,7 +52,7 @@ class SLP {
       const tokenInfo = result.find(token => token.tokenId === config.SLP_TOKEN_ID)
       // console.log(`tokenInfo: ${JSON.stringify(tokenInfo, null, 2)}`)
 
-      return tokenInfo.balance
+      return parseFloat(tokenInfo.balance)
     } catch (err) {
       wlogger.error(`Error in util.js/getTokenBalance: `, err)
       throw err
