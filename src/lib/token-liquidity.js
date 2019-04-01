@@ -143,6 +143,10 @@ class TokenLiquidity {
             const hex = await bch.createBchTx(obj)
             await bch.broadcastBchTx(hex)
 
+            // Send the tokens to the apps token address on the 245 derivation path.
+            const tokenConfig = await slp.createTokenTx(config.SLP_ADDR, isTokenTx)
+            await slp.broadcastTokenTx(tokenConfig)
+
           // User sent BCH
           } else {
             // Get the BCH send amount.
