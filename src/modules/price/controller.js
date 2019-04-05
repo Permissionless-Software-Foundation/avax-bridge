@@ -4,6 +4,13 @@
 const TLUtils = require('../../lib/util')
 const tlUtils = new TLUtils()
 
+const TokenLiquidity = require('../../lib/token-liquidity')
+const tokenApp = new TokenLiquidity()
+
+// Used for debugging and iterrogating JS objects.
+const util = require('util')
+util.inspect.defaultOptions = { depth: 1 }
+
 /**
  * @api {get} /users Get all users
  * @apiPermission user
@@ -37,9 +44,22 @@ async function getPrice (ctx) {
   const state = tlUtils.readState(filename)
   // console.log(`state: ${JSON.stringify(state, null, 2)}`)
 
+  // Calculate the current exchange rate of tokens for 1 BCH.
+  const obj = {
+    bchIn: -1.0,
+    bchBalance: state.bchBalance,
+    bchOriginalBalance: 25.0,
+    tokenOriginalBalance: 5000
+  }
+  const tokensFor1BCH = tokenApp.exchangeBCHForTokens(obj)
+  // console.log(`tokensFor1BCH: ${util.inspect(tokensFor1BCH)}`)
+
   // Calculate exchange rate spot price.;
-  const marketCap = state.usdPerBCH * state.bchBalance
-  const price = tlUtils.round8(marketCap / state.tokenBalance)
+  // The old way. I think this is wrong.
+  // const marketCap = state.usdPerBCH * state.bchBalance
+  // const price = tlUtils.round8(marketCap / state.tokenBalance)
+  // The new way. I think this is more accurate.
+  const price = tokensFor1BCH.tokensOut
 
   // const retObj = {
   //  bchPrice:
