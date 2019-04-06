@@ -59,7 +59,7 @@ async function getPrice (ctx) {
   // const marketCap = state.usdPerBCH * state.bchBalance
   // const price = tlUtils.round8(marketCap / state.tokenBalance)
   // The new way. I think this is more accurate.
-  const price = tokensFor1BCH.tokensOut
+  const price = tlUtils.round8(state.usdPerBCH / tokensFor1BCH.tokensOut)
 
   // const retObj = {
   //  bchPrice:
