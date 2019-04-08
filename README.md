@@ -1,5 +1,7 @@
 # token-liquidity
-This is an application for providing token liquidity, inspired by the pricing algorithm in the [Bancor Whitepaper](docs/bancor-protocol-whitepaper.pdf). While Bancor uses ERC20 tokens, this application focuses on the Wormhole protocol for creating tokens on the BCH network.
+This is an application for providing token liquidity, inspired by the pricing algorithm in the [Bancor Whitepaper](docs/bancor-protocol-whitepaper.pdf). While Bancor uses ERC20 tokens, this application focuses on the
+[Simple Leger Protocol](https://simpleledger.cash/) for creating tokens on the
+BCH network.
 
 The idea is simple. This program has its own BCH public address. If you send BCH to the address, the program will send you tokens. If you send tokens to that address, the program will send you BCH. The exchange rate is determined by the price formula.
 
@@ -12,8 +14,6 @@ The price formula used in this program was inspired by the Bancor whitepaper, bu
 [![Coverage Status](https://coveralls.io/repos/github/Permissionless-Software-Foundation/token-liquidity/badge.svg?branch=unstable)](https://coveralls.io/github/Permissionless-Software-Foundation/token-liquidity?branch=unstable)
 
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
-
-[![Greenkeeper badge](https://badges.greenkeeper.io/christroutner/babel-free-koa2-api-boilerplate.svg)](https://greenkeeper.io/)
 
 ## License
 MIT
