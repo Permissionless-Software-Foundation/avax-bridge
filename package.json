@@ -1,7 +1,7 @@
 {
   "name": "token-liquidity",
   "version": "3.0.0",
-  "description": "BCH Wormhole Token Liquidity Web App for the Permissionless Software Foundation",
+  "description": "BCH SLP Token Liquidity Web App for the Permissionless Software Foundation",
   "main": "index.js",
   "scripts": {
     "start": "NETWORK=mainnet node index.js",
@@ -51,7 +51,7 @@
     "koa-passport": "^4.1.1",
     "koa-router": "^7.0.1",
     "koa-static": "^5.0.0",
-    "mongoose": "^5.4.18",
+    "mongoose": "^5.5.4",
     "passport-local": "^1.0.0",
     "request": "^2.85.0",
     "request-promise": "^4.2.2",
@@ -76,7 +76,7 @@
     "nock": "^10.0.6",
     "nyc": "^14.1.1",
     "semantic-release": "^15.13.24",
-    "sinon": "^7.2.2",
+    "sinon": "^7.3.2",
     "slp-sdk-mock": "^1.0.2"
   },
   "release": {
