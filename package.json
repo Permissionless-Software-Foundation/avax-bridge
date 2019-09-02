@@ -4,7 +4,7 @@
   "description": "BCH SLP Token Liquidity Web App for the Permissionless Software Foundation",
   "main": "index.js",
   "scripts": {
-    "start": "NETWORK=mainnet node index.js",
+    "start": "NETWORK=mainnet node token-liquidity.js",
     "test": "APP_ENV=test TEST_ENV=unit nyc --reporter=text ./node_modules/.bin/mocha --exit --timeout 15000 test/unit",
     "test:integration": "APP_ENV=test TEST_ENV=integration nyc --reporter=text ./node_modules/.bin/mocha --exit --timeout 30000 test/unit",
     "lint": "eslint src/**/*.js",
