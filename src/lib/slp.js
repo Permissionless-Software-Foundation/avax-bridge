@@ -54,7 +54,7 @@ class SLP {
 
       return parseFloat(tokenInfo.balance)
     } catch (err) {
-      wlogger.error(`Error in util.js/getTokenBalance: `, err)
+      wlogger.error(`Error in slp.js/getTokenBalance: `, err)
       throw err
     }
   }

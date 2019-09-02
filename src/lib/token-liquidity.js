@@ -205,13 +205,14 @@ class TokenLiquidity {
       wlogger.debug(`compareLastTransaction returning false.`)
       return false
     } catch (err) {
-      if (err.code === 'ENETUNREACH') {
+      if (err.code === 'ENETUNREACH' || err.code === 'ETIMEDOUT') {
         console.log(`Could not connect to rest.bitcoin.com. Will try again.`)
         return
       }
 
-      wlogger.error(`Error in compareLastTransaction: `, err)
+      wlogger.error(`Error in token-liquidity.js/compareLastTransaction(): `, err)
       wlogger.error(`obj: ${JSON.stringify(obj, null, 2)}`)
+      wlogger.error(`err.code: ${err.code}`)
       // throw err
     }
   }
@@ -241,7 +242,7 @@ class TokenLiquidity {
 
       return retObj
     } catch (err) {
-      wlogger.error(`Error in util.js/exchangeBCHForTokens() `)
+      wlogger.error(`Error in token-liquidity.js/exchangeBCHForTokens().`)
       throw err
     }
   }
@@ -265,7 +266,7 @@ class TokenLiquidity {
 
       return Math.abs(tlUtil.round8(bchOut))
     } catch (err) {
-      wlogger.error(`Error in exchangeTokensForBCH().`)
+      wlogger.error(`Error in token-liquidity.js/exchangeTokensForBCH().`)
       throw err
     }
   }
@@ -284,7 +285,7 @@ class TokenLiquidity {
         // tokenBalance: tokenBalance
       }
     } catch (err) {
-      wlogger.error(`Error in getBlockchainBalances()`)
+      wlogger.error(`Error in token-liquidity.js/getBlockchainBalances().`)
       throw err
     }
   }

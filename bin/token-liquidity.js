@@ -48,17 +48,23 @@ async function startTokenLiquidity () {
   const addressInfo = await bch.getBCHBalance(config.BCH_ADDR, false)
   bchBalance = addressInfo.balance
   config.bchBalance = bchBalance
-  wlogger.info(`BCH address ${config.BCH_ADDR} has a balance of ${bchBalance} BCH`)
+  wlogger.info(
+    `BCH address ${config.BCH_ADDR} has a balance of ${bchBalance} BCH`
+  )
 
   // Get SLP token balance
   tokenBalance = await slp.getTokenBalance(config.SLP_ADDR)
-  wlogger.info(`SLP token address ${config.SLP_ADDR} has a balance of: ${tokenBalance}`)
+  wlogger.info(
+    `SLP token address ${config.SLP_ADDR} has a balance of: ${tokenBalance}`
+  )
   config.tokenBalance = tokenBalance
 
   // Get the BCH-USD exchange rate.
   let USDperBCH
   try {
-    const rawRate = await got(`https://api.coinbase.com/v2/exchange-rates?currency=BCH`)
+    const rawRate = await got(
+      `https://api.coinbase.com/v2/exchange-rates?currency=BCH`
+    )
     const jsonRate = JSON.parse(rawRate.body)
     // console.log(`jsonRate: ${JSON.stringify(jsonRate, null, 2)}`);
     USDperBCH = jsonRate.data.rates.USD
@@ -66,9 +72,11 @@ async function startTokenLiquidity () {
 
     config.usdPerBCH = USDperBCH
   } catch (err) {
-    wlogger.error(`Coinbase exchange rate could not be retrieved!. Assuming hard coded value.`)
+    wlogger.error(
+      `Coinbase exchange rate could not be retrieved!. Assuming hard coded value.`
+    )
     wlogger.error(err)
-    USDperBCH = 560
+    USDperBCH = 300
   }
 
   // Calculate exchange rate spot price.;
@@ -82,32 +90,38 @@ async function startTokenLiquidity () {
 
   // Periodically check the last transaction.
   setInterval(async function () {
-    // console.log(`Checking transactions...`)
-    const obj = {
-      bchAddr: BCH_ADDR1,
-      txid: lastTransaction,
-      bchBalance: bchBalance,
-      tokenBalance: tokenBalance
+    try {
+      // console.log(`Checking transactions...`)
+      const obj = {
+        bchAddr: BCH_ADDR1,
+        txid: lastTransaction,
+        bchBalance: bchBalance,
+        tokenBalance: tokenBalance
+      }
+
+      const retObj = await lib.compareLastTransaction(obj)
+      const newTx = retObj.lastTransaction
+
+      // Save the updated price information.
+      await tlUtil.saveState(config)
+
+      // Update the last transaction.
+      if (newTx) lastTransaction = newTx
+      if (retObj.bchBalance) bchBalance = retObj.bchBalance
+      if (retObj.tokenBalance) tokenBalance = retObj.tokenBalance
+
+      const now = new Date()
+
+      // New Balances:
+      wlogger.info(
+        `bchBalance: ${bchBalance}, tokenBalance: ${tokenBalance}, timestamp: ${now.toLocaleString()}`
+      )
+
+      config.bchBalance = bchBalance
+      config.tokenBalance = tokenBalance
+    } catch (err) {
+      wlogger.error(`Error checking transactions in token-liquidity.js`, err)
     }
-
-    const retObj = await lib.compareLastTransaction(obj)
-    const newTx = retObj.lastTransaction
-
-    // Save the updated price information.
-    await tlUtil.saveState(config)
-
-    // Update the last transaction.
-    if (newTx) lastTransaction = newTx
-    if (retObj.bchBalance) bchBalance = retObj.bchBalance
-    if (retObj.tokenBalance) tokenBalance = retObj.tokenBalance
-
-    const now = new Date()
-
-    // New Balances:
-    wlogger.info(`bchBalance: ${bchBalance}, tokenBalance: ${tokenBalance}, timestamp: ${now.toLocaleString()}`)
-
-    config.bchBalance = bchBalance
-    config.tokenBalance = tokenBalance
   }, 60000 * 2)
 }
 
