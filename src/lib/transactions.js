@@ -13,14 +13,14 @@ const config = require('../../config')
 // Winston logger
 const wlogger = require('../utils/logging')
 
-const BITBOXCli = require('bitbox-sdk')
+const BITBOXSDK = require('bitbox-sdk').BITBOX
 let BITBOX, REST_URL
 if (config.NETWORK === `testnet`) {
   REST_URL = 'https://trest.bitcoin.com/v2/'
-  BITBOX = new BITBOXCli({ restURL: REST_URL })
+  BITBOX = new BITBOXSDK({ restURL: REST_URL })
 } else {
   REST_URL = 'https://rest.bitcoin.com/v2/'
-  BITBOX = new BITBOXCli({ restURL: REST_URL })
+  BITBOX = new BITBOXSDK({ restURL: REST_URL })
 }
 
 // let _this
@@ -74,6 +74,7 @@ class Transactions {
 
       return sortedArray
     } catch (err) {
+      wlogger.error(`Error in transactions.js/getTxConfs().`)
       throw err
     }
   }
@@ -121,7 +122,7 @@ class Transactions {
 
       return lastTxids
     } catch (err) {
-      wlogger.error(`Error in getLastConfirmedTransactions()`)
+      wlogger.error(`Error in transactions.js/getLastConfirmedTransactions()`)
       throw err
     }
   }
@@ -141,7 +142,7 @@ class Transactions {
 
       return senderAddr
     } catch (err) {
-      wlogger.debug(`Error in bch.js/getUserAddr().`)
+      wlogger.debug(`Error in transactions.js/getUserAddr().`)
       throw err
     }
   }
@@ -159,7 +160,7 @@ class Transactions {
 
       return false
     } catch (err) {
-      wlogger.error(`Error in transactions.js/only2Conf()`)
+      wlogger.error(`Error in transactions.js/only2Conf(). Returning false`, err)
       return false
     }
   }

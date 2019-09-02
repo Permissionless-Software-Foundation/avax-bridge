@@ -37,7 +37,7 @@
   "dependencies": {
     "apidoc": "^0.17.6",
     "bcryptjs": "^2.4.3",
-    "bitbox-sdk": "^5.1.0",
+    "bitbox-sdk": "^8.8.0",
     "glob": "^7.0.0",
     "got": "^9.5.1",
     "jsonwebtoken": "^8.3.0",
@@ -56,7 +56,7 @@
     "request": "^2.85.0",
     "request-promise": "^4.2.2",
     "shelljs": "^0.8.3",
-    "slp-sdk": "^3.2.1",
+    "slp-sdk": "^4.11.0",
     "winston": "^3.1.0",
     "winston-daily-rotate-file": "^3.6.0"
   },
@@ -72,10 +72,10 @@
     "eslint-plugin-node": "^8.0.0",
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
-    "mocha": "^6.0.2",
+    "mocha": "^6.2.0",
     "nock": "^10.0.6",
-    "nyc": "^13.3.0",
-    "semantic-release": "^15.13.3",
+    "nyc": "^14.1.1",
+    "semantic-release": "^15.13.24",
     "sinon": "^7.2.2",
     "slp-sdk-mock": "^1.0.2"
   },
