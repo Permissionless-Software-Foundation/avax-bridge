@@ -95,7 +95,9 @@ class TokenLiquidity {
           // Exit if the userAddr is the same as the bchAddr for this app.
           // This occurs when the app sends bch or tokens to the user.
           if (userAddr === bchAddr) {
-            wlogger.info(`userAddr === app address. Exiting compareLastTransaction()`)
+            wlogger.info(
+              `userAddr === app address. Exiting compareLastTransaction()`
+            )
             seenTxs.push(lastTransaction)
             const retObj = {
               lastTransaction: lastTransaction,
@@ -128,7 +130,9 @@ class TokenLiquidity {
             )
 
             // Update the balances
-            newTokenBalance = tlUtil.round8(exchangeObj.tokenBalance + isTokenTx)
+            newTokenBalance = tlUtil.round8(
+              exchangeObj.tokenBalance + isTokenTx
+            )
             newBchBalance = tlUtil.round8(bchBalance - bchOut)
             wlogger.info(`New BCH balance: ${newBchBalance}`)
             wlogger.info(`New token balance: ${newTokenBalance}`)
@@ -144,10 +148,13 @@ class TokenLiquidity {
             await bch.broadcastBchTx(hex)
 
             // Send the tokens to the apps token address on the 245 derivation path.
-            const tokenConfig = await slp.createTokenTx(config.SLP_ADDR, isTokenTx)
+            const tokenConfig = await slp.createTokenTx(
+              config.SLP_ADDR,
+              isTokenTx
+            )
             await slp.broadcastTokenTx(tokenConfig)
 
-          // User sent BCH
+            // User sent BCH
           } else {
             // Get the BCH send amount.
             const bchQty = await bch.recievedBch(lastTransaction, BCH_ADDR1)
@@ -163,13 +170,19 @@ class TokenLiquidity {
             const retObj = _this.exchangeBCHForTokens(exchangeObj)
 
             wlogger.info(
-              `Ready to send ${retObj.tokensOut} tokens in exchange for ${bchQty} BCH`
+              `Ready to send ${
+                retObj.tokensOut
+              } tokens in exchange for ${bchQty} BCH`
             )
 
             // Calculate the new balances
             // newBchBalance = retObj.bch2
-            newBchBalance = tlUtil.round8(Number(bchBalance) + exchangeObj.bchIn)
-            newTokenBalance = tlUtil.round8(Number(tokenBalance) - retObj.tokensOut)
+            newBchBalance = tlUtil.round8(
+              Number(bchBalance) + exchangeObj.bchIn
+            )
+            newTokenBalance = tlUtil.round8(
+              Number(tokenBalance) - retObj.tokensOut
+            )
             wlogger.debug(`retObj: ${util.inspect(retObj)}`)
             wlogger.info(`New BCH balance: ${newBchBalance}`)
             wlogger.info(`New token balance: ${newTokenBalance}`)
@@ -181,7 +194,10 @@ class TokenLiquidity {
             // }
 
             // await tknLib.sendTokens(obj)
-            const tokenConfig = await slp.createTokenTx(userAddr, retObj.tokensOut)
+            const tokenConfig = await slp.createTokenTx(
+              userAddr,
+              retObj.tokensOut
+            )
             await slp.broadcastTokenTx(tokenConfig)
           }
 
@@ -210,7 +226,10 @@ class TokenLiquidity {
         return
       }
 
-      wlogger.error(`Error in token-liquidity.js/compareLastTransaction(): `, err)
+      wlogger.error(
+        `Error in token-liquidity.js/compareLastTransaction(): `,
+        err
+      )
       wlogger.error(`obj: ${JSON.stringify(obj, null, 2)}`)
       wlogger.error(`err.code: ${err.code}`)
       // throw err
@@ -220,17 +239,26 @@ class TokenLiquidity {
   // Calculates the numbers of tokens to send.
   exchangeBCHForTokens (obj) {
     try {
-      const { bchIn, bchBalance, bchOriginalBalance, tokenOriginalBalance } = obj
+      const {
+        bchIn,
+        bchBalance,
+        bchOriginalBalance,
+        tokenOriginalBalance
+      } = obj
 
       const bch1 = bchBalance
-      const bch2 = bch1 - bchIn - 0.00000270 // Subtract 270 satoshi tx fee
+      const bch2 = bch1 - bchIn - 0.0000027 // Subtract 270 satoshi tx fee
 
-      const token1 = -1 * tokenOriginalBalance * Math.log(bch1 / bchOriginalBalance)
-      const token2 = -1 * tokenOriginalBalance * Math.log(bch2 / bchOriginalBalance)
+      const token1 =
+        -1 * tokenOriginalBalance * Math.log(bch1 / bchOriginalBalance)
+      const token2 =
+        -1 * tokenOriginalBalance * Math.log(bch2 / bchOriginalBalance)
 
       const tokensOut = token2 - token1
 
-      wlogger.debug(`bch1: ${bch1}, bch2: ${bch2}, token1: ${token1}, token2: ${token2}, tokensOut: ${tokensOut}`)
+      wlogger.debug(
+        `bch1: ${bch1}, bch2: ${bch2}, token1: ${token1}, token2: ${token2}, tokensOut: ${tokensOut}`
+      )
 
       wlogger.debug(`${tokensOut} tokens sent in exchange for ${bchIn} BCH`)
 
@@ -252,21 +280,54 @@ class TokenLiquidity {
     try {
       wlogger.silly(`Entering exchangeTokensForBCH.`, obj)
 
-      const { tokenIn, tokenBalance, bchOriginalBalance, tokenOriginalBalance } = obj
+      const {
+        tokenIn,
+        tokenBalance,
+        bchOriginalBalance,
+        tokenOriginalBalance
+      } = obj
 
       const token1 = tokenBalance - tokenOriginalBalance
       const token2 = token1 + tokenIn
 
-      const bch1 = bchOriginalBalance * Math.pow(Math.E, -1 * token1 / tokenOriginalBalance)
-      const bch2 = bchOriginalBalance * Math.pow(Math.E, -1 * token2 / tokenOriginalBalance)
+      const bch1 =
+        bchOriginalBalance *
+        Math.pow(Math.E, (-1 * token1) / tokenOriginalBalance)
+      const bch2 =
+        bchOriginalBalance *
+        Math.pow(Math.E, (-1 * token2) / tokenOriginalBalance)
 
-      const bchOut = bch2 - bch1 - 0.00000270 // Subtract 270 satoshi tx fee
+      const bchOut = bch2 - bch1 - 0.0000027 // Subtract 270 satoshi tx fee
 
-      wlogger.debug(`bch1: ${bch1}, bch2: ${bch2}, token1: ${token1}, token2: ${token2}, bchOut: ${bchOut}`)
+      wlogger.debug(
+        `bch1: ${bch1}, bch2: ${bch2}, token1: ${token1}, token2: ${token2}, bchOut: ${bchOut}`
+      )
 
       return Math.abs(tlUtil.round8(bchOut))
     } catch (err) {
       wlogger.error(`Error in token-liquidity.js/exchangeTokensForBCH().`)
+      throw err
+    }
+  }
+
+  // Returns the 'spot price'. The number of tokens that would be recieved if
+  // 1 BCH was sent to the liquidity app.
+  getSpotPrice (bchBalance, usdPerBCH) {
+    try {
+      const obj = {
+        bchIn: -1.0,
+        bchBalance: bchBalance,
+        bchOriginalBalance: 25.0,
+        tokenOriginalBalance: 5000
+      }
+
+      const tokensFor1BCH = this.exchangeBCHForTokens(obj)
+
+      const price = tlUtil.round8(usdPerBCH / tokensFor1BCH.tokensOut)
+
+      return price
+    } catch (err) {
+      wlogger.error(`Error in token-liquidity.js/getSpotPrice().`)
       throw err
     }
   }

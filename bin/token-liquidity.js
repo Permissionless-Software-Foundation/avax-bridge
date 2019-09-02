@@ -82,7 +82,7 @@ async function startTokenLiquidity () {
   // Calculate exchange rate spot price.;
   const marketCap = USDperBCH * bchBalance
   console.log(`Market cap of BCH controlled by app: $${marketCap}`)
-  const price = marketCap / tokenBalance
+  const price = lib.getSpotPrice(bchBalance, USDperBCH)
   console.log(`Token spot price: $${price}`)
 
   // Get the last transaction associated with this address.
