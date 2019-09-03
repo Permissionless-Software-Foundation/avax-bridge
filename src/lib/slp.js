@@ -139,9 +139,9 @@ class SLP {
       // get the cash address
       const cashAddress = slpsdk.HDNode.toCashAddress(change)
 
-      const fundingAddress = cashAddress
+      const fundingAddress = slpsdk.Address.toSLPAddress(cashAddress)
       const fundingWif = slpsdk.HDNode.toWIF(change) // <-- compressed WIF format
-      const tokenReceiverAddress = addr
+      const tokenReceiverAddress = slpsdk.Address.toSLPAddress(addr)
       const bchChangeReceiverAddress = cashAddress
 
       // Create a config object for minting
@@ -153,6 +153,8 @@ class SLP {
         tokenId: config.SLP_TOKEN_ID,
         amount: qty
       }
+
+      wlogger.debug(`sendConfig: ${JSON.stringify(sendConfig, null, 2)}`)
 
       return sendConfig
     } catch (err) {
