@@ -18,21 +18,31 @@ const tlUtils = new TLUtils()
 // Winston logger
 const wlogger = require('../utils/logging')
 
-const BITBOXSDK = require('bitbox-sdk').BITBOX
-let BITBOX, REST_URL
-if (config.NETWORK === `testnet`) {
-  REST_URL = 'https://trest.bitcoin.com/v2/'
-  BITBOX = new BITBOXSDK({ restURL: REST_URL })
-} else {
-  REST_URL = 'https://rest.bitcoin.com/v2/'
-  BITBOX = new BITBOXSDK({ restURL: REST_URL })
-}
+// Mainnet by default
+let BITBOX = new config.BCHLIB({ restURL: config.MAINNET_REST })
+
+const SATS_PER_BCH = 100000000
+
+// const BITBOXSDK = require('bitbox-sdk').BITBOX
+// let BITBOX, REST_URL
+// if (config.NETWORK === `testnet`) {
+//   REST_URL = 'https://trest.bitcoin.com/v2/'
+//   BITBOX = new BITBOXSDK({ restURL: REST_URL })
+// } else {
+//   REST_URL = 'https://rest.bitcoin.com/v2/'
+//   BITBOX = new BITBOXSDK({ restURL: REST_URL })
+// }
 
 // let _this
 
 class BCH {
   constructor () {
     // _this = this
+
+    // Determine if this is a testnet wallet or a mainnet wallet.
+    if (config.NETWORK === 'testnet') {
+      BITBOX = new config.BCHLIB({ restURL: config.TESTNET_REST })
+    }
 
     this.BITBOX = BITBOX
   }
@@ -85,29 +95,33 @@ class BCH {
     }
   }
 
-  // Calculates the amount of BCH was sent to this app from a TX.
+  // Calculates the amount of BCH that was sent to this app from a TX.
   // Returns a floating point number of BCH recieved. 0 if no match found.
   async recievedBch (txid, addr) {
     try {
       wlogger.silly(`Entering receivedBch().`)
+      // console.log(`addr: ${addr}`)
+      // console.log(`this.BITBOX.restURL: ${this.BITBOX.restURL}`)
 
-      const txDetails = await this.BITBOX.Transaction.details(txid)
+      // const txDetails = await this.BITBOX.Transaction.details(txid)
+      const txDetails = await this.BITBOX.Blockbook.tx(txid)
       // console.log(`txDetails: ${JSON.stringify(txDetails, null, 2)}`)
 
       const vout = txDetails.vout
+      // console.log(`vout: ${JSON.stringify(vout, null, 2)}`)
 
       // Loop through each vout in the TX.
       for (let i = 0; i < vout.length; i++) {
         const thisVout = vout[i]
         // console.log(`thisVout: ${JSON.stringify(thisVout, null, 2)}`);
-        const value = thisVout.value
+        const value = Number(thisVout.value)
 
         // Skip if value is zero.
-        if (Number(thisVout.value) === 0.0) continue
+        if (thisVout.value === 0.0) continue
 
         // Skip if vout has no addresses field.
-        if (thisVout.scriptPubKey.addresses) {
-          const addresses = thisVout.scriptPubKey.addresses
+        if (thisVout.addresses) {
+          const addresses = thisVout.addresses
           // console.log(`addresses: ${JSON.stringify(addresses, null, 2)}`);
 
           // Note: Assuming addresses[] only has 1 element.
@@ -115,7 +129,7 @@ class BCH {
           let address = addresses[0] // Legacy address
           address = this.BITBOX.Address.toCashAddress(address)
 
-          if (address === addr) return Number(value)
+          if (address === addr) return tlUtils.round8(value / SATS_PER_BCH)
         }
       }
 
@@ -191,7 +205,7 @@ class BCH {
       transactionBuilder.addOutput(this.BITBOX.Address.toLegacyAddress(config.BCH_ADDR), remainder)
 
       // Generate a change address from a Mnemonic of a private key.
-      const change = this.changeAddrFromMnemonic(walletInfo.mnemonic)
+      const change = await this.changeAddrFromMnemonic(walletInfo.mnemonic)
 
       // Generate a keypair from the change address.
       const keyPair = this.BITBOX.HDNode.toKeyPair(change)
@@ -236,9 +250,9 @@ class BCH {
   }
 
   // Generate a change address from a Mnemonic of a private key.
-  changeAddrFromMnemonic (mnemonic) {
+  async changeAddrFromMnemonic (mnemonic) {
     // root seed buffer
-    const rootSeed = BITBOX.Mnemonic.toSeed(mnemonic)
+    const rootSeed = await BITBOX.Mnemonic.toSeed(mnemonic)
 
     // master HDNode
     let masterHDNode
