@@ -42,14 +42,16 @@ class SLP {
   async getTokenBalance (addr) {
     try {
       wlogger.silly(`Enter slp.getTokenBalance()`)
+      // console.log(`addr: ${addr}`)
 
       const result = await this.slpsdk.Utils.balancesForAddress(addr)
       wlogger.debug(`token balance: `, result)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
-      if (result === 'No balance for this address') return 0
+      if (result === 'No balance for this address' || result.length === 0) return 0
 
       // Get the token information that matches the token-ID for PSF tokens.
-      const tokenInfo = result.find(token => token.tokenId === config.SLP_TOKEN_ID)
+      let tokenInfo = result.find(token => token.tokenId === config.SLP_TOKEN_ID)
       // console.log(`tokenInfo: ${JSON.stringify(tokenInfo, null, 2)}`)
 
       return parseFloat(tokenInfo.balance)
@@ -63,6 +65,12 @@ class SLP {
   async txDetails (txid) {
     try {
       wlogger.silly(`Entering slp.txDetails().`)
+
+      const txValid = await this.slpsdk.Util.validateTxid(txid)
+      // console.log(`txValid: ${JSON.stringify(txValid, null, 2)}`)
+
+      // Return false if the tx is not a valid SLP transaction.
+      if (!txValid[0].valid) return false
 
       const options = {
         method: 'GET',
@@ -139,9 +147,9 @@ class SLP {
       // get the cash address
       const cashAddress = slpsdk.HDNode.toCashAddress(change)
 
-      const fundingAddress = cashAddress
+      const fundingAddress = slpsdk.Address.toSLPAddress(cashAddress)
       const fundingWif = slpsdk.HDNode.toWIF(change) // <-- compressed WIF format
-      const tokenReceiverAddress = addr
+      const tokenReceiverAddress = slpsdk.Address.toSLPAddress(addr)
       const bchChangeReceiverAddress = cashAddress
 
       // Create a config object for minting
@@ -153,6 +161,8 @@ class SLP {
         tokenId: config.SLP_TOKEN_ID,
         amount: qty
       }
+
+      wlogger.debug(`sendConfig: ${JSON.stringify(sendConfig, null, 2)}`)
 
       return sendConfig
     } catch (err) {

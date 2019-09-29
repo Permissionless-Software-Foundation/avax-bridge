@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "NETWORK=mainnet node token-liquidity.js",
-    "test": "APP_ENV=test TEST_ENV=unit nyc --reporter=text ./node_modules/.bin/mocha --exit --timeout 15000 test/unit",
-    "test:integration": "APP_ENV=test TEST_ENV=integration nyc --reporter=text ./node_modules/.bin/mocha --exit --timeout 30000 test/unit",
+    "test": "NETWORK=testnet APP_ENV=test TEST_ENV=unit nyc --reporter=text ./node_modules/.bin/mocha --exit --timeout 15000 test/unit",
+    "test:integration": "NETWORK=testnet APP_ENV=test TEST_ENV=integration nyc --reporter=text ./node_modules/.bin/mocha --exit --timeout 30000 test/unit",
     "lint": "eslint src/**/*.js",
     "docs": "./node_modules/.bin/apidoc -i src/ -o docs",
     "coverage": "nyc report --reporter=text-lcov | coveralls",

@@ -79,7 +79,8 @@ describe('#bch', () => {
         'legacyAddress',
         'cashAddress',
         'currentPage',
-        'pagesTotal'
+        'pagesTotal',
+        'slpAddress'
       ])
       assert.isArray(bchBalance.transactions)
     })

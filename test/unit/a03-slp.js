@@ -55,18 +55,19 @@ describe('#slp', () => {
     it('should get token balance', async () => {
       // If unit test, use the mocking library instead of live calls.
       if (process.env.TEST_ENV === 'unit') {
-        sandbox.stub(slp.slpsdk.Utils, 'balancesForAddress')
-          .resolves([
-            {
-              tokenId: '7ac7f4bb50b019fe0f5c81e3fc13fc0720e130282ea460768cafb49785eb2796',
-              balance: '19882.09163133',
-              decimalCount: 8
-            }
-          ])
+        sandbox.stub(slp.slpsdk.Utils, 'balancesForAddress').resolves([
+          {
+            tokenId:
+              '435fdbf1beeacbbf4ac0f7acccbee0b98d2a6a8b9a9c52af562d4029f9192e92',
+            balance: 1,
+            balanceString: '1',
+            slpAddress: 'slptest:qz80hhc6eucgauzmcfjzglccspdqfpl0fqx7x3lshs',
+            decimalCount: 8
+          }
+        ])
       }
 
-      // const addr = 'simpleledger:qzl6k0wvdd5ky99hewghqdgfj2jhcpqnfqtaqr70rp'
-      const addr = 'slptest:qz2uhf4dj7a56m6cacpwwrkz4c4jwknqsgzv37ktge'
+      const addr = 'slptest:qz80hhc6eucgauzmcfjzglccspdqfpl0fqx7x3lshs'
 
       const tokenBalance = await slp.getTokenBalance(addr)
       // console.log(`tokenBalance: ${util.inspect(tokenBalance)}`)
@@ -84,7 +85,7 @@ describe('#slp', () => {
       }
 
       try {
-        const addr = 'slptest:qz4qnxcxwvmacgye8wlakhz0835x0w3vtvxu67aaaa'
+        const addr = 'slptest:qz80hhc6eucgauzfjzglccspdqfpl0fqx7x3lshs'
 
         await slp.getTokenBalance(addr)
 
@@ -107,7 +108,7 @@ describe('#slp', () => {
           .resolves('No balance for this address')
       }
 
-      const addr = 'bchtest:qphvf5z3h24e8n2cexyr56g0tyrcrlc8wuaatqhg7z'
+      const addr = 'slptest:qzayl9rxxprzst3fnydykx2rt4d746fcqqu0s50c9u'
 
       const result = await slp.getTokenBalance(addr)
 
@@ -118,6 +119,8 @@ describe('#slp', () => {
   describe('#txDetails', () => {
     it('should return token tx details for a token tx', async () => {
       if (process.env.TEST_ENV === 'unit') {
+        sandbox.stub(slp.slpsdk.Util, 'validateTxid').resolves([{ valid: true }])
+
         const testData = {
           txid:
             '61e71554a3dc18158f30d9e8f5c9b6641a789690b32302899f81cbea9fe3bb49',
@@ -162,6 +165,8 @@ describe('#slp', () => {
 
     it('should return false for non-token tx', async () => {
       if (process.env.TEST_ENV === 'unit') {
+        sandbox.stub(slp.slpsdk.Util, 'validateTxid').resolves([{ valid: false }])
+
         const testData = {
           txid:
             'c5834f0f29810a6bfa6325ebc5606f043875e5e0454b68b16e5fa343e6f8e8de',
@@ -190,13 +195,13 @@ describe('#slp', () => {
       }
 
       const txid =
-        'c5834f0f29810a6bfa6325ebc5606f043875e5e0454b68b16e5fa343e6f8e8de'
+        '6a2a8722fdbf16456f84245f2e74d4a355dac86e6faec9ce062834d1e82f6517'
 
       const tokenInfo = await slp.txDetails(txid)
       // console.log(`tokenInfo: ${util.inspect(tokenInfo)}`)
 
       // assert.equal(tokenInfo, false, `Expect false returned for non-token tx`)
-      assert.equal(tokenInfo.tokenIsValid, false)
+      assert.equal(tokenInfo, false)
     })
   })
 
@@ -204,12 +209,12 @@ describe('#slp', () => {
     it('should return token quantity for a token tx', async () => {
       if (process.env.TEST_ENV === 'unit') {
         slpMockDataCopy.tokenTx.tokenInfo.tokenIdHex =
-          '7ac7f4bb50b019fe0f5c81e3fc13fc0720e130282ea460768cafb49785eb2796'
+          '435fdbf1beeacbbf4ac0f7acccbee0b98d2a6a8b9a9c52af562d4029f9192e92'
         sandbox.stub(slp, 'txDetails').resolves(slpMockDataCopy.tokenTx)
       }
 
       const txid =
-        '62fff39843860bb3aa1e37ae22a7a99abab16d34c7a0b64bfdc23493ea97f24d'
+        'd284e71227ec89f713b964d8eda595be6392bebd2fac46082bc5a9ce6fb7b33e'
 
       const tokenInfo = await slp.tokenTxInfo(txid)
       // console.log(`tokenInfo: ${util.inspect(tokenInfo)}`)
