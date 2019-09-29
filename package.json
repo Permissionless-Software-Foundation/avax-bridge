@@ -35,7 +35,7 @@
   },
   "repository": "Permissionless-Software-Foundation/token-liquidity",
   "dependencies": {
-    "@chris.troutner/bch-js": "^1.4.22",
+    "@chris.troutner/bch-js": "^1.4.24",
     "apidoc": "^0.17.6",
     "bcryptjs": "^2.4.3",
     "bitbox-sdk": "^8.8.0",
