@@ -21,7 +21,7 @@ if (NETWORK === `mainnet`) {
     SLP_ADDR: `slptest:qr8tqc5ucmwrrls5upyc32hhpmjp5a7sxyt4vpush5`,
     TOKENS_QTY_ORIGINAL: 5000,
     BCH_QTY_ORIGINAL: 25,
-    SLP_TOKEN_ID: '7ac7f4bb50b019fe0f5c81e3fc13fc0720e130282ea460768cafb49785eb2796'
+    SLP_TOKEN_ID: '435fdbf1beeacbbf4ac0f7acccbee0b98d2a6a8b9a9c52af562d4029f9192e92'
   }
 }
 
