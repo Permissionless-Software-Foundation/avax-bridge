@@ -5,8 +5,6 @@
 
 'use strict'
 
-const rp = require('request-promise')
-
 // Used for debugging and iterrogating JS objects.
 const util = require('util')
 util.inspect.defaultOptions = { depth: 5 }
@@ -19,23 +17,17 @@ const tlUtils = new TLUtils()
 // Winston logger
 const wlogger = require('../utils/logging')
 
-let SLPSDK = require('slp-sdk')
-let slpsdk, REST_URL
-if (config.NETWORK === `testnet`) {
-  REST_URL = `https://trest.bitcoin.com/v2/`
-  slpsdk = new SLPSDK({ restURL: REST_URL })
-} else {
-  REST_URL = `https://rest.bitcoin.com/v2/`
-  slpsdk = new SLPSDK({ restURL: REST_URL })
-}
+// Mainnet by default
+let slpsdk = new config.BCHLIB({ restURL: config.MAINNET_REST })
 
 class SLP {
   constructor () {
-    this.slpsdk = slpsdk
-  }
+    // Determine if this is a testnet wallet or a mainnet wallet.
+    if (config.NETWORK === 'testnet') {
+      slpsdk = new config.BCHLIB({ restURL: config.TESTNET_REST })
+    }
 
-  hello () {
-    console.log(`Hello world!`)
+    this.slpsdk = slpsdk
   }
 
   // Get the token balance of an address.
@@ -44,7 +36,7 @@ class SLP {
       wlogger.silly(`Enter slp.getTokenBalance()`)
       // console.log(`addr: ${addr}`)
 
-      const result = await this.slpsdk.Utils.balancesForAddress(addr)
+      const result = await this.slpsdk.Util.balancesForAddress(addr)
       wlogger.debug(`token balance: `, result)
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
@@ -72,17 +64,8 @@ class SLP {
       // Return false if the tx is not a valid SLP transaction.
       if (!txValid[0].valid) return false
 
-      const options = {
-        method: 'GET',
-        uri: `${REST_URL}slp/txDetails/${txid}`,
-        // resolveWithFullResponse: true,
-        json: true,
-        headers: {
-          Accept: 'application/json'
-        }
-      }
-
-      const result = await rp(options)
+      // const result = await rp(options)
+      const result = this.slpsdk.Util.txDetails(txid)
       // console.log(`txDetails: ${util.inspect(result)}`)
 
       return result
@@ -124,7 +107,7 @@ class SLP {
   // Generate TX hex for sending tokens to an address. Returns a config object
   // ready to be broadcast to the BCH network with the SLP SDK TokenType1.send()
   // method.
-  createTokenTx (addr, qty) {
+  async createTokenTx (addr, qty) {
     try {
       // Open the wallet controlling the tokens
       const walletInfo = tlUtils.openWallet()
@@ -132,7 +115,7 @@ class SLP {
       const mnemonic = walletInfo.mnemonic
 
       // root seed buffer
-      const rootSeed = slpsdk.Mnemonic.toSeed(mnemonic)
+      const rootSeed = await slpsdk.Mnemonic.toSeed(mnemonic)
 
       // master HDNode
       let masterHDNode

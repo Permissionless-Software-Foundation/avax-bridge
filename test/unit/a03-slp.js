@@ -17,12 +17,14 @@ util.inspect.defaultOptions = { depth: 1 }
 const slpMockData = require('./mocks/slp')
 // const slpMock = require('slp-sdk-mock')
 
+const config = require('../../config')
+
 // Determine if this is a Unit or Integration test
 // If not specified, default to unit test.
 if (!process.env.APP_ENV) process.env.APP_ENV = 'test'
 if (!process.env.TEST_ENV) process.env.TEST_ENV = 'unit'
 
-const REST_URL = `https://trest.bitcoin.com/v2/`
+// const REST_URL = `https://trest.bitcoin.com/v2/`
 
 describe('#slp', () => {
   let slp
@@ -55,7 +57,7 @@ describe('#slp', () => {
     it('should get token balance', async () => {
       // If unit test, use the mocking library instead of live calls.
       if (process.env.TEST_ENV === 'unit') {
-        sandbox.stub(slp.slpsdk.Utils, 'balancesForAddress').resolves([
+        sandbox.stub(slp.slpsdk.Util, 'balancesForAddress').resolves([
           {
             tokenId:
               '435fdbf1beeacbbf4ac0f7acccbee0b98d2a6a8b9a9c52af562d4029f9192e92',
@@ -77,8 +79,8 @@ describe('#slp', () => {
 
     it(`should throw an error for an invalid address`, async () => {
       if (process.env.TEST_ENV === 'unit') {
-        // slp.slpsdk.Utils.balancesForAddress = sandbox.throws()
-        sandbox.stub(slp.slpsdk.Utils, 'balancesForAddress').throws({
+        // slp.slpsdk.Util.balancesForAddress = sandbox.throws()
+        sandbox.stub(slp.slpsdk.Util, 'balancesForAddress').throws({
           error:
             'Invalid BCH address. Double check your address is valid: slptest:qz4qnxcxwvmacgye8wlakhz0835x0w3vtvxu67aaaa'
         })
@@ -104,7 +106,7 @@ describe('#slp', () => {
     it('should return 0 on address with zero balance', async () => {
       if (process.env.TEST_ENV === 'unit') {
         sandbox
-          .stub(slp.slpsdk.Utils, 'balancesForAddress')
+          .stub(slp.slpsdk.Util, 'balancesForAddress')
           .resolves('No balance for this address')
       }
 
@@ -149,9 +151,10 @@ describe('#slp', () => {
         }
 
         // Mock the http call to rest.
-        nock(REST_URL)
-          .get(uri => uri.includes('/'))
-          .reply(200, testData)
+        // nock(config.TESTNET_REST)
+        //   .get(uri => uri.includes('/'))
+        //   .reply(200, testData)
+        sandbox.stub(slp.slpsdk.Util, 'txDetails').resolves(testData)
       }
 
       const txid =
@@ -189,7 +192,7 @@ describe('#slp', () => {
         }
 
         // Mock the http call to rest.
-        nock(REST_URL)
+        nock(config.TESTNET_REST)
           .get(uri => uri.includes('/'))
           .reply(200, testData)
       }
@@ -256,11 +259,11 @@ describe('#slp', () => {
   })
 
   describe('#createTokenTx', () => {
-    it('should generate a SLP config object', () => {
+    it('should generate a SLP config object', async () => {
       const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
       const qty = 1
 
-      const result = slp.createTokenTx(addr, qty)
+      const result = await slp.createTokenTx(addr, qty)
       // console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, [
