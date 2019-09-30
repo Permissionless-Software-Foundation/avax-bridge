@@ -2,7 +2,7 @@
   "name": "token-liquidity",
   "version": "3.0.0",
   "description": "BCH SLP Token Liquidity Web App for the Permissionless Software Foundation",
-  "main": "index.js",
+  "main": "token-liquidity.js",
   "scripts": {
     "start": "NETWORK=mainnet node token-liquidity.js",
     "test": "NETWORK=testnet APP_ENV=test TEST_ENV=unit nyc --reporter=text ./node_modules/.bin/mocha --exit --timeout 15000 test/unit",
