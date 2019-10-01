@@ -60,16 +60,16 @@ describe('#slp', () => {
         sandbox.stub(slp.slpsdk.Util, 'balancesForAddress').resolves([
           {
             tokenId:
-              '435fdbf1beeacbbf4ac0f7acccbee0b98d2a6a8b9a9c52af562d4029f9192e92',
+              '7ac7f4bb50b019fe0f5c81e3fc13fc0720e130282ea460768cafb49785eb2796',
             balance: 1,
             balanceString: '1',
-            slpAddress: 'slptest:qz80hhc6eucgauzmcfjzglccspdqfpl0fqx7x3lshs',
+            slpAddress: 'slptest:qr8tqc5ucmwrrls5upyc32hhpmjp5a7sxyt4vpush5',
             decimalCount: 8
           }
         ])
       }
 
-      const addr = 'slptest:qz80hhc6eucgauzmcfjzglccspdqfpl0fqx7x3lshs'
+      const addr = 'slptest:qr8tqc5ucmwrrls5upyc32hhpmjp5a7sxyt4vpush5'
 
       const tokenBalance = await slp.getTokenBalance(addr)
       // console.log(`tokenBalance: ${util.inspect(tokenBalance)}`)
@@ -212,17 +212,17 @@ describe('#slp', () => {
     it('should return token quantity for a token tx', async () => {
       if (process.env.TEST_ENV === 'unit') {
         slpMockDataCopy.tokenTx.tokenInfo.tokenIdHex =
-          '435fdbf1beeacbbf4ac0f7acccbee0b98d2a6a8b9a9c52af562d4029f9192e92'
+          '7ac7f4bb50b019fe0f5c81e3fc13fc0720e130282ea460768cafb49785eb2796'
         sandbox.stub(slp, 'txDetails').resolves(slpMockDataCopy.tokenTx)
       }
 
       const txid =
-        'd284e71227ec89f713b964d8eda595be6392bebd2fac46082bc5a9ce6fb7b33e'
+        '02ed1b8882eb356f864a21eb59b7f222f13c36efc230329050f569b5580bf6ce'
 
       const tokenInfo = await slp.tokenTxInfo(txid)
       // console.log(`tokenInfo: ${util.inspect(tokenInfo)}`)
 
-      assert.equal(tokenInfo, 1, 'Validate token transfer')
+      assert.isAbove(tokenInfo, 0, 'Validate token transfer')
     })
 
     it('should return false for a non-token tx', async () => {

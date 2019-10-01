@@ -36,3 +36,18 @@ Here is the general flow of this function:
     - if the user sent BCH...
       - calculate and send tokens
     - Calculate the new BCH and token balances and return them.
+
+
+### Experimental changes:
+
+At startup:
+- seenTxs = Get a list of transactions associated with the address.
+
+
+Looping:
+- curTxs = Gets a list of transactions associated with the address.
+- diffTxs = diff seenTxs from curTxs
+- filter out all the txs in diffTx that are 0-conf
+- Add them to the seenTxs array after they've been processed.
+  - Add them before processing in case something goes wrong with the processing.
+- process these txs
