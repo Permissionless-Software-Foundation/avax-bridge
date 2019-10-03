@@ -53,23 +53,46 @@ class TokenLiquidity {
   // Add them to the seenTxs array after they've been processed.
   //  - Add them before processing in case something goes wrong with the processing.
   // process these txs
-  async processNewTxs (obj) {
+  async detectNewTxs (obj) {
     try {
-      const { seenTxs, bchBalance, tokenBalance } = obj
-
-      let newBchBalance = bchBalance
-      let newTokenBalance = tokenBalance
+      const { seenTxs } = obj
 
       // Get the current list of transactions for the apps address.
       const addrInfo = await bch.getBCHBalance(config.BCH_ADDR, false)
       const curTxs = collect(addrInfo.txids)
+      // console.log(`curTxs: ${JSON.stringify(curTxs, null, 2)}`)
 
       // Diff the transactions against the list of processed txs.
       const diffTxs = curTxs.diff(seenTxs)
+      // console.log(`diffTxs: ${JSON.stringify(diffTxs, null, 2)}`)
 
-      return {}
+      // Exit if there are no new transactions.
+      if (diffTxs.items.length === 0) return []
+
+      // Get confirmation info on each transaction.
+      const confs = await txs.getTxConfirmations(diffTxs.items)
+      // console.log(`confs: ${JSON.stringify(confs, null, 2)}`)
+
+      // Filter out any zero conf transactions.
+      const newTxs = confs.filter(x => x.confirmations > 0)
+      // console.log(`newTxs: ${JSON.stringify(newTxs, null, 2)}`)
+
+      return newTxs
     } catch (err) {
-      console.log(`Error in lib/token-liquidity.js/processNewTxs()`)
+      wlogger.error(`Error in lib/token-liquidity.js/processNewTxs()`)
+      throw err
+    }
+  }
+
+  // Processes a single TX, sends tokens or BCH based on the type of transaction.
+  async processTx (txid) {
+    try {
+      // Data validation
+      if (typeof txid !== 'string') throw new Error(`txid needs to be a string`)
+
+      wlogger.info(`Processing new TXID ${txid}.`)
+    } catch (err) {
+      wlogger.error(`Error in token-liquidity.js/processTx(${txid})`)
       throw err
     }
   }

@@ -56,7 +56,7 @@ async function startTokenLiquidity () {
 
   // Get all the TXIDs associated with this apps address. The app assumes all
   // these TXs have been processed.
-  const seenTxs = addressInfo.txids
+  let seenTxs = addressInfo.txids
   console.log(`seenTxs: ${JSON.stringify(seenTxs, null, 2)}`)
 
   // Get SLP token balance
@@ -93,14 +93,33 @@ async function startTokenLiquidity () {
   console.log(`Token spot price: $${price}`)
 
   setInterval(async function () {
+    const now = new Date()
+    let outStr = `${now.toLocaleString()}: Checking transactions... `
+
     const obj = {
-      seenTxs,
-      bchBalance,
-      tokenBalance
+      seenTxs
     }
 
-    const retObj = await lib.processNewTxs(obj)
-    console.log(`retObj: ${JSON.stringify(retObj, null, 2)}`)
+    const newTxids = await lib.detectNewTxs(obj)
+    // console.log(`retObj: ${JSON.stringify(retObj, null, 2)}`)
+
+    // If there are no new transactions, exit.
+    if (newTxids.length === 0) {
+      outStr += `...nothing new.`
+      console.log(`${outStr}`)
+      return
+    }
+
+    // Add the new txids to the seenTxs array.
+    newTxids.map(x => seenTxs.push(x.txid))
+
+    outStr += `...${newTxids.length} new transactions found!`
+    console.log(`${outStr}`)
+
+    // process the new TX.
+    for (let i = 0; i < newTxids.length; i++) {
+      await lib.processTx(newTxids[i].txid)
+    }
   }, 60000 * 2)
 
   // Get the last transaction associated with this address.

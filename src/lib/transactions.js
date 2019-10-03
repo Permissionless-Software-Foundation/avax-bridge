@@ -164,6 +164,36 @@ class Transactions {
       return false
     }
   }
+
+  // Expects an array of txids as input. Returns an array of objects.
+  // Each object contains the txid and the confirmations for that tx.
+  async getTxConfirmations (txids) {
+    try {
+      // Data validation
+      if (!Array.isArray(txids)) throw new Error(`txids needs to be an array`)
+
+      // Collect the confirmations for each txid.
+      const data = []
+      for (let i = 0; i < txids.length; i++) {
+        const txid = txids[i]
+
+        // Get the transaction data from the full node.
+        const txInfo = await this.BITBOX.RawTransactions.getRawTransaction(txid, true)
+        // console.log(`txInfo: ${JSON.stringify(txInfo, null, 2)}`)
+
+        // Get the confirmations for the transactions.
+        let confirmations = txInfo.confirmations
+        if (confirmations === undefined) confirmations = 0
+
+        data.push({ txid, confirmations })
+      }
+
+      return data
+    } catch (err) {
+      wlogger.error(`Error in transactions.js/getTxConfirmations()`)
+      throw err
+    }
+  }
 }
 
 module.exports = Transactions
