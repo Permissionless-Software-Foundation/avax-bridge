@@ -54,7 +54,7 @@ class BCH {
     try {
       // const result = await this.BITBOX.Address.details(addr)
       const result = await this.BITBOX.Blockbook.balance(addr)
-      console.log(`result: ${JSON.stringify(result, null, 2)}`)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
       // Convert balance to BCH
       result.balance = this.BITBOX.BitcoinCash.toBitcoinCash(Number(result.balance))

@@ -54,6 +54,11 @@ async function startTokenLiquidity () {
 
   // console.log(`addressInfo: ${JSON.stringify(addressInfo, null, 2)}`)
 
+  // Get all the TXIDs associated with this apps address. The app assumes all
+  // these TXs have been processed.
+  const seenTxs = addressInfo.txids
+  console.log(`seenTxs: ${JSON.stringify(seenTxs, null, 2)}`)
+
   // Get SLP token balance
   tokenBalance = await slp.getTokenBalance(config.SLP_ADDR)
   wlogger.info(
@@ -87,44 +92,55 @@ async function startTokenLiquidity () {
   const price = lib.getSpotPrice(bchBalance, USDperBCH)
   console.log(`Token spot price: $${price}`)
 
-  // Get the last transaction associated with this address.
-  let lastTransaction = await txs.getLastConfirmedTransaction(BCH_ADDR1)
-
-  // Periodically check the last transaction.
   setInterval(async function () {
-    try {
-      // console.log(`Checking transactions...`)
-      const obj = {
-        bchAddr: BCH_ADDR1,
-        txid: lastTransaction,
-        bchBalance: bchBalance,
-        tokenBalance: tokenBalance
-      }
-
-      const retObj = await lib.compareLastTransaction(obj)
-      const newTx = retObj.lastTransaction
-
-      // Save the updated price information.
-      await tlUtil.saveState(config)
-
-      // Update the last transaction.
-      if (newTx) lastTransaction = newTx
-      if (retObj.bchBalance) bchBalance = retObj.bchBalance
-      if (retObj.tokenBalance) tokenBalance = retObj.tokenBalance
-
-      const now = new Date()
-
-      // New Balances:
-      wlogger.info(
-        `bchBalance: ${bchBalance}, tokenBalance: ${tokenBalance}, timestamp: ${now.toLocaleString()}`
-      )
-
-      config.bchBalance = bchBalance
-      config.tokenBalance = tokenBalance
-    } catch (err) {
-      wlogger.error(`Error checking transactions in token-liquidity.js`, err)
+    const obj = {
+      seenTxs,
+      bchBalance,
+      tokenBalance
     }
+
+    const retObj = await lib.processNewTxs(obj)
+    console.log(`retObj: ${JSON.stringify(retObj, null, 2)}`)
   }, 60000 * 2)
+
+  // Get the last transaction associated with this address.
+  // let lastTransaction = await txs.getLastConfirmedTransaction(BCH_ADDR1)
+
+  // // Periodically check the last transaction.
+  // setInterval(async function () {
+  //   try {
+  //     // console.log(`Checking transactions...`)
+  //     const obj = {
+  //       bchAddr: BCH_ADDR1,
+  //       txid: lastTransaction,
+  //       bchBalance: bchBalance,
+  //       tokenBalance: tokenBalance
+  //     }
+  //
+  //     const retObj = await lib.compareLastTransaction(obj)
+  //     const newTx = retObj.lastTransaction
+  //
+  //     // Save the updated price information.
+  //     await tlUtil.saveState(config)
+  //
+  //     // Update the last transaction.
+  //     if (newTx) lastTransaction = newTx
+  //     if (retObj.bchBalance) bchBalance = retObj.bchBalance
+  //     if (retObj.tokenBalance) tokenBalance = retObj.tokenBalance
+  //
+  //     const now = new Date()
+  //
+  //     // New Balances:
+  //     wlogger.info(
+  //       `bchBalance: ${bchBalance}, tokenBalance: ${tokenBalance}, timestamp: ${now.toLocaleString()}`
+  //     )
+  //
+  //     config.bchBalance = bchBalance
+  //     config.tokenBalance = tokenBalance
+  //   } catch (err) {
+  //     wlogger.error(`Error checking transactions in token-liquidity.js`, err)
+  //   }
+  // }, 60000 * 2)
 }
 
 module.exports = {

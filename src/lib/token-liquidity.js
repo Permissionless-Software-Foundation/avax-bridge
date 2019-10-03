@@ -4,6 +4,8 @@
 
 'use strict'
 
+const collect = require('collect.js')
+
 const config = require('../../config')
 
 // App utility functions library.
@@ -42,6 +44,34 @@ let _this
 class TokenLiquidity {
   constructor () {
     _this = this
+  }
+
+  // seenTxs = array of txs that have already been processed.
+  // curTxs = Gets a list of transactions associated with the address.
+  // diffTxs = diff seenTxs from curTxs
+  // filter out all the txs in diffTx that are 0-conf
+  // Add them to the seenTxs array after they've been processed.
+  //  - Add them before processing in case something goes wrong with the processing.
+  // process these txs
+  async processNewTxs (obj) {
+    try {
+      const { seenTxs, bchBalance, tokenBalance } = obj
+
+      let newBchBalance = bchBalance
+      let newTokenBalance = tokenBalance
+
+      // Get the current list of transactions for the apps address.
+      const addrInfo = await bch.getBCHBalance(config.BCH_ADDR, false)
+      const curTxs = collect(addrInfo.txids)
+
+      // Diff the transactions against the list of processed txs.
+      const diffTxs = curTxs.diff(seenTxs)
+
+      return {}
+    } catch (err) {
+      console.log(`Error in lib/token-liquidity.js/processNewTxs()`)
+      throw err
+    }
   }
 
   // Checks the last TX associated with the BCH address. If it changed, then
