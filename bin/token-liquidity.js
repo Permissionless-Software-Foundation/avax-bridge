@@ -52,6 +52,8 @@ async function startTokenLiquidity () {
     `BCH address ${config.BCH_ADDR} has a balance of ${bchBalance} BCH`
   )
 
+  // console.log(`addressInfo: ${JSON.stringify(addressInfo, null, 2)}`)
+
   // Get SLP token balance
   tokenBalance = await slp.getTokenBalance(config.SLP_ADDR)
   wlogger.info(

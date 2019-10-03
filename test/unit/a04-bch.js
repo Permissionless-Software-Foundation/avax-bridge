@@ -54,8 +54,8 @@ describe('#bch', () => {
       // If unit test, use the mocking library instead of live calls.
       if (process.env.TEST_ENV === 'unit') {
         sandbox
-          .stub(bch.BITBOX.Address, 'details')
-          .resolves(bchMockData.addressDetails)
+          .stub(bch.BITBOX.Blockbook, 'balance')
+          .resolves(bchMockData.balance)
       }
 
       const addr = 'bchtest:qq22ys5qz8z4jzkkex7p5jrdd9vh6q06cgrpsx2fu7'
@@ -66,23 +66,9 @@ describe('#bch', () => {
 
       assert.hasAnyKeys(bchBalance, [
         'balance',
-        'balanceSat',
-        'totalReceived',
-        'totalReceivedSat',
-        'totalSent',
-        'totalSentSat',
-        'unconfirmedBalance',
-        'unconfirmedBalanceSat',
-        'unconfirmedTxApperances',
-        'txApperances',
-        'transactions',
-        'legacyAddress',
-        'cashAddress',
-        'currentPage',
-        'pagesTotal',
-        'slpAddress'
+        'txids'
       ])
-      assert.isArray(bchBalance.transactions)
+      assert.isArray(bchBalance.txids)
     })
   })
 
@@ -141,7 +127,7 @@ describe('#bch', () => {
       if (process.env.TEST_ENV === 'unit') {
         sandbox
           .stub(bch, 'getBCHBalance')
-          .resolves(bchMockData.addressDetails)
+          .resolves(bchMockData.balance)
 
         sandbox.stub(bch.BITBOX.Address, 'utxo')
           .resolves(bchMockData.utxos)

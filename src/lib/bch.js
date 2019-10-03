@@ -52,12 +52,16 @@ class BCH {
   // The verbose flag determins if the results are written to the console or not.
   async getBCHBalance (addr, verbose) {
     try {
-      const result = await this.BITBOX.Address.details(addr)
-      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+      // const result = await this.BITBOX.Address.details(addr)
+      const result = await this.BITBOX.Blockbook.balance(addr)
+      console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      // Convert balance to BCH
+      result.balance = this.BITBOX.BitcoinCash.toBitcoinCash(Number(result.balance))
 
       if (verbose) {
         const resultToDisplay = result
-        resultToDisplay.transactions = []
+        resultToDisplay.txids = []
         console.log(resultToDisplay)
       }
 
