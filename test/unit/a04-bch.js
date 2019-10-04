@@ -10,7 +10,7 @@ const nock = require('nock')
 
 const BCH = require('../../src/lib/bch')
 
-const bitboxMock = require('bitbox-mock')
+// const bitboxMock = require('bitbox-mock')
 const bchMockData = require('./mocks/bch')
 
 const config = require('../../config')

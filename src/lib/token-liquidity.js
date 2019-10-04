@@ -44,6 +44,11 @@ let _this
 class TokenLiquidity {
   constructor () {
     _this = this
+
+    this.slp = slp
+    this.bch = bch
+    this.txs = txs
+    this.tlUtil = tlUtil
   }
 
   // seenTxs = array of txs that have already been processed.
@@ -58,7 +63,8 @@ class TokenLiquidity {
       const { seenTxs } = obj
 
       // Get the current list of transactions for the apps address.
-      const addrInfo = await bch.getBCHBalance(config.BCH_ADDR, false)
+      const addrInfo = await this.bch.getBCHBalance(config.BCH_ADDR, false)
+      // console.log(`addrInfo: ${JSON.stringify(addrInfo, null, 2)}`)
       const curTxs = collect(addrInfo.txids)
       // console.log(`curTxs: ${JSON.stringify(curTxs, null, 2)}`)
 
@@ -70,7 +76,7 @@ class TokenLiquidity {
       if (diffTxs.items.length === 0) return []
 
       // Get confirmation info on each transaction.
-      const confs = await txs.getTxConfirmations(diffTxs.items)
+      const confs = await this.txs.getTxConfirmations(diffTxs.items)
       // console.log(`confs: ${JSON.stringify(confs, null, 2)}`)
 
       // Filter out any zero conf transactions.
