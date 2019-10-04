@@ -72,6 +72,47 @@ describe('#transactions', () => {
       assert.isArray(txids.txs)
     })
   })
+
+  describe('#getTxConfirmations', () => {
+    it('should throw an error if input is not an array', async () => {
+      try {
+        const txids = 'bad-data'
+
+        await txs.getTxConfirmations(txids)
+
+        assert.equal(true, false, 'Unexpected result')
+      } catch (err) {
+        assert.include(err.message, 'txids needs to be an array')
+      }
+    })
+
+    it('should get confirmation information about a tx', async () => {
+      // If unit test, use the mocking library instead of live calls.
+      if (process.env.TEST_ENV === 'unit') {
+        sandbox.stub(txs.BITBOX.RawTransactions, 'getRawTransaction').resolves([
+          {
+            txid:
+              '83147001c579d0c3f3150fc733c43af602e44fa157de9bbd74aa0d47062e55f5',
+            confirmations: 55
+          }
+        ])
+      }
+
+      const txids = [
+        '83147001c579d0c3f3150fc733c43af602e44fa157de9bbd74aa0d47062e55f5'
+      ]
+
+      const result = await txs.getTxConfirmations(txids)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.isArray(result)
+      assert.hasAllKeys(result[0], [
+        'txid',
+        'confirmations'
+      ])
+    })
+  })
+
   /*
   describe('getTxConfs', () => {
     it('throws error for non-array input', () => {

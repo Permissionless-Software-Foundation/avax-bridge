@@ -13,21 +13,19 @@ const config = require('../../config')
 // Winston logger
 const wlogger = require('../utils/logging')
 
-const BITBOXSDK = require('bitbox-sdk').BITBOX
-let BITBOX, REST_URL
-if (config.NETWORK === `testnet`) {
-  REST_URL = 'https://trest.bitcoin.com/v2/'
-  BITBOX = new BITBOXSDK({ restURL: REST_URL })
-} else {
-  REST_URL = 'https://rest.bitcoin.com/v2/'
-  BITBOX = new BITBOXSDK({ restURL: REST_URL })
-}
+// Mainnet by default
+let BITBOX = new config.BCHLIB({ restURL: config.MAINNET_REST })
 
 // let _this
 
 class Transactions {
   constructor () {
     // _this = this
+
+    // Determine if this is a testnet wallet or a mainnet wallet.
+    if (config.NETWORK === 'testnet') {
+      BITBOX = new config.BCHLIB({ restURL: config.TESTNET_REST })
+    }
 
     this.BITBOX = BITBOX
   }
