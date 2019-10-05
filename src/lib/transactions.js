@@ -130,13 +130,15 @@ class Transactions {
     try {
       wlogger.debug(`Entering getUserAddr(). txid: ${txid}`)
 
-      const txDetails = await this.BITBOX.Transaction.details(txid)
-      // console.log(`txDetails: ${util.inspect(txDetails)}`)
+      // const txDetails = await this.BITBOX.Transaction.details(txid)
+      const txDetails = await this.BITBOX.Blockbook.tx(txid)
+      // console.log(`txDetails: ${JSON.stringify(txDetails, null, 2)}`)
 
       // Assumption: There is only 1 vin element, or the senders address exists in
       // the first vin element.
       const vin = txDetails.vin[0]
-      const senderAddr = vin.cashAddress
+      // console.log(`vin: ${JSON.stringify(vin, null, 2)}`)
+      const senderAddr = vin.addresses[0]
 
       return senderAddr
     } catch (err) {

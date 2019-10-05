@@ -107,6 +107,9 @@ async function startTokenLiquidity () {
     if (newTxids.length === 0) {
       outStr += `...nothing new.`
       console.log(`${outStr}`)
+
+      // TODO: Retrieve token and bch balance and update.
+
       return
     }
 
