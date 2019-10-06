@@ -40,6 +40,9 @@ util.inspect.defaultOptions = {
 const BCH_ADDR1 = config.BCH_ADDR
 // const TOKEN_ID = config.TOKEN_ID
 
+const FIVE_MINUTES = 60000 * 5
+let timerHandle
+
 let bchBalance
 let tokenBalance
 
@@ -92,7 +95,13 @@ async function startTokenLiquidity () {
   const price = lib.getSpotPrice(bchBalance, USDperBCH)
   console.log(`Token spot price: $${price}`)
 
-  setInterval(async function () {
+  timerHandle = setInterval(async function () {
+    await processingLoop(seenTxs)
+  }, 60000 * 2)
+}
+
+async function processingLoop (seenTxs) {
+  try {
     const now = new Date()
     let outStr = `${now.toLocaleString()}: Checking transactions... `
 
@@ -107,7 +116,7 @@ async function startTokenLiquidity () {
     if (newTxids.length === 0) {
       // Retrieve the balances from the blockchain.
       const retObj2 = await lib.getBlockchainBalances(config.BCH_ADDR)
-      console.log(`retObj2: ${JSON.stringify(retObj2, null, 2)}`)
+      // console.log(`retObj2: ${JSON.stringify(retObj2, null, 2)}`)
 
       // Update the app balances.
       bchBalance = retObj2.bchBalance
@@ -115,6 +124,7 @@ async function startTokenLiquidity () {
 
       outStr += `...nothing new. BCH: ${bchBalance}, SLP: ${tokenBalance}`
       console.log(`${outStr}`)
+      console.log(' ')
 
       return
     }
@@ -140,47 +150,39 @@ async function startTokenLiquidity () {
       bchBalance = result.bchBalance
       tokenBalance = result.tokenBalance
       console.log(`BCH: ${bchBalance}, SLP: ${tokenBalance}`)
+      console.log(` `)
+
+      // Sleep for 5 minutes to give Blockbook time to process the last transaction.
+      await waitForBlockbook(seenTxs)
     }
+  } catch (err) {
+    wlogger.error(`Error in token-liquidity.js.`, err)
+    console.log(' ')
+    console.log(`Err: `, err)
+  }
+}
+
+// Sleep for 5 minutes to give Blockbook time to process the last transaction.
+// Disables the processing loop while it waits.
+async function waitForBlockbook (seenTxs) {
+  const now = new Date()
+  wlogger.info(
+    `${
+      now.toLocaleString
+    }: Waiting 5 minutes before processing next transaction...`
+  )
+
+  clearInterval(timerHandle)
+  await sleep(FIVE_MINUTES)
+  console.log(`...continuing processing.`)
+
+  timerHandle = setInterval(async function () {
+    await processingLoop(seenTxs)
   }, 60000 * 2)
+}
 
-  // Get the last transaction associated with this address.
-  // let lastTransaction = await txs.getLastConfirmedTransaction(BCH_ADDR1)
-
-  // // Periodically check the last transaction.
-  // setInterval(async function () {
-  //   try {
-  //     // console.log(`Checking transactions...`)
-  //     const obj = {
-  //       bchAddr: BCH_ADDR1,
-  //       txid: lastTransaction,
-  //       bchBalance: bchBalance,
-  //       tokenBalance: tokenBalance
-  //     }
-  //
-  //     const retObj = await lib.compareLastTransaction(obj)
-  //     const newTx = retObj.lastTransaction
-  //
-  //     // Save the updated price information.
-  //     await tlUtil.saveState(config)
-  //
-  //     // Update the last transaction.
-  //     if (newTx) lastTransaction = newTx
-  //     if (retObj.bchBalance) bchBalance = retObj.bchBalance
-  //     if (retObj.tokenBalance) tokenBalance = retObj.tokenBalance
-  //
-  //     const now = new Date()
-  //
-  //     // New Balances:
-  //     wlogger.info(
-  //       `bchBalance: ${bchBalance}, tokenBalance: ${tokenBalance}, timestamp: ${now.toLocaleString()}`
-  //     )
-  //
-  //     config.bchBalance = bchBalance
-  //     config.tokenBalance = tokenBalance
-  //   } catch (err) {
-  //     wlogger.error(`Error checking transactions in token-liquidity.js`, err)
-  //   }
-  // }, 60000 * 2)
+function sleep (ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 module.exports = {

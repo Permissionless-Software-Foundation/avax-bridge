@@ -200,12 +200,12 @@ class TokenLiquidity {
         wlogger.info(`New token balance: ${newTokenBalance}`)
 
         // Send Tokens
-        const tokenConfig = await slp.createTokenTx2(
+        const tokenConfig = await slp.createTokenTx(
           userAddr,
           retObj.tokensOut
         )
 
-        await slp.broadcastTokenTx2(tokenConfig)
+        await slp.broadcastTokenTx(tokenConfig)
       }
 
       const retObj = {

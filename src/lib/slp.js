@@ -169,6 +169,9 @@ class SLP {
       // Add Insight property that is missing from Blockbook.
       bchUtxo.satoshis = Number(bchUtxo.value)
 
+      // Bail out if no token UTXOs are found.
+      if (tokenUtxos.length === 0) throw new Error(`No token UTXOs are available!`)
+
       // Generate the OP_RETURN code.
       const slpSendObj = this.bchjs.SLP.TokenType1.generateSendOpReturn(
         tokenUtxos,
@@ -271,8 +274,8 @@ class SLP {
 
       return hex
     } catch (err) {
-      console.error(`Error in sendToken: `, err)
-      console.log(`Error message: ${err.message}`)
+      wlogger.error(`Error in createTokenTx: ${err.message}`, err)
+      throw err
     }
   }
 
