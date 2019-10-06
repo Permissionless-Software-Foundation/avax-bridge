@@ -12,13 +12,13 @@ const config = require('../../config')
 const TLUtils = require('./util')
 const tlUtil = new TLUtils()
 
-// SLP Token library
-const SLP = require('./slp')
-const slp = new SLP()
-
 // BCH library
 const BCH = require('./bch')
 const bch = new BCH()
+
+// SLP Token library
+const SLP = require('./slp')
+const slp = new SLP()
 
 // Transactions library
 const Transactions = require('./transactions')
@@ -91,8 +91,10 @@ class TokenLiquidity {
   }
 
   // Processes a single TX, sends tokens or BCH based on the type of transaction.
-  async processTx (txid) {
+  async processTx (inObj) {
     try {
+      const { txid, bchBalance, tokenBalance } = inObj
+
       // Data validation
       if (typeof txid !== 'string') throw new Error(`txid needs to be a string`)
 
@@ -104,132 +106,118 @@ class TokenLiquidity {
       const userAddr = await txs.getUserAddr(lastTransaction)
       wlogger.info(`userAddr: ${util.inspect(userAddr)}`)
 
-      // // Exit if the userAddr is the same as the bchAddr for this app.
-      // // This occurs when the app sends bch or tokens to the user.
-      // if (userAddr === config.BCH_ADDR) {
-      //   wlogger.info(
-      //     `userAddr === app address. Exiting compareLastTransaction()`
-      //   )
-      //   seenTxs.push(lastTransaction)
-      //   const retObj = {
-      //     lastTransaction: lastTransaction,
-      //     bchBalance: newBchBalance,
-      //     tokenBalance: newTokenBalance
-      //   }
-      //   return retObj
-      // }
-      //
-      // // Process new txid.
-      // // const isTokenTx = await tokenTxInfo(lastTransaction, wormhole)
-      // const isTokenTx = await slp.tokenTxInfo(lastTransaction)
-      // wlogger.debug(`isTokenTx: ${isTokenTx}`)
-      //
-      // // User sent tokens.
-      // if (isTokenTx) {
-      //   wlogger.info(`${isTokenTx} tokens recieved.`)
-      //
-      //   // Exchange tokens for BCH
-      //   const exchangeObj = {
-      //     tokenIn: isTokenTx,
-      //     tokenBalance: Number(tokenBalance),
-      //     bchOriginalBalance: BCH_QTY_ORIGINAL,
-      //     tokenOriginalBalance: TOKENS_QTY_ORIGINAL
-      //   }
-      //
-      //   const bchOut = _this.exchangeTokensForBCH(exchangeObj)
-      //   wlogger.info(
-      //     `Ready to send ${bchOut} BCH in exchange for ${isTokenTx} tokens`
-      //   )
-      //
-      //   // Update the balances
-      //   newTokenBalance = tlUtil.round8(
-      //     exchangeObj.tokenBalance + isTokenTx
-      //   )
-      //   newBchBalance = tlUtil.round8(bchBalance - bchOut)
-      //   wlogger.info(`New BCH balance: ${newBchBalance}`)
-      //   wlogger.info(`New token balance: ${newTokenBalance}`)
-      //
-      //   // Send BCH
-      //   const obj = {
-      //     recvAddr: userAddr,
-      //     satoshisToSend: Math.floor(bchOut * 100000000)
-      //   }
-      //   wlogger.debug(`obj.satoshisToSend: ${obj.satoshisToSend}`)
-      //
-      //   const hex = await bch.createBchTx(obj)
-      //   const userBCHTXID = await bch.broadcastBchTx(hex)
-      //   wlogger.info(`BCH sent to user: ${userBCHTXID}`)
-      //
-      //   // Send the tokens to the apps token address on the 245 derivation path.
-      //   const tokenConfig = await slp.createTokenTx(
-      //     config.SLP_ADDR,
-      //     isTokenTx
-      //   )
-      //   const tokenTXID = await slp.broadcastTokenTx(tokenConfig)
-      //   wlogger.info(`Newly recieved tokens sent to 245 derivation path: ${tokenTXID}`)
-      //
-      //   // User sent BCH
-      // } else {
-      //   // Get the BCH send amount.
-      //   const bchQty = await bch.recievedBch(lastTransaction, BCH_ADDR1)
-      //   wlogger.info(`${bchQty} BCH recieved.`)
-      //
-      //   // Exchange BCH for tokens
-      //   const exchangeObj = {
-      //     bchIn: Number(bchQty),
-      //     bchBalance: Number(bchBalance),
-      //     bchOriginalBalance: BCH_QTY_ORIGINAL,
-      //     tokenOriginalBalance: TOKENS_QTY_ORIGINAL
-      //   }
-      //   const retObj = _this.exchangeBCHForTokens(exchangeObj)
-      //
-      //   wlogger.info(
-      //     `Ready to send ${
-      //       retObj.tokensOut
-      //     } tokens in exchange for ${bchQty} BCH`
-      //   )
-      //
-      //   // Calculate the new balances
-      //   // newBchBalance = retObj.bch2
-      //   newBchBalance = tlUtil.round8(
-      //     Number(bchBalance) + exchangeObj.bchIn
-      //   )
-      //   newTokenBalance = tlUtil.round8(
-      //     Number(tokenBalance) - retObj.tokensOut
-      //   )
-      //   wlogger.debug(`retObj: ${util.inspect(retObj)}`)
-      //   wlogger.info(`New BCH balance: ${newBchBalance}`)
-      //   wlogger.info(`New token balance: ${newTokenBalance}`)
-      //
-      //   // Send Tokens
-      //   // const obj = {
-      //   //  recvAddr: userAddr,
-      //   //  tokensToSend: retObj.tokensOut
-      //   // }
-      //
-      //   // await tknLib.sendTokens(obj)
-      //   const tokenConfig = await slp.createTokenTx(
-      //     userAddr,
-      //     retObj.tokensOut
-      //   )
-      //   await slp.broadcastTokenTx(tokenConfig)
-      // }
-      //
-      // // Add the last transaction TXID to the seenTxs array so that it's not
-      // // processed twice. Allows processing of multiple transactions in the
-      // // same block.
-      // seenTxs.push(lastTransaction)
-      //
-      // const retObj = {
-      //   lastTransaction: lastTransaction,
-      //   bchBalance: tlUtil.round8(newBchBalance),
-      //   tokenBalance: tlUtil.round8(newTokenBalance)
-      // }
-      //
-      // // Return the newly detected txid.
-      // return retObj
+      // Exit if the userAddr is the same as the bchAddr for this app.
+      // This occurs when the app sends bch or tokens to the user.
+      if (userAddr === config.BCH_ADDR) {
+        wlogger.info(
+          `userAddr === app address. Exiting compareLastTransaction()`
+        )
+
+        return inObj
+      }
+
+      // Process new txid.
+      const isTokenTx = await slp.tokenTxInfo(lastTransaction)
+      wlogger.debug(`isTokenTx: ${isTokenTx}`)
+
+      let newTokenBalance = tokenBalance
+      let newBchBalance = bchBalance
+
+      // User sent tokens.
+      if (isTokenTx) {
+        wlogger.info(`${isTokenTx} tokens recieved.`)
+
+        // Exchange tokens for BCH
+        const exchangeObj = {
+          tokenIn: isTokenTx,
+          tokenBalance: Number(tokenBalance),
+          bchOriginalBalance: BCH_QTY_ORIGINAL,
+          tokenOriginalBalance: TOKENS_QTY_ORIGINAL
+        }
+
+        const bchOut = _this.exchangeTokensForBCH(exchangeObj)
+        wlogger.info(
+          `Ready to send ${bchOut} BCH in exchange for ${isTokenTx} tokens`
+        )
+
+        // Update the balances
+        newTokenBalance = tlUtil.round8(
+          exchangeObj.tokenBalance + isTokenTx
+        )
+        newBchBalance = tlUtil.round8(bchBalance - bchOut)
+        wlogger.info(`New BCH balance: ${newBchBalance}`)
+        wlogger.info(`New token balance: ${newTokenBalance}`)
+
+        // Send BCH
+        const obj = {
+          recvAddr: userAddr,
+          satoshisToSend: Math.floor(bchOut * 100000000)
+        }
+        wlogger.debug(`obj.satoshisToSend: ${obj.satoshisToSend}`)
+
+        const hex = await bch.createBchTx(obj)
+        const userBCHTXID = await bch.broadcastBchTx(hex)
+        wlogger.info(`BCH sent to user: ${userBCHTXID}`)
+
+        // Send the tokens to the apps token address on the 245 derivation path.
+        const tokenConfig = await slp.createTokenTx(
+          config.SLP_ADDR,
+          isTokenTx
+        )
+        const tokenTXID = await slp.broadcastTokenTx(tokenConfig)
+        wlogger.info(`Newly recieved tokens sent to 245 derivation path: ${tokenTXID}`)
+
+        // User sent BCH
+      } else {
+        // Get the BCH send amount.
+        const bchQty = await bch.recievedBch(lastTransaction, BCH_ADDR1)
+        wlogger.info(`${bchQty} BCH recieved.`)
+
+        // Exchange BCH for tokens
+        const exchangeObj = {
+          bchIn: Number(bchQty),
+          bchBalance: Number(bchBalance),
+          bchOriginalBalance: BCH_QTY_ORIGINAL,
+          tokenOriginalBalance: TOKENS_QTY_ORIGINAL
+        }
+        const retObj = _this.exchangeBCHForTokens(exchangeObj)
+
+        wlogger.info(
+          `Ready to send ${
+            retObj.tokensOut
+          } tokens in exchange for ${bchQty} BCH`
+        )
+
+        // Calculate the new balances
+        newBchBalance = tlUtil.round8(
+          Number(bchBalance) + exchangeObj.bchIn
+        )
+        newTokenBalance = tlUtil.round8(
+          Number(tokenBalance) - retObj.tokensOut
+        )
+        wlogger.debug(`retObj: ${util.inspect(retObj)}`)
+        wlogger.info(`New BCH balance: ${newBchBalance}`)
+        wlogger.info(`New token balance: ${newTokenBalance}`)
+
+        // Send Tokens
+        const tokenConfig = await slp.createTokenTx2(
+          userAddr,
+          retObj.tokensOut
+        )
+
+        await slp.broadcastTokenTx2(tokenConfig)
+      }
+
+      const retObj = {
+        txid,
+        bchBalance: tlUtil.round8(newBchBalance),
+        tokenBalance: tlUtil.round8(newTokenBalance)
+      }
+
+      // Return the newly detected txid.
+      return retObj
     } catch (err) {
-      wlogger.error(`Error in token-liquidity.js/processTx(${txid})`)
+      wlogger.error(`Error in token-liquidity.js/processTx(${inObj.txid})`)
       throw err
     }
   }

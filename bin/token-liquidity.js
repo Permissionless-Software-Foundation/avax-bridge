@@ -57,7 +57,7 @@ async function startTokenLiquidity () {
   // Get all the TXIDs associated with this apps address. The app assumes all
   // these TXs have been processed.
   let seenTxs = addressInfo.txids
-  console.log(`seenTxs: ${JSON.stringify(seenTxs, null, 2)}`)
+  // console.log(`seenTxs: ${JSON.stringify(seenTxs, null, 2)}`)
 
   // Get SLP token balance
   tokenBalance = await slp.getTokenBalance(config.SLP_ADDR)
@@ -121,7 +121,14 @@ async function startTokenLiquidity () {
 
     // process the new TX.
     for (let i = 0; i < newTxids.length; i++) {
-      await lib.processTx(newTxids[i].txid)
+      const obj = {
+        txid: newTxids[i].txid,
+        bchBalance,
+        tokenBalance
+      }
+
+      const result = await lib.processTx(obj)
+      console.log(`result: ${JSON.stringify(result, null, 2)}`)
     }
   }, 60000 * 2)
 
