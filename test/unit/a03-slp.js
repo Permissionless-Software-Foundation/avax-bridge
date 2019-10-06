@@ -6,12 +6,7 @@
 
 const assert = require('chai').assert
 const sinon = require('sinon')
-const SLP = require('../../src/lib/slp')
 const nock = require('nock')
-
-// Used for debugging.
-const util = require('util')
-util.inspect.defaultOptions = { depth: 1 }
 
 // Mocking-data
 const slpMockData = require('./mocks/slp')
@@ -24,7 +19,7 @@ const config = require('../../config')
 if (!process.env.APP_ENV) process.env.APP_ENV = 'test'
 if (!process.env.TEST_ENV) process.env.TEST_ENV = 'unit'
 
-// const REST_URL = `https://trest.bitcoin.com/v2/`
+const SLP = require('../../src/lib/slp')
 
 describe('#slp', () => {
   let slp
@@ -168,7 +163,9 @@ describe('#slp', () => {
 
     it('should return false for non-token tx', async () => {
       if (process.env.TEST_ENV === 'unit') {
-        sandbox.stub(slp.bchjs.Util, 'validateTxid').resolves([{ valid: false }])
+        sandbox
+          .stub(slp.bchjs.Util, 'validateTxid')
+          .resolves([{ valid: false }])
 
         const testData = {
           txid:
@@ -274,6 +271,27 @@ describe('#slp', () => {
         'tokenId',
         'amount'
       ])
+    })
+  })
+
+  describe('#createTokenTx2', () => {
+    it('should generate a transaction hex', async () => {
+      // Mock out dependencies for a unit test.
+      if (process.env.TEST_ENV === 'unit') {
+        sandbox.stub(slp.bchjs.Blockbook, 'utxo').resolves(slpMockData.utxos)
+        sandbox
+          .stub(slp.bchjs.SLP.Utils, 'tokenUtxoDetails')
+          .resolves(slpMockData.tokenUtxos)
+      }
+
+      const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
+      const qty = 1
+
+      const result = await slp.createTokenTx2(addr, qty)
+      // console.log(`result: ${util.inspect(result)}`)
+
+      assert.isString(result)
+      assert.equal(result.indexOf('0200'), 0, 'First part of string matches.')
     })
   })
 })
