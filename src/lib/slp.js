@@ -110,56 +110,7 @@ class SLP {
     }
   }
 
-  // Generate TX hex for sending tokens to an address. Returns a config object
-  // ready to be broadcast to the BCH network with the SLP SDK TokenType1.send()
-  // method.
   async createTokenTx (addr, qty) {
-    try {
-      // Open the wallet controlling the tokens
-      const walletInfo = tlUtils.openWallet()
-
-      const mnemonic = walletInfo.mnemonic
-
-      // root seed buffer
-      const rootSeed = await bchjs.Mnemonic.toSeed(mnemonic)
-
-      // master HDNode
-      let masterHDNode
-      if (config.NETWORK === `mainnet`) { masterHDNode = bchjs.HDNode.fromSeed(rootSeed) } else masterHDNode = bchjs.HDNode.fromSeed(rootSeed, 'testnet') // Testnet
-
-      // HDNode of BIP44 account
-      const account = bchjs.HDNode.derivePath(masterHDNode, "m/44'/245'/0'")
-
-      const change = bchjs.HDNode.derivePath(account, '0/0')
-
-      // get the cash address
-      const cashAddress = bchjs.HDNode.toCashAddress(change)
-
-      const fundingAddress = bchjs.Address.toSLPAddress(cashAddress)
-      const fundingWif = bchjs.HDNode.toWIF(change) // <-- compressed WIF format
-      const tokenReceiverAddress = bchjs.Address.toSLPAddress(addr)
-      const bchChangeReceiverAddress = cashAddress
-
-      // Create a config object for minting
-      const sendConfig = {
-        fundingAddress,
-        fundingWif,
-        tokenReceiverAddress,
-        bchChangeReceiverAddress,
-        tokenId: config.SLP_TOKEN_ID,
-        amount: qty
-      }
-
-      wlogger.debug(`sendConfig: ${JSON.stringify(sendConfig, null, 2)}`)
-
-      return sendConfig
-    } catch (err) {
-      wlogger.error(`Error in slp.js/createTokenTx()`)
-      throw err
-    }
-  }
-
-  async createTokenTx2 (addr, qty) {
     try {
       // Open the wallet controlling the tokens
       const walletInfo = tlUtils.openWallet()
@@ -326,28 +277,12 @@ class SLP {
   }
 
   // Broadcast the SLP transaction to the BCH network.
-  async broadcastTokenTx2 (hex) {
+  async broadcastTokenTx (hex) {
     try {
-      const txidStr = await bchjs.RawTransactions.sendRawTransaction([hex])
+      const txidStr = await this.bchjs.RawTransactions.sendRawTransaction([hex])
       wlogger.info(`Transaction ID: ${txidStr}`)
 
       return txidStr
-    } catch (err) {
-      wlogger.error(`Error in slp.js/broadcastTokenTx()`)
-      throw err
-    }
-  }
-
-  // Submit the SLP config object and broadcast the token transaction to the
-  // BCH network.
-  async broadcastTokenTx (config) {
-    try {
-      // Generate, sign, and broadcast a hex-encoded transaction for sending
-      // the tokens.
-      const sendTxId = await bchjs.TokenType1.send(config)
-
-      wlogger.debug(`sendTxId: ${util.inspect(sendTxId)}`)
-      console.log(`sendTxId: ${util.inspect(sendTxId)}`)
     } catch (err) {
       wlogger.error(`Error in slp.js/broadcastTokenTx()`)
       throw err

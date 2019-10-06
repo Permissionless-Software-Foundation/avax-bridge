@@ -256,25 +256,6 @@ describe('#slp', () => {
   })
 
   describe('#createTokenTx', () => {
-    it('should generate a SLP config object', async () => {
-      const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
-      const qty = 1
-
-      const result = await slp.createTokenTx(addr, qty)
-      // console.log(`result: ${util.inspect(result)}`)
-
-      assert.hasAllKeys(result, [
-        'fundingAddress',
-        'fundingWif',
-        'tokenReceiverAddress',
-        'bchChangeReceiverAddress',
-        'tokenId',
-        'amount'
-      ])
-    })
-  })
-
-  describe('#createTokenTx2', () => {
     it('should generate a transaction hex', async () => {
       // Mock out dependencies for a unit test.
       if (process.env.TEST_ENV === 'unit') {
@@ -287,11 +268,27 @@ describe('#slp', () => {
       const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
       const qty = 1
 
-      const result = await slp.createTokenTx2(addr, qty)
+      const result = await slp.createTokenTx(addr, qty)
       // console.log(`result: ${util.inspect(result)}`)
 
       assert.isString(result)
       assert.equal(result.indexOf('0200'), 0, 'First part of string matches.')
     })
   })
+
+  // Unit tests only.
+  if (process.env.TEST_ENV === 'unit') {
+    describe('#broadcastTokenTx', () => {
+      it('should broadcast a tx and return the txid', async () => {
+        // Mock out dependency.
+        sandbox.stub(slp.bchjs.RawTransactions, 'sendRawTransaction').resolves('txid')
+
+        const hex = '0200...'
+
+        const result = await slp.broadcastTokenTx(hex)
+
+        assert.equal(result, 'txid')
+      })
+    })
+  }
 })
