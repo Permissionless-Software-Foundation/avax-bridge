@@ -57,7 +57,7 @@ describe('#slp', () => {
     it('should get token balance', async () => {
       // If unit test, use the mocking library instead of live calls.
       if (process.env.TEST_ENV === 'unit') {
-        sandbox.stub(slp.slpsdk.Util, 'balancesForAddress').resolves([
+        sandbox.stub(slp.bchjs.Util, 'balancesForAddress').resolves([
           {
             tokenId:
               '7ac7f4bb50b019fe0f5c81e3fc13fc0720e130282ea460768cafb49785eb2796',
@@ -80,7 +80,7 @@ describe('#slp', () => {
     it(`should throw an error for an invalid address`, async () => {
       if (process.env.TEST_ENV === 'unit') {
         // slp.slpsdk.Util.balancesForAddress = sandbox.throws()
-        sandbox.stub(slp.slpsdk.Util, 'balancesForAddress').throws({
+        sandbox.stub(slp.bchjs.Util, 'balancesForAddress').throws({
           error:
             'Invalid BCH address. Double check your address is valid: slptest:qz4qnxcxwvmacgye8wlakhz0835x0w3vtvxu67aaaa'
         })
@@ -106,7 +106,7 @@ describe('#slp', () => {
     it('should return 0 on address with zero balance', async () => {
       if (process.env.TEST_ENV === 'unit') {
         sandbox
-          .stub(slp.slpsdk.Util, 'balancesForAddress')
+          .stub(slp.bchjs.Util, 'balancesForAddress')
           .resolves('No balance for this address')
       }
 
@@ -121,7 +121,7 @@ describe('#slp', () => {
   describe('#txDetails', () => {
     it('should return token tx details for a token tx', async () => {
       if (process.env.TEST_ENV === 'unit') {
-        sandbox.stub(slp.slpsdk.Util, 'validateTxid').resolves([{ valid: true }])
+        sandbox.stub(slp.bchjs.Util, 'validateTxid').resolves([{ valid: true }])
 
         const testData = {
           txid:
@@ -154,7 +154,7 @@ describe('#slp', () => {
         // nock(config.TESTNET_REST)
         //   .get(uri => uri.includes('/'))
         //   .reply(200, testData)
-        sandbox.stub(slp.slpsdk.Util, 'txDetails').resolves(testData)
+        sandbox.stub(slp.bchjs.Util, 'txDetails').resolves(testData)
       }
 
       const txid =
@@ -168,7 +168,7 @@ describe('#slp', () => {
 
     it('should return false for non-token tx', async () => {
       if (process.env.TEST_ENV === 'unit') {
-        sandbox.stub(slp.slpsdk.Util, 'validateTxid').resolves([{ valid: false }])
+        sandbox.stub(slp.bchjs.Util, 'validateTxid').resolves([{ valid: false }])
 
         const testData = {
           txid:
