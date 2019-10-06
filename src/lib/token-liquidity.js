@@ -513,17 +513,19 @@ class TokenLiquidity {
   }
 
   // Retrieve the current BCH and token balances from the blockchain.
-  async getBlockchainBalances (bchAddr) {
+  async getBlockchainBalances () {
     try {
       // Get BCH balance from the blockchain
-      const addressInfo = await bch.getBCHBalance(bchAddr, false)
-      const currentBCHBalance = addressInfo.balance
+      const addressInfo = await bch.getBCHBalance(config.BCH_ADDR, false)
+      const bchBalance = addressInfo.balance
 
-      wlogger.debug(`Blockchain balance: ${currentBCHBalance} BCH`)
+      wlogger.debug(`Blockchain balance: ${bchBalance} BCH`)
+
+      const tokenBalance = await slp.getTokenBalance()
 
       return {
-        bchBalance: currentBCHBalance
-        // tokenBalance: tokenBalance
+        bchBalance,
+        tokenBalance
       }
     } catch (err) {
       wlogger.error(`Error in token-liquidity.js/getBlockchainBalances().`)

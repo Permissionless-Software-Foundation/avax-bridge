@@ -35,12 +35,12 @@ class SLP {
   }
 
   // Get the token balance of an address.
-  async getTokenBalance (addr) {
+  async getTokenBalance () {
     try {
       wlogger.silly(`Enter slp.getTokenBalance()`)
       // console.log(`addr: ${addr}`)
 
-      const result = await this.bchjs.Util.balancesForAddress(addr)
+      const result = await this.bchjs.Util.balancesForAddress(config.SLP_ADDR)
       wlogger.debug(`token balance: `, result)
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 

@@ -64,53 +64,25 @@ describe('#slp', () => {
         ])
       }
 
-      const addr = 'slptest:qr8tqc5ucmwrrls5upyc32hhpmjp5a7sxyt4vpush5'
-
-      const tokenBalance = await slp.getTokenBalance(addr)
+      const tokenBalance = await slp.getTokenBalance()
       // console.log(`tokenBalance: ${util.inspect(tokenBalance)}`)
 
       assert.isNumber(tokenBalance)
     })
 
-    it(`should throw an error for an invalid address`, async () => {
-      if (process.env.TEST_ENV === 'unit') {
-        // slp.slpsdk.Util.balancesForAddress = sandbox.throws()
-        sandbox.stub(slp.bchjs.Util, 'balancesForAddress').throws({
-          error:
-            'Invalid BCH address. Double check your address is valid: slptest:qz4qnxcxwvmacgye8wlakhz0835x0w3vtvxu67aaaa'
-        })
-      }
-
-      try {
-        const addr = 'slptest:qz80hhc6eucgauzfjzglccspdqfpl0fqx7x3lshs'
-
-        await slp.getTokenBalance(addr)
-
-        assert.equal(true, false, 'Unexpected result')
-      } catch (err) {
-        // console.log(`Error obj: ${util.inspect(err)}`)
-
-        assert.include(
-          err.error,
-          'Invalid BCH address',
-          'Error message expected.'
-        )
-      }
-    })
-
-    it('should return 0 on address with zero balance', async () => {
-      if (process.env.TEST_ENV === 'unit') {
+    if (process.env.TEST_ENV === 'unit') {
+      it('should return 0 on address with zero balance', async () => {
         sandbox
           .stub(slp.bchjs.Util, 'balancesForAddress')
           .resolves('No balance for this address')
-      }
 
-      const addr = 'slptest:qzayl9rxxprzst3fnydykx2rt4d746fcqqu0s50c9u'
+        const addr = 'slptest:qzayl9rxxprzst3fnydykx2rt4d746fcqqu0s50c9u'
 
-      const result = await slp.getTokenBalance(addr)
+        const result = await slp.getTokenBalance(addr)
 
-      assert.equal(result, 0)
-    })
+        assert.equal(result, 0)
+      })
+    }
   })
 
   describe('#txDetails', () => {

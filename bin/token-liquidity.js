@@ -105,10 +105,16 @@ async function startTokenLiquidity () {
 
     // If there are no new transactions, exit.
     if (newTxids.length === 0) {
-      outStr += `...nothing new.`
-      console.log(`${outStr}`)
+      // Retrieve the balances from the blockchain.
+      const retObj2 = await lib.getBlockchainBalances(config.BCH_ADDR)
+      console.log(`retObj2: ${JSON.stringify(retObj2, null, 2)}`)
 
-      // TODO: Retrieve token and bch balance and update.
+      // Update the app balances.
+      bchBalance = retObj2.bchBalance
+      tokenBalance = retObj2.tokenBalance
+
+      outStr += `...nothing new. BCH: ${bchBalance}, SLP: ${tokenBalance}`
+      console.log(`${outStr}`)
 
       return
     }
@@ -129,6 +135,11 @@ async function startTokenLiquidity () {
 
       const result = await lib.processTx(obj)
       console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      // Update the app balances.
+      bchBalance = result.bchBalance
+      tokenBalance = result.tokenBalance
+      console.log(`BCH: ${bchBalance}, SLP: ${tokenBalance}`)
     }
   }, 60000 * 2)
 
