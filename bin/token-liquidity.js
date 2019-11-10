@@ -95,6 +95,8 @@ async function startTokenLiquidity () {
   const price = lib.getSpotPrice(bchBalance, USDperBCH)
   console.log(`Token spot price: $${price}`)
 
+  // Kick off the processing loop. It periodically checks for new transactions
+  // and reacts to them.
   timerHandle = setInterval(async function () {
     await processingLoop(seenTxs)
   }, 60000 * 2)
@@ -143,16 +145,22 @@ async function processingLoop (seenTxs) {
         tokenBalance
       }
 
+      // TODO: Instead of calling processTx(), call p-retry so that it will
+      // retry processTx() several times if it errors out.
       const result = await lib.processTx(obj)
       console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
-      // Update the app balances.
+      // Update the app balances. This temporarily updates the app balances until
+      // processing is complete, at which time the app can get its balance from
+      // an indexer.
       bchBalance = result.bchBalance
       tokenBalance = result.tokenBalance
       console.log(`BCH: ${bchBalance}, SLP: ${tokenBalance}`)
       console.log(` `)
 
       // Sleep for 5 minutes to give Blockbook time to process the last transaction.
+      // TODO: This is a really bad way to do it. This part should be able to be
+      // eliminated once the retry code is implemented.
       await waitForBlockbook(seenTxs)
     }
   } catch (err) {

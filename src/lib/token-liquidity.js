@@ -107,7 +107,8 @@ class TokenLiquidity {
       wlogger.info(`userAddr: ${util.inspect(userAddr)}`)
 
       // Exit if the userAddr is the same as the bchAddr for this app.
-      // This occurs when the app sends bch or tokens to the user.
+      // This occurs when the app sends bch or tokens to the user, imediately
+      // after processing the users transaction and then broadcasting the trade.
       if (userAddr === config.BCH_ADDR) {
         wlogger.info(
           `userAddr === app address. Exiting compareLastTransaction()`
@@ -222,6 +223,8 @@ class TokenLiquidity {
     }
   }
 
+  // DEPRECATED - This is an older version of the processing code. This will
+  // be deleted once the new code is complete.
   // Checks the last TX associated with the BCH address. If it changed, then
   // the program reacts to it. Otherwise it exits.
   // Here is the general flow of this function:

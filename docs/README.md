@@ -17,37 +17,17 @@ There are libraries in the `/src/lib` folder which contain the business logic an
 - `transactions.js` - library containing utilities for working with BCH transactions.
 - `util.js` - a general utilities library.
 
-The app starts by opening its wallet and retrieving its balance of BCH and SLP tokens from the blockchain. This determines the exchange rate of BCH to tokens, based on the curve described [in the business plan](https://psfoundation.cash/biz-plan/business-plan#pseudoStableToken). It retrieves the current USD market price for BCH and calculates the spot price of the token. This information is then available via the GET `/price` endpoint.
+The app starts by opening its wallet and retrieving its balance of BCH and SLP tokens from the blockchain. It also retrieves a list of previous transactions associated with the wallets address. It stores these previous transactions in the `seenTxs` object.
+
+The BCH balance determines the exchange rate of BCH to tokens, based on the curve described [in the business plan](https://psfoundation.cash/biz-plan/business-plan#pseudoStableToken). It retrieves the current USD market price for BCH and calculates the spot price of the token. This information is then available via the GET `/price` endpoint.
 
 ## Running
-After startup, the app runs in a loop every two minutes. It will poll the blockchain to see if it has received any BCH or SLP tokens.
+After startup, the app runs the `processingLoop` which loops every two minutes. It will poll the blockchain to see if it has received any BCH or SLP tokens.
 
-The loop calls the `compareLastTransaction()` function in the `token-liquidity.js` library. It checks the last TX associated with the BCH address. If it changed, then the program reacts to it. Otherwise it exits.
+The loop calls `detectNewTxs()` which returns an array of any new TXIDs associated with the apps address. This function will filter out 0-conf transactions, so will only process transactions that have at least 1 confirmation. This greatly reduces the risk of a double spend attack.
 
-Here is the general flow of this function:
-- Organize the transactions and return an array of 1-conf transactions
-- if there are no 1-conf transactions (2-conf or greater)...
-  - Retrieve the BCH and token balances from the blockchain and return those
-- else loop through each transaction in the 1-conf array
-  - if the current transaction is different than the last processed transaction...
-    - if the users address matches the app address, ignore and skip.
-    - if the user sent tokens...
-      - calculate and send BCH
-    - if the user sent BCH...
-      - calculate and send tokens
-    - Calculate the new BCH and token balances and return them.
+If no new transactions are found, the loop retrieves its balances from an indexer and then exits.
 
+If a new transaction is found, it is added to the `seenTxs` object, and then the TX is added to a processing queue. The processing queue will try to process the transaction several times until it succeeds. (*TODO*)
 
-### Experimental changes:
-
-At startup:
-- seenTxs = Get a list of transactions associated with the address.
-
-
-Looping:
-- curTxs = Gets a list of transactions associated with the address.
-- diffTxs = diff seenTxs from curTxs
-- filter out all the txs in diffTx that are 0-conf
-- Add them to the seenTxs array after they've been processed.
-  - Add them before processing in case something goes wrong with the processing.
-- process these txs
+The `token-liquidity.js/processTx()` function processes the transaction. At a high level, the purpose of this function is to send tokens if it recieves BCH, or to send BCH if it recieves tokens. The exchange rate is determined by a mathematical function.
