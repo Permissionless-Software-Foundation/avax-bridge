@@ -44,7 +44,9 @@ class SLP {
       wlogger.debug(`token balance: `, result)
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
-      if (result === 'No balance for this address' || result.length === 0) { return 0 }
+      if (result === 'No balance for this address' || result.length === 0) {
+        return 0
+      }
 
       // Get the token information that matches the token-ID for PSF tokens.
       let tokenInfo = result.find(
@@ -114,26 +116,38 @@ class SLP {
     try {
       // Open the wallet controlling the tokens
       const walletInfo = tlUtils.openWallet()
+      // console.log(`walletInfo: ${JSON.stringify(walletInfo, null, 2)}`)
 
       const mnemonic = walletInfo.mnemonic
+      // console.log(`mnemonic: ${JSON.stringify(mnemonic, null, 2)}`)
 
       // root seed buffer
       const rootSeed = await this.bchjs.Mnemonic.toSeed(mnemonic)
+      // console.log(`rootSeed: ${JSON.stringify(rootSeed, null, 2)}`)
 
       // master HDNode
       let masterHDNode
-      if (config.NETWORK === `mainnet`) { masterHDNode = bchjs.HDNode.fromSeed(rootSeed) } else masterHDNode = bchjs.HDNode.fromSeed(rootSeed, 'testnet') // Testnet
+      if (config.NETWORK === `mainnet`) {
+        masterHDNode = bchjs.HDNode.fromSeed(rootSeed)
+      } else masterHDNode = bchjs.HDNode.fromSeed(rootSeed, 'testnet') // Testnet
 
       // HDNode of BIP44 account
-      const account = this.bchjs.HDNode.derivePath(masterHDNode, "m/44'/245'/0'")
+      const account = this.bchjs.HDNode.derivePath(
+        masterHDNode,
+        "m/44'/245'/0'"
+      )
+      // console.log(`account: ${JSON.stringify(account, null, 2)}`)
       const change = this.bchjs.HDNode.derivePath(account, '0/0')
+      // console.log(`change: ${JSON.stringify(change, null, 2)}`)
 
       // Generate an EC key pair for signing the transaction.
       const keyPair = this.bchjs.HDNode.toKeyPair(change)
+      // console.log(`keyPair: ${JSON.stringify(keyPair, null, 2)}`)
 
       // get the cash address
       const cashAddress = this.bchjs.HDNode.toCashAddress(change)
       const slpAddress = this.bchjs.HDNode.toSLPAddress(change)
+      // console.log(`cashAddress to get utxus: ${JSON.stringify(cashAddress, null, 2)}`)
 
       // Get UTXOs held by this address.
       const utxos = await this.bchjs.Blockbook.utxo(cashAddress)
@@ -170,15 +184,16 @@ class SLP {
       bchUtxo.satoshis = Number(bchUtxo.value)
 
       // Bail out if no token UTXOs are found.
-      if (tokenUtxos.length === 0) throw new Error(`No token UTXOs are available!`)
+      if (tokenUtxos.length === 0) { throw new Error(`No token UTXOs are available!`) }
 
       // Generate the OP_RETURN code.
       const slpSendObj = this.bchjs.SLP.TokenType1.generateSendOpReturn(
         tokenUtxos,
         qty
       )
-      const slpData = this.bchjs.Script.encode(slpSendObj.script)
       // console.log(`slpOutputs: ${slpSendObj.outputs}`)
+      const slpData = this.bchjs.Script.encode(slpSendObj.script)
+      // console.log(`slpData: ${slpData}`)
 
       // BEGIN transaction construction.
 
@@ -215,7 +230,7 @@ class SLP {
       if (remainder < 1) {
         throw new Error(`Selected UTXO does not have enough satoshis`)
       }
-      // console.log(`remainder: ${remainder}`)
+      console.log(`remainder: ${remainder}`)
 
       // Add OP_RETURN as first output.
       transactionBuilder.addOutput(slpData, 0)
@@ -282,7 +297,9 @@ class SLP {
   // Broadcast the SLP transaction to the BCH network.
   async broadcastTokenTx (hex) {
     try {
-      const txidStr = await this.bchjs.RawTransactions.sendRawTransaction([hex])
+      const txidStr = await this.bchjs.RawTransactions.sendRawTransaction([
+        hex
+      ])
       wlogger.info(`Transaction ID: ${txidStr}`)
 
       return txidStr

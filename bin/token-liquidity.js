@@ -40,7 +40,7 @@ util.inspect.defaultOptions = {
 const BCH_ADDR1 = config.BCH_ADDR
 // const TOKEN_ID = config.TOKEN_ID
 
-const FIVE_MINUTES = 60000 * 5
+// const FIVE_MINUTES = 60000 * 5
 let timerHandle
 
 let bchBalance
@@ -112,7 +112,7 @@ async function processingLoop (seenTxs) {
     }
 
     const newTxids = await lib.detectNewTxs(obj)
-    // console.log(`retObj: ${JSON.stringify(retObj, null, 2)}`)
+    console.log(`newTxids: ${JSON.stringify(newTxids, null, 2)}`)
 
     // If there are no new transactions, exit.
     if (newTxids.length === 0) {
@@ -146,8 +146,8 @@ async function processingLoop (seenTxs) {
       }
 
       // TODO: Instead of calling processTx(), call p-retry so that it will
-      // retry processTx() several times if it errors out.
-      const result = await lib.processTx(obj)
+      // Retry processTx() several times if it errors out.
+      const result = await lib.pRetryProcessTx(obj)
       console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
       // Update the app balances. This temporarily updates the app balances until
@@ -161,7 +161,7 @@ async function processingLoop (seenTxs) {
       // Sleep for 5 minutes to give Blockbook time to process the last transaction.
       // TODO: This is a really bad way to do it. This part should be able to be
       // eliminated once the retry code is implemented.
-      await waitForBlockbook(seenTxs)
+      // await waitForBlockbook(seenTxs)
     }
   } catch (err) {
     wlogger.error(`Error in token-liquidity.js.`, err)
@@ -172,7 +172,7 @@ async function processingLoop (seenTxs) {
 
 // Sleep for 5 minutes to give Blockbook time to process the last transaction.
 // Disables the processing loop while it waits.
-async function waitForBlockbook (seenTxs) {
+/* async function waitForBlockbook (seenTxs) {
   const now = new Date()
   wlogger.info(
     `${
@@ -192,6 +192,7 @@ async function waitForBlockbook (seenTxs) {
 function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
+*/
 
 module.exports = {
   startTokenLiquidity

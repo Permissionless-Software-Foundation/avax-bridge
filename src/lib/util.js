@@ -66,7 +66,6 @@ class TLUtils {
   openWallet () {
     try {
       let walletInfo
-
       if (config.NETWORK === 'testnet') {
         walletInfo = require(`${__dirname}/../../wallet-test.json`)
       } else {
@@ -76,9 +75,7 @@ class TLUtils {
 
       return walletInfo
     } catch (err) {
-      return {
-        error: `wallet file not found`
-      }
+      throw new Error(`wallet file not found`)
     }
   }
 }
