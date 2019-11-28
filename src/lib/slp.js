@@ -119,11 +119,11 @@ class SLP {
       // console.log(`walletInfo: ${JSON.stringify(walletInfo, null, 2)}`)
 
       const mnemonic = walletInfo.mnemonic
-      // // console.log(`mnemonic: ${JSON.stringify(mnemonic, null, 2)}`)
+      // console.log(`mnemonic: ${JSON.stringify(mnemonic, null, 2)}`)
 
       // root seed buffer
       const rootSeed = await this.bchjs.Mnemonic.toSeed(mnemonic)
-      //console.log(`rootSeed: ${JSON.stringify(rootSeed, null, 2)}`)
+      // console.log(`rootSeed: ${JSON.stringify(rootSeed, null, 2)}`)
 
       // master HDNode
       let masterHDNode
@@ -145,22 +145,20 @@ class SLP {
       // console.log(`keyPair: ${JSON.stringify(keyPair, null, 2)}`)
 
       // get the cash address
-      const cashAddress = 'bchtest:qz4qnxcxwvmacgye8wlakhz0835x0w3vtvaga95c09' // this.bchjs.HDNode.toCashAddress(change)
+      const cashAddress = this.bchjs.HDNode.toCashAddress(change)
       const slpAddress = this.bchjs.HDNode.toSLPAddress(change)
-      //console.log(`cashAddress to get utxus: ${JSON.stringify(cashAddress, null, 2)}`)
+      // console.log(`cashAddress to get utxus: ${JSON.stringify(cashAddress, null, 2)}`)
       // console.log(`slpAddress : ${JSON.stringify(slpAddress, null, 2)}`)
 
       // Get UTXOs held by this address.
-      const utxos2 = await this.bchjs.Blockbook.utxo(cashAddress)
-      const utxos = utxos2.filter(utxo => utxo.vout > 0)
+      const utxosFromAddr = await this.bchjs.Blockbook.utxo(cashAddress)
+      const utxos = utxosFromAddr.filter(utxo => utxo.vout > 0)
       // console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
 
       if (utxos.length === 0) throw new Error('No UTXOs to spend! Exiting.')
 
       // Identify the SLP token UTXOs.
-      //  let tokenUtxos = await this.bchjs.SLP.Utils.tokenUtxoDetails(utxos)
-      // Get tokens utxos details
-      let tokenUtxos = await this.getTokenUtxoDetails(utxos)
+      let tokenUtxos = await this.bchjs.SLP.Utils.tokenUtxoDetails(utxos)
       // console.log(`tokenUtxos: ${JSON.stringify(tokenUtxos, null, 2)}`)
 
       // Filter out the non-SLP token UTXOs.
@@ -313,33 +311,6 @@ class SLP {
       wlogger.error(`Error in slp.js/broadcastTokenTx()`)
       throw err
     }
-  }
-  /*
-    This function breaks the utxos array in pieces of 20 spaces
-    and obtains the tokenUtxoDetails.
-    The function tokenUtxoDetails doesn't accept arrays with 20 spaces in size
-   */
-  async getTokenUtxoDetails (arr) {
-    const hunk = 20
-    const aux = arr.length / hunk // Number of divisions
-    let arrayAux = []
-    // For array length < 20
-    if (arr.length <= hunk) {
-      arrayAux = await this.bchjs.SLP.Utils.tokenUtxoDetails(arr)
-      return arrayAux
-    }
-    // For array length > 20
-
-    for (let i = 0; i < aux - 1; i++) {
-      const tokUtxos = await this.bchjs.SLP.Utils.tokenUtxoDetails(arr.slice(i * hunk, hunk + (i * hunk)))
-      arrayAux = arrayAux.concat(tokUtxos)
-    }
-
-    if (arrayAux.length < arr.length) {
-      const tokUtxos = await this.bchjs.SLP.Utils.tokenUtxoDetails(arr.slice(arrayAux.length, arr.length))
-      arrayAux = arrayAux.concat(tokUtxos)
-    }
-    return arrayAux
   }
 }
 
