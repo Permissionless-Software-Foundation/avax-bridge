@@ -173,6 +173,8 @@ class TokenLiquidity {
           config.SLP_ADDR,
           isTokenTx
         )
+        //console.log(`tokenConfig: ${JSON.stringify(tokenConfig, null, 2)}`)
+
         const tokenTXID = await slp.broadcastTokenTx(tokenConfig)
         wlogger.info(`Newly recieved tokens sent to 245 derivation path: ${tokenTXID}`)
 
@@ -209,14 +211,16 @@ class TokenLiquidity {
         wlogger.info(`New token balance: ${newTokenBalance}`)
 
         // Send Tokens
-        console.log(`Create token info => userAddr : ${userAddr}
-                    tokensOut: ${retObj.tokensOut}`)
+        //console.log(`Create token info => userAddr : ${userAddr}
+        //            tokensOut: ${retObj.tokensOut}`)
         const tokenConfig = await slp.createTokenTx(
           userAddr,
           retObj.tokensOut
         )
+        //console.log(`tokenConfig: ${JSON.stringify(tokenConfig, null, 2)}`)
 
-        await slp.broadcastTokenTx(tokenConfig)
+        const boradcast = await slp.broadcastTokenTx(tokenConfig)
+        //console.log(`boradcast: ${JSON.stringify(boradcast, null, 2)}`)
       }
 
       const retObj = {

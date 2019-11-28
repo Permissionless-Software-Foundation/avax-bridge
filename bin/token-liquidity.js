@@ -144,7 +144,7 @@ async function processingLoop (seenTxs) {
         bchBalance,
         tokenBalance
       }
-
+      
       // TODO: Instead of calling processTx(), call p-retry so that it will
       // Retry processTx() several times if it errors out.
       const result = await lib.pRetryProcessTx(obj)
