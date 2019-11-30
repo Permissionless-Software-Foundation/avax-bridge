@@ -31,3 +31,19 @@ If no new transactions are found, the loop retrieves its balances from an indexe
 If a new transaction is found, it is added to the `seenTxs` object, and then the TX is added to a processing queue. The processing queue will try to process the transaction several times until it succeeds. (*TODO*)
 
 The `token-liquidity.js/processTx()` function processes the transaction. At a high level, the purpose of this function is to send tokens if it recieves BCH, or to send BCH if it recieves tokens. The exchange rate is determined by a mathematical function.
+
+### Token Handling
+The handling of tokens within the app is a little different than most SLP token-aware wallets.
+This [BIP44 standard](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki) references this [SLP44 document](https://github.com/satoshilabs/slips/blob/master/slip-0044.md) which shows the standard derivation paths that cryptocurrencies use. 145 is the official derivation path for BCH, and 245 is the official derivation path for SLP tokens.
+
+To give context, here are several common wallets implements (or not) these standards and derivations:
+
+Badger Wallet uses a two-address system where it tries to keep BCH on the 145 address and tokens on the 245 address.
+
+The slp-cli-wallet, as well as Electron Cash SLP wallet, simply puts all BCH and tokens on the 245 path. This is simpler as the 245 derivation path is new. There are no legacy wallets using it. There is no reason for a wallet to use it unless it is 'token aware'. There is no danger of burning SLP tokens if everything stays on the 245 path. Putting everything on one path greatly simplifies the burdens on developers and reduces bugs.
+
+Since the token-liquidity apps has a custom wallet that is only used by the app, we can bend the rules a little bit to make the design easier to debug.
+
+All transactions, both BCH and tokens, should be sent to the wallets primary address on the 145 path. After a transaction has been processed where tokens were recieved, the app moves the tokens to an address on its 245 path. This keeps tokens and BCH on separate addresses.
+
+When sending tokens however, the app needs a little of BCH to send transactions. For now, the app expects a little BCH to be present on the 245 path to pay for transactions. This is a short cut. **TODO** What the app should do, is use BCH on the 145 to pay for the transaction, while spending the SLP UTXOs on the 245 path.

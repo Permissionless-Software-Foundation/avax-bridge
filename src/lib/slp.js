@@ -44,7 +44,9 @@ class SLP {
       wlogger.debug(`token balance: `, result)
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
-      if (result === 'No balance for this address' || result.length === 0) { return 0 }
+      if (result === 'No balance for this address' || result.length === 0) {
+        return 0
+      }
 
       // Get the token information that matches the token-ID for PSF tokens.
       let tokenInfo = result.find(
@@ -77,8 +79,9 @@ class SLP {
       return result
     } catch (err) {
       // This catch will activate on non-token txs.
+      // Leave this commented out.
       // wlogger.error(`Error in slp.js/txDetails()`)
-      wlogger.debug(`Not a token tx`, err)
+      // wlogger.debug(`Not a token tx`, err)
       throw err
     }
   }
@@ -110,6 +113,9 @@ class SLP {
     }
   }
 
+  // Craft a SLP token TX.
+  // Uses the 245 derivation path. Assumes there is a little bit of BCH in the testnet
+  // address to pay for transactions.
   async createTokenTx (addr, qty) {
     try {
       // Open the wallet controlling the tokens
@@ -122,10 +128,15 @@ class SLP {
 
       // master HDNode
       let masterHDNode
-      if (config.NETWORK === `mainnet`) { masterHDNode = bchjs.HDNode.fromSeed(rootSeed) } else masterHDNode = bchjs.HDNode.fromSeed(rootSeed, 'testnet') // Testnet
+      if (config.NETWORK === `mainnet`) {
+        masterHDNode = bchjs.HDNode.fromSeed(rootSeed)
+      } else masterHDNode = bchjs.HDNode.fromSeed(rootSeed, 'testnet') // Testnet
 
       // HDNode of BIP44 account
-      const account = this.bchjs.HDNode.derivePath(masterHDNode, "m/44'/245'/0'")
+      const account = this.bchjs.HDNode.derivePath(
+        masterHDNode,
+        "m/44'/245'/0'"
+      )
       const change = this.bchjs.HDNode.derivePath(account, '0/0')
 
       // Generate an EC key pair for signing the transaction.
@@ -139,7 +150,7 @@ class SLP {
       const utxos = await this.bchjs.Blockbook.utxo(cashAddress)
       // console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
 
-      if (utxos.length === 0) throw new Error('No UTXOs to spend! Exiting.')
+      if (utxos.length === 0) throw new Error('No token UTXOs to spend! Exiting.')
 
       // Identify the SLP token UTXOs.
       let tokenUtxos = await this.bchjs.SLP.Utils.tokenUtxoDetails(utxos)
@@ -170,7 +181,7 @@ class SLP {
       bchUtxo.satoshis = Number(bchUtxo.value)
 
       // Bail out if no token UTXOs are found.
-      if (tokenUtxos.length === 0) throw new Error(`No token UTXOs are available!`)
+      if (tokenUtxos.length === 0) { throw new Error(`No token UTXOs are available!`) }
 
       // Generate the OP_RETURN code.
       const slpSendObj = this.bchjs.SLP.TokenType1.generateSendOpReturn(
