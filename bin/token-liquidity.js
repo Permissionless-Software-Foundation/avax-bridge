@@ -176,7 +176,7 @@ async function waitForBlockbook (seenTxs) {
   const now = new Date()
   wlogger.info(
     `${
-      now.toLocaleString
+      now.toLocaleString()
     }: Waiting 5 minutes before processing next transaction...`
   )
 
