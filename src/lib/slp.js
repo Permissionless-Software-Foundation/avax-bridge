@@ -79,8 +79,9 @@ class SLP {
       return result
     } catch (err) {
       // This catch will activate on non-token txs.
+      // Leave this commented out.
       // wlogger.error(`Error in slp.js/txDetails()`)
-      wlogger.debug(`Not a token tx`, err)
+      // wlogger.debug(`Not a token tx`, err)
       throw err
     }
   }
@@ -112,18 +113,18 @@ class SLP {
     }
   }
 
+  // Craft a SLP token TX.
+  // Uses the 245 derivation path. Assumes there is a little bit of BCH in the testnet
+  // address to pay for transactions.
   async createTokenTx (addr, qty) {
     try {
       // Open the wallet controlling the tokens
       const walletInfo = tlUtils.openWallet()
-      // console.log(`walletInfo: ${JSON.stringify(walletInfo, null, 2)}`)
 
       const mnemonic = walletInfo.mnemonic
-      // console.log(`mnemonic: ${JSON.stringify(mnemonic, null, 2)}`)
 
       // root seed buffer
       const rootSeed = await this.bchjs.Mnemonic.toSeed(mnemonic)
-      // console.log(`rootSeed: ${JSON.stringify(rootSeed, null, 2)}`)
 
       // master HDNode
       let masterHDNode
@@ -134,32 +135,27 @@ class SLP {
       // HDNode of BIP44 account
       const account = this.bchjs.HDNode.derivePath(
         masterHDNode,
-        "m/44'/145'/0'"
+        "m/44'/245'/0'"
       )
-      // console.log(`account: ${JSON.stringify(account, null, 2)}`)
       const change = this.bchjs.HDNode.derivePath(account, '0/0')
-      // console.log(`change: ${JSON.stringify(change, null, 2)}`)
 
       // Generate an EC key pair for signing the transaction.
       const keyPair = this.bchjs.HDNode.toKeyPair(change)
-      // console.log(`keyPair: ${JSON.stringify(keyPair, null, 2)}`)
 
       // get the cash address
       const cashAddress = this.bchjs.HDNode.toCashAddress(change)
       const slpAddress = this.bchjs.HDNode.toSLPAddress(change)
-      // console.log(`cashAddress to get utxus: ${JSON.stringify(cashAddress, null, 2)}`)
-      // console.log(`slpAddress : ${JSON.stringify(slpAddress, null, 2)}`)
+      console.log(`cashAddress: ${JSON.stringify(cashAddress, null, 2)}`)
 
       // Get UTXOs held by this address.
-      const utxosFromAddr = await this.bchjs.Blockbook.utxo(cashAddress)
-      const utxos = utxosFromAddr.filter(utxo => utxo.vout > 0)
-      // console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
+      const utxos = await this.bchjs.Blockbook.utxo(cashAddress)
+      console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
 
-      if (utxos.length === 0) throw new Error('No UTXOs to spend! Exiting.')
+      if (utxos.length === 0) throw new Error('No token UTXOs to spend! Exiting.')
 
       // Identify the SLP token UTXOs.
       let tokenUtxos = await this.bchjs.SLP.Utils.tokenUtxoDetails(utxos)
-      // console.log(`tokenUtxos: ${JSON.stringify(tokenUtxos, null, 2)}`)
+      console.log(`tokenUtxos: ${JSON.stringify(tokenUtxos, null, 2)}`)
 
       // Filter out the non-SLP token UTXOs.
       const bchUtxos = utxos.filter((utxo, index) => {
@@ -171,6 +167,7 @@ class SLP {
       if (bchUtxos.length === 0) {
         throw new Error(`Wallet does not have a BCH UTXO to pay miner fees.`)
       }
+
       // Filter out the token UTXOs that match the user-provided token ID.
       tokenUtxos = tokenUtxos.filter((utxo, index) => {
         if (utxo && utxo.tokenId === config.SLP_TOKEN_ID) return true
@@ -186,18 +183,13 @@ class SLP {
 
       // Bail out if no token UTXOs are found.
       if (tokenUtxos.length === 0) { throw new Error(`No token UTXOs are available!`) }
-
       // Generate the OP_RETURN code.
-      // console.log(`qty: ${JSON.stringify(qty, null, 2)}`)
-
       const slpSendObj = this.bchjs.SLP.TokenType1.generateSendOpReturn(
         tokenUtxos,
         qty
       )
-      // console.log(`slpSendObj: ${slpSendObj}`)
-      // console.log(`slpOutputs: ${slpSendObj.outputs}`)
       const slpData = this.bchjs.Script.encode(slpSendObj.script)
-      // console.log(`slpData: ${slpData}`)
+      // console.log(`slpOutputs: ${slpSendObj.outputs}`)
 
       // BEGIN transaction construction.
 
@@ -301,9 +293,7 @@ class SLP {
   // Broadcast the SLP transaction to the BCH network.
   async broadcastTokenTx (hex) {
     try {
-      const txidStr = await this.bchjs.RawTransactions.sendRawTransaction([
-        hex
-      ])
+      const txidStr = await this.bchjs.RawTransactions.sendRawTransaction([hex])
       wlogger.info(`Transaction ID: ${txidStr}`)
 
       return txidStr

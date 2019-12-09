@@ -8,9 +8,6 @@ const collect = require('collect.js')
 
 const config = require('../../config')
 
-// p-retry library
-const pRetry = require('p-retry')
-
 // App utility functions library.
 const TLUtils = require('./util')
 const tlUtil = new TLUtils()
@@ -41,6 +38,9 @@ const BCH_ADDR1 = config.BCH_ADDR
 const TOKENS_QTY_ORIGINAL = config.TOKENS_QTY_ORIGINAL
 const BCH_QTY_ORIGINAL = config.BCH_QTY_ORIGINAL
 
+// p-retry library
+const pRetry = require('p-retry')
+
 const seenTxs = [] // Track processed TXIDs
 let _this
 
@@ -48,6 +48,7 @@ class TokenLiquidity {
   constructor () {
     _this = this
     _this.objProcessTx = {}
+
     this.slp = slp
     this.bch = bch
     this.txs = txs
@@ -173,8 +174,6 @@ class TokenLiquidity {
           config.SLP_ADDR,
           isTokenTx
         )
-        //console.log(`tokenConfig: ${JSON.stringify(tokenConfig, null, 2)}`)
-
         const tokenTXID = await slp.broadcastTokenTx(tokenConfig)
         wlogger.info(`Newly recieved tokens sent to 245 derivation path: ${tokenTXID}`)
 
@@ -209,18 +208,14 @@ class TokenLiquidity {
         wlogger.debug(`retObj: ${util.inspect(retObj)}`)
         wlogger.info(`New BCH balance: ${newBchBalance}`)
         wlogger.info(`New token balance: ${newTokenBalance}`)
-
+        console.log('retObj.tokensOut', retObj.tokensOut)
         // Send Tokens
-        //console.log(`Create token info => userAddr : ${userAddr}
-        //            tokensOut: ${retObj.tokensOut}`)
         const tokenConfig = await slp.createTokenTx(
           userAddr,
           retObj.tokensOut
         )
-        //console.log(`tokenConfig: ${JSON.stringify(tokenConfig, null, 2)}`)
 
-        const boradcast = await slp.broadcastTokenTx(tokenConfig)
-        //console.log(`boradcast: ${JSON.stringify(boradcast, null, 2)}`)
+        await slp.broadcastTokenTx(tokenConfig)
       }
 
       const retObj = {
@@ -554,11 +549,13 @@ class TokenLiquidity {
     // This because the function that executes the p-retry library...
     // ...cannot pass attributes as parameters
     _this.setObjProcessTx(obj)
+    if (!obj) throw new Error('Error in "pRetryProcessTx" functions')
     try {
       const result = await pRetry(_this.tryProcessTx, {
         onFailedAttempt: async () => {
           //   failed attempt.
-          await _this.sleep(60000 * 5) // Sleep for 5 minutes
+          console.log('P-retry error')
+          await _this.sleep(60000 * 2) // Sleep for 2 minutes
         },
         retries: 5 // Retry 5 times
       })

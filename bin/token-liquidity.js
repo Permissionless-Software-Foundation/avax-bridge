@@ -40,7 +40,7 @@ util.inspect.defaultOptions = {
 const BCH_ADDR1 = config.BCH_ADDR
 // const TOKEN_ID = config.TOKEN_ID
 
-// const FIVE_MINUTES = 60000 * 5
+const FIVE_MINUTES = 60000 * 5
 let timerHandle
 
 let bchBalance
@@ -112,7 +112,7 @@ async function processingLoop (seenTxs) {
     }
 
     const newTxids = await lib.detectNewTxs(obj)
-    console.log(`newTxids: ${JSON.stringify(newTxids, null, 2)}`)
+    // console.log(`retObj: ${JSON.stringify(retObj, null, 2)}`)
 
     // If there are no new transactions, exit.
     if (newTxids.length === 0) {
@@ -144,9 +144,10 @@ async function processingLoop (seenTxs) {
         bchBalance,
         tokenBalance
       }
-      
+
       // TODO: Instead of calling processTx(), call p-retry so that it will
-      // Retry processTx() several times if it errors out.
+      // retry processTx() several times if it errors out.
+      console.log(obj)
       const result = await lib.pRetryProcessTx(obj)
       console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
@@ -176,7 +177,7 @@ async function processingLoop (seenTxs) {
   const now = new Date()
   wlogger.info(
     `${
-      now.toLocaleString
+      now.toLocaleString()
     }: Waiting 5 minutes before processing next transaction...`
   )
 
@@ -193,7 +194,6 @@ function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 */
-
 module.exports = {
   startTokenLiquidity
 }

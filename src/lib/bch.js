@@ -131,6 +131,7 @@ class BCH {
           // Note: Assuming addresses[] only has 1 element.
           // Not sure how there can be multiple addresses if the value is not an array.
           let address = addresses[0] // Legacy address
+          wlogger.debug(`address: `, address)
           address = this.BITBOX.Address.toCashAddress(address)
 
           if (address === addr) return tlUtils.round8(value / SATS_PER_BCH)

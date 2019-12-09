@@ -58,9 +58,14 @@ const confs = [
     'confirmations': 45937
   }
 ]
+const processTx = {
+  txid: '14df82e3ec54fa0227531309f7189ed695bafad6f5062407d3a528fbeddc4a09',
+  bchBalance: 12,
+  tokenBalance: 100 }
 
 module.exports = {
   knownTxids,
   addrInfo,
-  confs
+  confs,
+  processTx
 }
