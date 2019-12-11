@@ -20,8 +20,8 @@ const config = {}
 
 if (RESTAPI === 'bchjs') {
   config.BCHLIB = BCHJS.BitboxShim()
-  config.MAINNET_REST = `https://mainnet.bchjs.cash/v3/`
-  config.TESTNET_REST = `https://testnet.bchjs.cash/v3/`
+  config.MAINNET_REST = `https://api.bchjs.cash/v3/`
+  config.TESTNET_REST = `https://tapi.bchjs.cash/v3/`
   config.RESTAPI = 'bchjs'
 }
 
