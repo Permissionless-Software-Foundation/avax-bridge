@@ -38,19 +38,28 @@ const BCH_ADDR1 = config.BCH_ADDR
 const TOKENS_QTY_ORIGINAL = config.TOKENS_QTY_ORIGINAL
 const BCH_QTY_ORIGINAL = config.BCH_QTY_ORIGINAL
 
+// p-retry library
+const pRetry = require('p-retry')
+
 const seenTxs = [] // Track processed TXIDs
 let _this
 
 class TokenLiquidity {
   constructor () {
     _this = this
+    _this.objProcessTx = {}
 
     this.slp = slp
     this.bch = bch
     this.txs = txs
     this.tlUtil = tlUtil
   }
-
+  async getObjProcessTx () {
+    return _this.objProcessTx
+  }
+  async setObjProcessTx (obj) {
+    _this.objProcessTx = obj
+  }
   // seenTxs = array of txs that have already been processed.
   // curTxs = Gets a list of transactions associated with the address.
   // diffTxs = diff seenTxs from curTxs
@@ -199,7 +208,7 @@ class TokenLiquidity {
         wlogger.debug(`retObj: ${util.inspect(retObj)}`)
         wlogger.info(`New BCH balance: ${newBchBalance}`)
         wlogger.info(`New token balance: ${newTokenBalance}`)
-
+        console.log('retObj.tokensOut', retObj.tokensOut)
         // Send Tokens
         const tokenConfig = await slp.createTokenTx(
           userAddr,
@@ -533,6 +542,45 @@ class TokenLiquidity {
     } catch (err) {
       wlogger.error(`Error in token-liquidity.js/getBlockchainBalances().`)
       throw err
+    }
+  }
+  async pRetryProcessTx (obj) {
+    // Update global var with obj
+    // This because the function that executes the p-retry library...
+    // ...cannot pass attributes as parameters
+    _this.setObjProcessTx(obj)
+    if (!obj) throw new Error('Error in "pRetryProcessTx" functions')
+    try {
+      const result = await pRetry(_this.tryProcessTx, {
+        onFailedAttempt: async () => {
+          //   failed attempt.
+          console.log('P-retry error')
+          await _this.sleep(60000 * 2) // Sleep for 2 minutes
+        },
+        retries: 5 // Retry 5 times
+      })
+      _this.setObjProcessTx({})
+      return result
+    } catch (error) {
+      // console.log('ERROR from pRetryProcessTx function', error)
+      return error
+      // console.log(error)
+    }
+  }
+  sleep (ms) {
+    return new Promise(resolve => setTimeout(resolve, ms))
+  }
+  // Function called by p-retry library
+  async tryProcessTx () {
+    console.log(`Trying Process Tx`)
+    const obj = await _this.getObjProcessTx()
+    try {
+      const result = await _this.processTx(obj)
+      return result
+      // console.log('result', result)
+    } catch (error) {
+      // console.log('ERROR from tryProcessTx function', error)
+      throw error
     }
   }
 }

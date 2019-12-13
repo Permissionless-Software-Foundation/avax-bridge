@@ -145,16 +145,17 @@ class SLP {
       // get the cash address
       const cashAddress = this.bchjs.HDNode.toCashAddress(change)
       const slpAddress = this.bchjs.HDNode.toSLPAddress(change)
+      console.log(`cashAddress: ${JSON.stringify(cashAddress, null, 2)}`)
 
       // Get UTXOs held by this address.
       const utxos = await this.bchjs.Blockbook.utxo(cashAddress)
-      // console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
+      console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
 
       if (utxos.length === 0) throw new Error('No token UTXOs to spend! Exiting.')
 
       // Identify the SLP token UTXOs.
       let tokenUtxos = await this.bchjs.SLP.Utils.tokenUtxoDetails(utxos)
-      // console.log(`tokenUtxos: ${JSON.stringify(tokenUtxos, null, 2)}`)
+      console.log(`tokenUtxos: ${JSON.stringify(tokenUtxos, null, 2)}`)
 
       // Filter out the non-SLP token UTXOs.
       const bchUtxos = utxos.filter((utxo, index) => {

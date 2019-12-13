@@ -76,9 +76,7 @@ class TLUtils {
 
       return walletInfo
     } catch (err) {
-      return {
-        error: `wallet file not found`
-      }
+      throw new Error(`wallet file not found`)
     }
   }
 }

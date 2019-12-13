@@ -54,6 +54,7 @@
     "koa-router": "^7.0.1",
     "koa-static": "^5.0.0",
     "mongoose": "^5.5.4",
+    "p-retry": "^4.2.0",
     "passport-local": "^1.0.0",
     "request": "^2.85.0",
     "request-promise": "^4.2.2",

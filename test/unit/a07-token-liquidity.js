@@ -112,6 +112,36 @@ describe('#token-liquidity', () => {
       ])
     })
   })
+  describe('#pRetryProcessTx function', () => {
+    it('should throw error if parameters are not defined', async () => {
+      try {
+        await lib.pRetryProcessTx()
+      } catch (error) {
+        assert.include(error.message, `Error in "pRetryProcessTx" functions`)
+      }
+    })
+    it('Should return object', async () => {
+      console.log('init test')
+      const obj = {
+        txid: '14df82e3ec54fa0227531309f7189ed695bafad6f5062407d3a528fbeddc4a09',
+        bchBalance: 12.01044695,
+        tokenBalance: 1 }
+      sandbox
+        .stub(lib, 'processTx')
+        .resolves(libMockData.processTx)
+      try {
+        const result = await lib.pRetryProcessTx(obj)
+        assert.hasAllKeys(result, [
+          'txid',
+          'bchBalance',
+          'tokenBalance'
+        ])
+      } catch (error) {
+        console.log(error)
+        // assert.include(error.message, `Error in "pRetryProcessTx" functions`)
+      }
+    })
+  })
 
   // Only run these tests for a unit test.
   if (process.env.TEST_ENV === 'unit') {
