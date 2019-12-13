@@ -148,20 +148,20 @@ class SLP {
 
       // Get UTXOs held by this address.
       const utxos = await this.bchjs.Blockbook.utxo(cashAddress)
-      // console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
+      console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
 
       if (utxos.length === 0) throw new Error('No token UTXOs to spend! Exiting.')
 
       // Identify the SLP token UTXOs.
       let tokenUtxos = await this.bchjs.SLP.Utils.tokenUtxoDetails(utxos)
-      // console.log(`tokenUtxos: ${JSON.stringify(tokenUtxos, null, 2)}`)
+      console.log(`tokenUtxos: ${JSON.stringify(tokenUtxos, null, 2)}`)
 
       // Filter out the non-SLP token UTXOs.
       const bchUtxos = utxos.filter((utxo, index) => {
         const tokenUtxo = tokenUtxos[index]
         if (!tokenUtxo) return true
       })
-      // console.log(`bchUTXOs: ${JSON.stringify(bchUtxos, null, 2)}`)
+      console.log(`bchUTXOs: ${JSON.stringify(bchUtxos, null, 2)}`)
 
       if (bchUtxos.length === 0) {
         throw new Error(`Wallet does not have a BCH UTXO to pay miner fees.`)

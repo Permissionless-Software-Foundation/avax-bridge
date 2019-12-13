@@ -18,11 +18,11 @@ if (NETWORK === `mainnet`) {
   configOut = {
     NETWORK: `testnet`,
     port: process.env.PORT || 5100,
-    BCH_ADDR: `bchtest:qz4qnxcxwvmacgye8wlakhz0835x0w3vtvaga95c09`,
-    SLP_ADDR: `slptest:qr8tqc5ucmwrrls5upyc32hhpmjp5a7sxyt4vpush5`,
+    BCH_ADDR: `bchtest:qpz5hez3qmzrnjzdfu03tf7fp6ca0rlsaqvrxmfpyd`,
+    SLP_ADDR: `slptest:qpt74e74f75w6s7cd8r9p5fumvdhqf995g69udvd5n`,
     TOKENS_QTY_ORIGINAL: 5000,
     BCH_QTY_ORIGINAL: 25,
-    SLP_TOKEN_ID: '7ac7f4bb50b019fe0f5c81e3fc13fc0720e130282ea460768cafb49785eb2796'
+    SLP_TOKEN_ID: '155784a206873c98acc09e8dabcccf6abf13c4c14d8662190534138a16bb93ce'
   }
 }
 

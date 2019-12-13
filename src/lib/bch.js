@@ -173,7 +173,7 @@ class BCH {
       wlogger.debug(`Sender Legacy Address: ${SEND_ADDR_LEGACY}`)
       wlogger.debug(`Receiver Legacy Address: ${RECV_ADDR_LEGACY}`)
 
-      const utxos = await this.BITBOX.Address.utxo(config.BCH_ADDR)
+      const utxos = await this.BITBOX.Blockbook.utxo(config.BCH_ADDR)
       const utxo = this.findBiggestUtxo(utxos.utxos)
       wlogger.debug(`selected utxo`, utxo)
       utxo.value = utxo.amount
