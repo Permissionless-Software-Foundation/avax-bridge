@@ -129,7 +129,7 @@ describe('#bch', () => {
           .stub(bch, 'getBCHBalance')
           .resolves(bchMockData.balance)
 
-        sandbox.stub(bch.BITBOX.Address, 'utxo')
+        sandbox.stub(bch.BITBOX.Blockbook, 'utxo')
           .resolves(bchMockData.utxos)
       }
 

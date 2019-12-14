@@ -177,7 +177,7 @@ class BCH {
       // console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
 
       const utxo = this.findBiggestUtxo(utxos)
-      wlogger.debug(`selected utxo`, utxo)
+      // console.log(`selected utxo`, utxo)
       utxo.value = utxo.amount
 
       // instance of transaction builder

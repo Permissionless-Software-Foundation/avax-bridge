@@ -55,17 +55,16 @@ describe('#slp', () => {
         sandbox.stub(slp.bchjs.Util, 'balancesForAddress').resolves([
           {
             tokenId:
-              '7ac7f4bb50b019fe0f5c81e3fc13fc0720e130282ea460768cafb49785eb2796',
-            balance: 1,
-            balanceString: '1',
-            slpAddress: 'slptest:qr8tqc5ucmwrrls5upyc32hhpmjp5a7sxyt4vpush5',
+              '155784a206873c98acc09e8dabcccf6abf13c4c14d8662190534138a16bb93ce',
+            balance: 11999.16572854,
+            slpAddress: 'slptest:qpt74e74f75w6s7cd8r9p5fumvdhqf995g69udvd5n',
             decimalCount: 8
           }
         ])
       }
 
       const tokenBalance = await slp.getTokenBalance()
-      // console.log(`tokenBalance: ${util.inspect(tokenBalance)}`)
+      // console.log(`tokenBalance: ${JSON.stringify(tokenBalance, null, 2)}`)
 
       assert.isNumber(tokenBalance)
     })
@@ -181,7 +180,7 @@ describe('#slp', () => {
     it('should return token quantity for a token tx', async () => {
       if (process.env.TEST_ENV === 'unit') {
         slpMockDataCopy.tokenTx.tokenInfo.tokenIdHex =
-          '7ac7f4bb50b019fe0f5c81e3fc13fc0720e130282ea460768cafb49785eb2796'
+          config.SLP_TOKEN_ID
         sandbox.stub(slp, 'txDetails').resolves(slpMockDataCopy.tokenTx)
       }
 
@@ -253,7 +252,9 @@ describe('#slp', () => {
     describe('#broadcastTokenTx', () => {
       it('should broadcast a tx and return the txid', async () => {
         // Mock out dependency.
-        sandbox.stub(slp.bchjs.RawTransactions, 'sendRawTransaction').resolves('txid')
+        sandbox
+          .stub(slp.bchjs.RawTransactions, 'sendRawTransaction')
+          .resolves('txid')
 
         const hex = '0200...'
 

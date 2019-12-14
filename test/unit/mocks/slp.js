@@ -11,6 +11,8 @@ util.inspect.defaultOptions = {
   colors: true
 }
 
+const config = require('../../../config')
+
 const tokenTx = {
   txid: '3f027a0006e28db49cfa24820d1cab67c3591e975791e46af689c319819bf8d0',
   version: 2,
@@ -319,7 +321,7 @@ const tokenUtxos = [
     satoshis: 546,
     utxoType: 'token',
     transactionType: 'send',
-    tokenId: '7ac7f4bb50b019fe0f5c81e3fc13fc0720e130282ea460768cafb49785eb2796',
+    tokenId: config.SLP_TOKEN_ID,
     tokenTicker: 'SLPSDK',
     tokenName: 'SLP SDK example using BITBOX',
     tokenDocumentUrl: 'developer.bitcoin.com',
