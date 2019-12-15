@@ -14,7 +14,7 @@ const nock = require('nock')
 const Transactions = require('../../src/lib/transactions')
 
 const bitboxMock = require('bitbox-mock')
-// const txMockData = require('./mocks/transactions')
+const txMockData = require('./mocks/transactions')
 
 // Used for debugging.
 const util = require('util')
@@ -72,6 +72,44 @@ describe('#transactions', () => {
       assert.isArray(txids.txs)
     })
   })
+
+  describe('#getTxConfirmations', () => {
+    it('should throw an error if input is not an array', async () => {
+      try {
+        const txids = 'bad-data'
+
+        await txs.getTxConfirmations(txids)
+
+        assert.equal(true, false, 'Unexpected result')
+      } catch (err) {
+        assert.include(err.message, 'txids needs to be an array')
+      }
+    })
+
+    it('should get confirmation information about a tx', async () => {
+      // If unit test, use the mocking library instead of live calls.
+      if (process.env.TEST_ENV === 'unit') {
+        sandbox.stub(txs.BITBOX.RawTransactions, 'getRawTransaction').resolves([
+          {
+            txid:
+              '83147001c579d0c3f3150fc733c43af602e44fa157de9bbd74aa0d47062e55f5',
+            confirmations: 55
+          }
+        ])
+      }
+
+      const txids = [
+        '83147001c579d0c3f3150fc733c43af602e44fa157de9bbd74aa0d47062e55f5'
+      ]
+
+      const result = await txs.getTxConfirmations(txids)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.isArray(result)
+      assert.hasAllKeys(result[0], ['txid', 'confirmations'])
+    })
+  })
+
   /*
   describe('getTxConfs', () => {
     it('throws error for non-array input', () => {
@@ -146,23 +184,22 @@ describe('#transactions', () => {
       assert.isArray(result)
     })
   })
+*/
 
   describe('getUserAddr', () => {
     it('should should throw an error for an invalid transaction', async () => {
       try {
         // If unit test, use the mocking library instead of live calls.
         if (process.env.TEST_ENV === 'unit') {
-          // txs.BITBOX = bitboxMock
-          sandbox.stub(txs.BITBOX.Transaction, 'details').throws({
-            error:
-              "parameter 1 must be hexadecimal string (not 'cf1b5d374e171876a625599a489a2a6cdda119fb84b6cff2a226c39e189'). Code:-8"
+          sandbox.stub(txs.BITBOX.Blockbook, 'tx').throws({
+            error: 'txid must be of length 64 (not 59)'
           })
         }
 
         const txid = `cf1b5d374e171876a625599a489a2a6cdda119fb84b6cff2a226c39e189`
 
-        const result = await txs.getUserAddr(txid)
-        console.log(`result: ${util.inspect(result)}`)
+        await txs.getUserAddr(txid)
+        // console.log(`result: ${util.inspect(result)}`)
 
         assert(true, false, 'Unexpected result')
       } catch (err) {
@@ -176,10 +213,12 @@ describe('#transactions', () => {
     it('should return senders cash address', async () => {
       // If unit test, use the mocking library instead of live calls.
       if (process.env.TEST_ENV === 'unit') {
-        txs.BITBOX = bitboxMock
+        sandbox
+          .stub(txs.BITBOX.Blockbook, 'tx')
+          .resolves(txMockData.mockTransactions)
       }
 
-      const txid = `0d457cf1b5d374e171876a625599a489a2a6cdda119fb84b6cff2a226c39e189`
+      const txid = `af30cc46356378cb5f139fb9da301d3b06a50416eb5030e3d397d6c3c027a26d`
 
       const senderAddr = await txs.getUserAddr(txid)
       // console.log(`senderAddr: ${util.inspect(senderAddr)}`)
@@ -187,10 +226,12 @@ describe('#transactions', () => {
       assert.isString(senderAddr)
       assert.equal(
         senderAddr,
-        'bchtest:qqafk2cvztl8yt70v5akaawucwrn94hl2yups7rzfn'
+        'bchtest:qpyrwjq5c8euxyuwyqqdt40qf00dkfw02q6aqhm2wt'
       )
     })
   })
+
+  /*
 
   describe(`only2Conf()`, () => {
     it(`should return true if confirmations are greater than 1`, async () => {

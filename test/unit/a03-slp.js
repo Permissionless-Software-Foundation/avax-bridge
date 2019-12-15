@@ -6,12 +6,7 @@
 
 const assert = require('chai').assert
 const sinon = require('sinon')
-const SLP = require('../../src/lib/slp')
 const nock = require('nock')
-
-// Used for debugging.
-const util = require('util')
-util.inspect.defaultOptions = { depth: 1 }
 
 // Mocking-data
 const slpMockData = require('./mocks/slp')
@@ -24,7 +19,7 @@ const config = require('../../config')
 if (!process.env.APP_ENV) process.env.APP_ENV = 'test'
 if (!process.env.TEST_ENV) process.env.TEST_ENV = 'unit'
 
-// const REST_URL = `https://trest.bitcoin.com/v2/`
+const SLP = require('../../src/lib/slp')
 
 describe('#slp', () => {
   let slp
@@ -57,71 +52,42 @@ describe('#slp', () => {
     it('should get token balance', async () => {
       // If unit test, use the mocking library instead of live calls.
       if (process.env.TEST_ENV === 'unit') {
-        sandbox.stub(slp.slpsdk.Util, 'balancesForAddress').resolves([
+        sandbox.stub(slp.bchjs.Util, 'balancesForAddress').resolves([
           {
             tokenId:
-              '435fdbf1beeacbbf4ac0f7acccbee0b98d2a6a8b9a9c52af562d4029f9192e92',
-            balance: 1,
-            balanceString: '1',
-            slpAddress: 'slptest:qz80hhc6eucgauzmcfjzglccspdqfpl0fqx7x3lshs',
+              '155784a206873c98acc09e8dabcccf6abf13c4c14d8662190534138a16bb93ce',
+            balance: 11999.16572854,
+            slpAddress: 'slptest:qpt74e74f75w6s7cd8r9p5fumvdhqf995g69udvd5n',
             decimalCount: 8
           }
         ])
       }
 
-      const addr = 'slptest:qz80hhc6eucgauzmcfjzglccspdqfpl0fqx7x3lshs'
-
-      const tokenBalance = await slp.getTokenBalance(addr)
-      // console.log(`tokenBalance: ${util.inspect(tokenBalance)}`)
+      const tokenBalance = await slp.getTokenBalance()
+      // console.log(`tokenBalance: ${JSON.stringify(tokenBalance, null, 2)}`)
 
       assert.isNumber(tokenBalance)
     })
 
-    it(`should throw an error for an invalid address`, async () => {
-      if (process.env.TEST_ENV === 'unit') {
-        // slp.slpsdk.Util.balancesForAddress = sandbox.throws()
-        sandbox.stub(slp.slpsdk.Util, 'balancesForAddress').throws({
-          error:
-            'Invalid BCH address. Double check your address is valid: slptest:qz4qnxcxwvmacgye8wlakhz0835x0w3vtvxu67aaaa'
-        })
-      }
-
-      try {
-        const addr = 'slptest:qz80hhc6eucgauzfjzglccspdqfpl0fqx7x3lshs'
-
-        await slp.getTokenBalance(addr)
-
-        assert.equal(true, false, 'Unexpected result')
-      } catch (err) {
-        // console.log(`Error obj: ${util.inspect(err)}`)
-
-        assert.include(
-          err.error,
-          'Invalid BCH address',
-          'Error message expected.'
-        )
-      }
-    })
-
-    it('should return 0 on address with zero balance', async () => {
-      if (process.env.TEST_ENV === 'unit') {
+    if (process.env.TEST_ENV === 'unit') {
+      it('should return 0 on address with zero balance', async () => {
         sandbox
-          .stub(slp.slpsdk.Util, 'balancesForAddress')
+          .stub(slp.bchjs.Util, 'balancesForAddress')
           .resolves('No balance for this address')
-      }
 
-      const addr = 'slptest:qzayl9rxxprzst3fnydykx2rt4d746fcqqu0s50c9u'
+        const addr = 'slptest:qzayl9rxxprzst3fnydykx2rt4d746fcqqu0s50c9u'
 
-      const result = await slp.getTokenBalance(addr)
+        const result = await slp.getTokenBalance(addr)
 
-      assert.equal(result, 0)
-    })
+        assert.equal(result, 0)
+      })
+    }
   })
 
   describe('#txDetails', () => {
     it('should return token tx details for a token tx', async () => {
       if (process.env.TEST_ENV === 'unit') {
-        sandbox.stub(slp.slpsdk.Util, 'validateTxid').resolves([{ valid: true }])
+        sandbox.stub(slp.bchjs.Util, 'validateTxid').resolves([{ valid: true }])
 
         const testData = {
           txid:
@@ -154,7 +120,7 @@ describe('#slp', () => {
         // nock(config.TESTNET_REST)
         //   .get(uri => uri.includes('/'))
         //   .reply(200, testData)
-        sandbox.stub(slp.slpsdk.Util, 'txDetails').resolves(testData)
+        sandbox.stub(slp.bchjs.Util, 'txDetails').resolves(testData)
       }
 
       const txid =
@@ -168,7 +134,9 @@ describe('#slp', () => {
 
     it('should return false for non-token tx', async () => {
       if (process.env.TEST_ENV === 'unit') {
-        sandbox.stub(slp.slpsdk.Util, 'validateTxid').resolves([{ valid: false }])
+        sandbox
+          .stub(slp.bchjs.Util, 'validateTxid')
+          .resolves([{ valid: false }])
 
         const testData = {
           txid:
@@ -212,17 +180,17 @@ describe('#slp', () => {
     it('should return token quantity for a token tx', async () => {
       if (process.env.TEST_ENV === 'unit') {
         slpMockDataCopy.tokenTx.tokenInfo.tokenIdHex =
-          '435fdbf1beeacbbf4ac0f7acccbee0b98d2a6a8b9a9c52af562d4029f9192e92'
+          config.SLP_TOKEN_ID
         sandbox.stub(slp, 'txDetails').resolves(slpMockDataCopy.tokenTx)
       }
 
       const txid =
-        'd284e71227ec89f713b964d8eda595be6392bebd2fac46082bc5a9ce6fb7b33e'
+        '02ed1b8882eb356f864a21eb59b7f222f13c36efc230329050f569b5580bf6ce'
 
       const tokenInfo = await slp.tokenTxInfo(txid)
       // console.log(`tokenInfo: ${util.inspect(tokenInfo)}`)
 
-      assert.equal(tokenInfo, 1, 'Validate token transfer')
+      assert.isAbove(tokenInfo, 0, 'Validate token transfer')
     })
 
     it('should return false for a non-token tx', async () => {
@@ -259,21 +227,41 @@ describe('#slp', () => {
   })
 
   describe('#createTokenTx', () => {
-    it('should generate a SLP config object', async () => {
+    it('should generate a transaction hex', async () => {
+      // Mock out dependencies for a unit test.
+      if (process.env.TEST_ENV === 'unit') {
+        sandbox.stub(slp.bchjs.Blockbook, 'utxo').resolves(slpMockData.utxos)
+        sandbox
+          .stub(slp.bchjs.SLP.Utils, 'tokenUtxoDetails')
+          .resolves(slpMockData.tokenUtxos)
+      }
+
       const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
       const qty = 1
 
       const result = await slp.createTokenTx(addr, qty)
       // console.log(`result: ${util.inspect(result)}`)
 
-      assert.hasAllKeys(result, [
-        'fundingAddress',
-        'fundingWif',
-        'tokenReceiverAddress',
-        'bchChangeReceiverAddress',
-        'tokenId',
-        'amount'
-      ])
+      assert.isString(result)
+      assert.equal(result.indexOf('0200'), 0, 'First part of string matches.')
     })
   })
+
+  // Unit tests only.
+  if (process.env.TEST_ENV === 'unit') {
+    describe('#broadcastTokenTx', () => {
+      it('should broadcast a tx and return the txid', async () => {
+        // Mock out dependency.
+        sandbox
+          .stub(slp.bchjs.RawTransactions, 'sendRawTransaction')
+          .resolves('txid')
+
+        const hex = '0200...'
+
+        const result = await slp.broadcastTokenTx(hex)
+
+        assert.equal(result, 'txid')
+      })
+    })
+  }
 })

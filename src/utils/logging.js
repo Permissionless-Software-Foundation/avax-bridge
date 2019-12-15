@@ -25,6 +25,7 @@ transport.on('rotate', function (oldFilename, newFilename) {
   wlogger.info(`Rotating log files`)
 })
 
+// Control the written log files.
 const wlogger = winston.createLogger({
   level: 'debug',
   format: winston.format.json(),
@@ -44,8 +45,8 @@ const wlogger = winston.createLogger({
 if (process.env.TEST_ENV !== 'unit') {
   wlogger.add(new winston.transports.Console({
     format: winston.format.simple(),
-    level: 'verbose'
-    // level: 'debug'
+    // level: 'verbose'
+    level: 'debug'
   }))
 }
 

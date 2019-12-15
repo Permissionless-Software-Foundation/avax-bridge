@@ -13,6 +13,8 @@ const TLUtils = require('../../src/lib/util')
 // const bitboxMock = require('bitbox-mock')
 // const txMockData = require('./mocks/transactions')
 
+const config = require('../../config')
+
 // Used for debugging.
 const util = require('util')
 util.inspect.defaultOptions = { depth: 1 }
@@ -73,7 +75,7 @@ describe('#utils', () => {
         // assert.equal(walletInfo.cashAddress, 'bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pzqf')
         assert.equal(
           walletInfo.cashAddress,
-          'bchtest:qz4qnxcxwvmacgye8wlakhz0835x0w3vtvaga95c09'
+          config.BCH_ADDR
         )
       }
     })

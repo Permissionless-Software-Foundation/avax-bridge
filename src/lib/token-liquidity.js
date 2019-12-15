@@ -4,19 +4,21 @@
 
 'use strict'
 
+const collect = require('collect.js')
+
 const config = require('../../config')
 
 // App utility functions library.
 const TLUtils = require('./util')
 const tlUtil = new TLUtils()
 
-// SLP Token library
-const SLP = require('./slp')
-const slp = new SLP()
-
 // BCH library
 const BCH = require('./bch')
 const bch = new BCH()
+
+// SLP Token library
+const SLP = require('./slp')
+const slp = new SLP()
 
 // Transactions library
 const Transactions = require('./transactions')
@@ -36,14 +38,202 @@ const BCH_ADDR1 = config.BCH_ADDR
 const TOKENS_QTY_ORIGINAL = config.TOKENS_QTY_ORIGINAL
 const BCH_QTY_ORIGINAL = config.BCH_QTY_ORIGINAL
 
+// p-retry library
+const pRetry = require('p-retry')
+
 const seenTxs = [] // Track processed TXIDs
 let _this
 
 class TokenLiquidity {
   constructor () {
     _this = this
+    _this.objProcessTx = {}
+
+    this.slp = slp
+    this.bch = bch
+    this.txs = txs
+    this.tlUtil = tlUtil
+  }
+  async getObjProcessTx () {
+    return _this.objProcessTx
+  }
+  async setObjProcessTx (obj) {
+    _this.objProcessTx = obj
+  }
+  // seenTxs = array of txs that have already been processed.
+  // curTxs = Gets a list of transactions associated with the address.
+  // diffTxs = diff seenTxs from curTxs
+  // filter out all the txs in diffTx that are 0-conf
+  // Add them to the seenTxs array after they've been processed.
+  //  - Add them before processing in case something goes wrong with the processing.
+  // process these txs
+  async detectNewTxs (obj) {
+    try {
+      const { seenTxs } = obj
+
+      // Get the current list of transactions for the apps address.
+      const addrInfo = await this.bch.getBCHBalance(config.BCH_ADDR, false)
+      // console.log(`addrInfo: ${JSON.stringify(addrInfo, null, 2)}`)
+      const curTxs = collect(addrInfo.txids)
+      // console.log(`curTxs: ${JSON.stringify(curTxs, null, 2)}`)
+
+      // Diff the transactions against the list of processed txs.
+      const diffTxs = curTxs.diff(seenTxs)
+      // console.log(`diffTxs: ${JSON.stringify(diffTxs, null, 2)}`)
+
+      // Exit if there are no new transactions.
+      if (diffTxs.items.length === 0) return []
+
+      // Get confirmation info on each transaction.
+      const confs = await this.txs.getTxConfirmations(diffTxs.items)
+      // console.log(`confs: ${JSON.stringify(confs, null, 2)}`)
+
+      // Filter out any zero conf transactions.
+      const newTxs = confs.filter(x => x.confirmations > 0)
+      // console.log(`newTxs: ${JSON.stringify(newTxs, null, 2)}`)
+
+      return newTxs
+    } catch (err) {
+      wlogger.error(`Error in lib/token-liquidity.js/processNewTxs()`)
+      throw err
+    }
   }
 
+  // Processes a single TX, sends tokens or BCH based on the type of transaction.
+  async processTx (inObj) {
+    try {
+      const { txid, bchBalance, tokenBalance } = inObj
+
+      // Data validation
+      if (typeof txid !== 'string') throw new Error(`txid needs to be a string`)
+
+      wlogger.info(`Processing new TXID ${txid}.`)
+
+      const lastTransaction = txid
+
+      // Get the sender's address for this transaction.
+      const userAddr = await txs.getUserAddr(lastTransaction)
+      wlogger.info(`userAddr: ${util.inspect(userAddr)}`)
+
+      // Exit if the userAddr is the same as the bchAddr for this app.
+      // This occurs when the app sends bch or tokens to the user, imediately
+      // after processing the users transaction and then broadcasting the trade.
+      if (userAddr === config.BCH_ADDR) {
+        wlogger.info(
+          `userAddr === app address. Exiting compareLastTransaction()`
+        )
+
+        return inObj
+      }
+
+      // Process new txid.
+      const isTokenTx = await slp.tokenTxInfo(lastTransaction)
+      wlogger.debug(`isTokenTx: ${isTokenTx}`)
+
+      let newTokenBalance = tokenBalance
+      let newBchBalance = bchBalance
+
+      // User sent tokens.
+      if (isTokenTx) {
+        wlogger.info(`${isTokenTx} tokens recieved.`)
+
+        // Exchange tokens for BCH
+        const exchangeObj = {
+          tokenIn: isTokenTx,
+          tokenBalance: Number(tokenBalance),
+          bchOriginalBalance: BCH_QTY_ORIGINAL,
+          tokenOriginalBalance: TOKENS_QTY_ORIGINAL
+        }
+
+        const bchOut = _this.exchangeTokensForBCH(exchangeObj)
+        wlogger.info(
+          `Ready to send ${bchOut} BCH in exchange for ${isTokenTx} tokens`
+        )
+
+        // Update the balances
+        newTokenBalance = tlUtil.round8(
+          exchangeObj.tokenBalance + isTokenTx
+        )
+        newBchBalance = tlUtil.round8(bchBalance - bchOut)
+        wlogger.info(`New BCH balance: ${newBchBalance}`)
+        wlogger.info(`New token balance: ${newTokenBalance}`)
+
+        // Send BCH
+        const obj = {
+          recvAddr: userAddr,
+          satoshisToSend: Math.floor(bchOut * 100000000)
+        }
+        wlogger.debug(`obj.satoshisToSend: ${obj.satoshisToSend}`)
+
+        const hex = await bch.createBchTx(obj)
+        const userBCHTXID = await bch.broadcastBchTx(hex)
+        wlogger.info(`BCH sent to user: ${userBCHTXID}`)
+
+        // Send the tokens to the apps token address on the 245 derivation path.
+        const tokenConfig = await slp.createTokenTx(
+          config.SLP_ADDR,
+          isTokenTx
+        )
+        const tokenTXID = await slp.broadcastTokenTx(tokenConfig)
+        wlogger.info(`Newly recieved tokens sent to 245 derivation path: ${tokenTXID}`)
+
+        // User sent BCH
+      } else {
+        // Get the BCH send amount.
+        const bchQty = await bch.recievedBch(lastTransaction, BCH_ADDR1)
+        wlogger.info(`${bchQty} BCH recieved.`)
+
+        // Exchange BCH for tokens
+        const exchangeObj = {
+          bchIn: Number(bchQty),
+          bchBalance: Number(bchBalance),
+          bchOriginalBalance: BCH_QTY_ORIGINAL,
+          tokenOriginalBalance: TOKENS_QTY_ORIGINAL
+        }
+        const retObj = _this.exchangeBCHForTokens(exchangeObj)
+
+        wlogger.info(
+          `Ready to send ${
+            retObj.tokensOut
+          } tokens in exchange for ${bchQty} BCH`
+        )
+
+        // Calculate the new balances
+        newBchBalance = tlUtil.round8(
+          Number(bchBalance) + exchangeObj.bchIn
+        )
+        newTokenBalance = tlUtil.round8(
+          Number(tokenBalance) - retObj.tokensOut
+        )
+        wlogger.debug(`retObj: ${util.inspect(retObj)}`)
+        wlogger.info(`New BCH balance: ${newBchBalance}`)
+        wlogger.info(`New token balance: ${newTokenBalance}`)
+        console.log('retObj.tokensOut', retObj.tokensOut)
+        // Send Tokens
+        const tokenConfig = await slp.createTokenTx(
+          userAddr,
+          retObj.tokensOut
+        )
+
+        await slp.broadcastTokenTx(tokenConfig)
+      }
+
+      const retObj = {
+        txid,
+        bchBalance: tlUtil.round8(newBchBalance),
+        tokenBalance: tlUtil.round8(newTokenBalance)
+      }
+
+      // Return the newly detected txid.
+      return retObj
+    } catch (err) {
+      wlogger.error(`Error in token-liquidity.js/processTx(${inObj.txid})`)
+      throw err
+    }
+  }
+
+  // DEPRECATED - This is an older version of the processing code. This will
+  // be deleted once the new code is complete.
   // Checks the last TX associated with the BCH address. If it changed, then
   // the program reacts to it. Otherwise it exits.
   // Here is the general flow of this function:
@@ -335,21 +525,62 @@ class TokenLiquidity {
   }
 
   // Retrieve the current BCH and token balances from the blockchain.
-  async getBlockchainBalances (bchAddr) {
+  async getBlockchainBalances () {
     try {
       // Get BCH balance from the blockchain
-      const addressInfo = await bch.getBCHBalance(bchAddr, false)
-      const currentBCHBalance = addressInfo.balance
+      const addressInfo = await bch.getBCHBalance(config.BCH_ADDR, false)
+      const bchBalance = addressInfo.balance
 
-      wlogger.debug(`Blockchain balance: ${currentBCHBalance} BCH`)
+      wlogger.debug(`Blockchain balance: ${bchBalance} BCH`)
+
+      const tokenBalance = await slp.getTokenBalance()
 
       return {
-        bchBalance: currentBCHBalance
-        // tokenBalance: tokenBalance
+        bchBalance,
+        tokenBalance
       }
     } catch (err) {
       wlogger.error(`Error in token-liquidity.js/getBlockchainBalances().`)
       throw err
+    }
+  }
+  async pRetryProcessTx (obj) {
+    // Update global var with obj
+    // This because the function that executes the p-retry library...
+    // ...cannot pass attributes as parameters
+    _this.setObjProcessTx(obj)
+    if (!obj) throw new Error('Error in "pRetryProcessTx" functions')
+    try {
+      const result = await pRetry(_this.tryProcessTx, {
+        onFailedAttempt: async () => {
+          //   failed attempt.
+          console.log('P-retry error')
+          await _this.sleep(60000 * 2) // Sleep for 2 minutes
+        },
+        retries: 5 // Retry 5 times
+      })
+      _this.setObjProcessTx({})
+      return result
+    } catch (error) {
+      // console.log('ERROR from pRetryProcessTx function', error)
+      return error
+      // console.log(error)
+    }
+  }
+  sleep (ms) {
+    return new Promise(resolve => setTimeout(resolve, ms))
+  }
+  // Function called by p-retry library
+  async tryProcessTx () {
+    console.log(`Trying Process Tx`)
+    const obj = await _this.getObjProcessTx()
+    try {
+      const result = await _this.processTx(obj)
+      return result
+      // console.log('result', result)
+    } catch (error) {
+      // console.log('ERROR from tryProcessTx function', error)
+      throw error
     }
   }
 }

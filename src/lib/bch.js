@@ -52,12 +52,16 @@ class BCH {
   // The verbose flag determins if the results are written to the console or not.
   async getBCHBalance (addr, verbose) {
     try {
-      const result = await this.BITBOX.Address.details(addr)
+      // const result = await this.BITBOX.Address.details(addr)
+      const result = await this.BITBOX.Blockbook.balance(addr)
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      // Convert balance to BCH
+      result.balance = this.BITBOX.BitcoinCash.toBitcoinCash(Number(result.balance))
 
       if (verbose) {
         const resultToDisplay = result
-        resultToDisplay.transactions = []
+        resultToDisplay.txids = []
         console.log(resultToDisplay)
       }
 
@@ -127,6 +131,7 @@ class BCH {
           // Note: Assuming addresses[] only has 1 element.
           // Not sure how there can be multiple addresses if the value is not an array.
           let address = addresses[0] // Legacy address
+          wlogger.debug(`address: `, address)
           address = this.BITBOX.Address.toCashAddress(address)
 
           if (address === addr) return tlUtils.round8(value / SATS_PER_BCH)
@@ -168,9 +173,11 @@ class BCH {
       wlogger.debug(`Sender Legacy Address: ${SEND_ADDR_LEGACY}`)
       wlogger.debug(`Receiver Legacy Address: ${RECV_ADDR_LEGACY}`)
 
-      const utxos = await this.BITBOX.Address.utxo(config.BCH_ADDR)
-      const utxo = this.findBiggestUtxo(utxos.utxos)
-      wlogger.debug(`selected utxo`, utxo)
+      const utxos = await this.BITBOX.Blockbook.utxo(config.BCH_ADDR)
+      // console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
+
+      const utxo = this.findBiggestUtxo(utxos)
+      // console.log(`selected utxo`, utxo)
       utxo.value = utxo.amount
 
       // instance of transaction builder

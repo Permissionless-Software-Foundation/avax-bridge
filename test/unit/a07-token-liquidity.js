@@ -12,6 +12,7 @@ const TokenLiquidity = require('../../src/lib/token-liquidity')
 
 // const bitboxMock = require('bitbox-mock')
 // const txMockData = require('./mocks/transactions')
+const libMockData = require('./mocks/token-liquidity-mock')
 
 // Used for debugging.
 const util = require('util')
@@ -84,6 +85,61 @@ describe('#token-liquidity', () => {
       )
       assert.isNumber(result.bch2)
       assert.isNumber(result.token2)
+    })
+  })
+
+  describe('#detectNewTxs', () => {
+    it('should return new txs', async () => {
+      const knownTxids = libMockData.knownTxids
+
+      const obj = {
+        seenTxs: knownTxids.slice(0, -1)
+      }
+
+      // If unit test, use the mocking library instead of live calls.
+      if (process.env.TEST_ENV === 'unit') {
+        sandbox.stub(lib.bch, 'getBCHBalance').resolves(libMockData.addrInfo)
+        sandbox.stub(lib.txs, 'getTxConfirmations').resolves(libMockData.confs)
+      }
+
+      const result = await lib.detectNewTxs(obj)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.isArray(result)
+      assert.hasAllKeys(result[0], [
+        'txid',
+        'confirmations'
+      ])
+    })
+  })
+  describe('#pRetryProcessTx function', () => {
+    it('should throw error if parameters are not defined', async () => {
+      try {
+        await lib.pRetryProcessTx()
+      } catch (error) {
+        assert.include(error.message, `Error in "pRetryProcessTx" functions`)
+      }
+    })
+    it('Should return object', async () => {
+      console.log('init test')
+      const obj = {
+        txid: '14df82e3ec54fa0227531309f7189ed695bafad6f5062407d3a528fbeddc4a09',
+        bchBalance: 12.01044695,
+        tokenBalance: 1 }
+      sandbox
+        .stub(lib, 'processTx')
+        .resolves(libMockData.processTx)
+      try {
+        const result = await lib.pRetryProcessTx(obj)
+        assert.hasAllKeys(result, [
+          'txid',
+          'bchBalance',
+          'tokenBalance'
+        ])
+      } catch (error) {
+        console.log(error)
+        // assert.include(error.message, `Error in "pRetryProcessTx" functions`)
+      }
     })
   })
 
