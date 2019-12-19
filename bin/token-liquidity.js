@@ -41,6 +41,7 @@ const BCH_ADDR1 = config.BCH_ADDR
 // const TOKEN_ID = config.TOKEN_ID
 
 const FIVE_MINUTES = 60000 * 5
+const CONSOLIDATE_INTERVAL = 60000 * 10
 let timerHandle
 
 let bchBalance
@@ -100,6 +101,10 @@ async function startTokenLiquidity () {
   timerHandle = setInterval(async function () {
     await processingLoop(seenTxs)
   }, 60000 * 2)
+  // Interval to consolidate UTXOs 
+  timerHandle = setInterval(async function () {
+    await bch.consolidateUtxos()
+  }, CONSOLIDATE_INTERVAL)
 }
 
 async function processingLoop (seenTxs) {
