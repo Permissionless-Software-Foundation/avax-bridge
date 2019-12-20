@@ -137,19 +137,34 @@ class SLP {
         masterHDNode,
         "m/44'/245'/0'"
       )
+      // Account path 145 to pay for bch miner fees
+      const accountBCH = this.bchjs.HDNode.derivePath(
+        masterHDNode,
+        "m/44'/145'/0'"
+      )
       const change = this.bchjs.HDNode.derivePath(account, '0/0')
-
+      const changeBCH = this.bchjs.HDNode.derivePath(accountBCH, '0/0')
       // Generate an EC key pair for signing the transaction.
       const keyPair = this.bchjs.HDNode.toKeyPair(change)
+
+      // Generate an EC key pair for signing the transaction.
+      const keyPairBCH = this.bchjs.HDNode.toKeyPair(changeBCH)
 
       // get the cash address
       const cashAddress = this.bchjs.HDNode.toCashAddress(change)
       const slpAddress = this.bchjs.HDNode.toSLPAddress(change)
       // console.log(`cashAddress: ${JSON.stringify(cashAddress, null, 2)}`)
 
-      // Get UTXOs held by this address.
+      const cashAddressBCH = this.bchjs.HDNode.toCashAddress(changeBCH)
+      // console.log(`cashAddressBCH: ${JSON.stringify(cashAddressBCH, null, 2)}`)
+
+      // Get UTXOs held by this address. Derivation 245
       const utxos = await this.bchjs.Blockbook.utxo(cashAddress)
       // console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
+
+      // Utxos from address derivation 145
+      const utxosBCH = await this.bchjs.Blockbook.utxo(cashAddressBCH)
+      // console.log(`utxosBCH: ${JSON.stringify(utxosBCH, null, 2)}`)
 
       if (utxos.length === 0) throw new Error('No token UTXOs to spend! Exiting.')
 
@@ -157,14 +172,7 @@ class SLP {
       let tokenUtxos = await this.bchjs.SLP.Utils.tokenUtxoDetails(utxos)
       // console.log(`tokenUtxos: ${JSON.stringify(tokenUtxos, null, 2)}`)
 
-      // Filter out the non-SLP token UTXOs.
-      const bchUtxos = utxos.filter((utxo, index) => {
-        const tokenUtxo = tokenUtxos[index]
-        if (!tokenUtxo) return true
-      })
-      // console.log(`bchUTXOs: ${JSON.stringify(bchUtxos, null, 2)}`)
-
-      if (bchUtxos.length === 0) {
+      if (utxosBCH.length === 0) {
         throw new Error(`Wallet does not have a BCH UTXO to pay miner fees.`)
       }
 
@@ -174,8 +182,8 @@ class SLP {
       })
       // console.log(`tokenUtxos: ${JSON.stringify(tokenUtxos, null, 2)}`)
 
-      // Choose a UTXO to pay for the transaction.
-      const bchUtxo = bch.findBiggestUtxo(bchUtxos)
+      // Choose a BCH sUTXO to pay for the transaction.
+      const bchUtxo = bch.findBiggestUtxo(utxosBCH)
       // console.log(`bchUtxo: ${JSON.stringify(bchUtxo, null, 2)}`)
 
       // Add Insight property that is missing from Blockbook.
@@ -248,7 +256,7 @@ class SLP {
 
       // Last output: send the BCH change back to the wallet.
       transactionBuilder.addOutput(
-        this.bchjs.Address.toLegacyAddress(cashAddress),
+        this.bchjs.Address.toLegacyAddress(cashAddressBCH),
         remainder
       )
 
@@ -256,7 +264,7 @@ class SLP {
       let redeemScript
       transactionBuilder.sign(
         0,
-        keyPair,
+        keyPairBCH,
         redeemScript,
         transactionBuilder.hashTypes.SIGHASH_ALL,
         originalAmount
