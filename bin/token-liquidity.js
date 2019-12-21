@@ -14,11 +14,11 @@ const BCH = require('../src/lib/bch')
 const bch = new BCH()
 
 // App utility functions library.
-const TLUtils = require('../src/lib/util')
-const tlUtil = new TLUtils()
+// const TLUtils = require('../src/lib/util')
+// const tlUtil = new TLUtils()
 
-const Transactions = require('../src/lib/transactions')
-const txs = new Transactions()
+// const Transactions = require('../src/lib/transactions')
+// const txs = new Transactions()
 
 const TokenLiquidity = require('../src/lib/token-liquidity')
 const lib = new TokenLiquidity()
@@ -37,10 +37,10 @@ util.inspect.defaultOptions = {
   colors: true
 }
 
-const BCH_ADDR1 = config.BCH_ADDR
+// const BCH_ADDR1 = config.BCH_ADDR
 // const TOKEN_ID = config.TOKEN_ID
 
-const FIVE_MINUTES = 60000 * 5
+// const FIVE_MINUTES = 60000 * 5
 const CONSOLIDATE_INTERVAL = 60000 * 10
 let timerHandle
 
@@ -101,7 +101,8 @@ async function startTokenLiquidity () {
   timerHandle = setInterval(async function () {
     await processingLoop(seenTxs)
   }, 60000 * 2)
-  // Interval to consolidate UTXOs 
+
+  // Interval to consolidate UTXOs (maintenance)
   timerHandle = setInterval(async function () {
     await bch.consolidateUtxos()
   }, CONSOLIDATE_INTERVAL)
