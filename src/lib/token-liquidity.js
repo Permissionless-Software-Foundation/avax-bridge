@@ -54,12 +54,15 @@ class TokenLiquidity {
     this.txs = txs
     this.tlUtil = tlUtil
   }
+
   async getObjProcessTx () {
     return _this.objProcessTx
   }
+
   async setObjProcessTx (obj) {
     _this.objProcessTx = obj
   }
+
   // seenTxs = array of txs that have already been processed.
   // curTxs = Gets a list of transactions associated with the address.
   // diffTxs = diff seenTxs from curTxs
@@ -151,9 +154,7 @@ class TokenLiquidity {
         )
 
         // Update the balances
-        newTokenBalance = tlUtil.round8(
-          exchangeObj.tokenBalance + isTokenTx
-        )
+        newTokenBalance = tlUtil.round8(exchangeObj.tokenBalance + isTokenTx)
         newBchBalance = tlUtil.round8(bchBalance - bchOut)
         wlogger.info(`New BCH balance: ${newBchBalance}`)
         wlogger.info(`New token balance: ${newTokenBalance}`)
@@ -170,12 +171,11 @@ class TokenLiquidity {
         wlogger.info(`BCH sent to user: ${userBCHTXID}`)
 
         // Send the tokens to the apps token address on the 245 derivation path.
-        const tokenConfig = await slp.createTokenTx(
-          config.SLP_ADDR,
-          isTokenTx
-        )
+        const tokenConfig = await slp.createTokenTx(config.SLP_ADDR, isTokenTx)
         const tokenTXID = await slp.broadcastTokenTx(tokenConfig)
-        wlogger.info(`Newly recieved tokens sent to 245 derivation path: ${tokenTXID}`)
+        wlogger.info(
+          `Newly recieved tokens sent to 245 derivation path: ${tokenTXID}`
+        )
 
         // User sent BCH
       } else {
@@ -199,21 +199,14 @@ class TokenLiquidity {
         )
 
         // Calculate the new balances
-        newBchBalance = tlUtil.round8(
-          Number(bchBalance) + exchangeObj.bchIn
-        )
-        newTokenBalance = tlUtil.round8(
-          Number(tokenBalance) - retObj.tokensOut
-        )
+        newBchBalance = tlUtil.round8(Number(bchBalance) + exchangeObj.bchIn)
+        newTokenBalance = tlUtil.round8(Number(tokenBalance) - retObj.tokensOut)
         wlogger.debug(`retObj: ${util.inspect(retObj)}`)
         wlogger.info(`New BCH balance: ${newBchBalance}`)
         wlogger.info(`New token balance: ${newTokenBalance}`)
         console.log('retObj.tokensOut', retObj.tokensOut)
         // Send Tokens
-        const tokenConfig = await slp.createTokenTx(
-          userAddr,
-          retObj.tokensOut
-        )
+        const tokenConfig = await slp.createTokenTx(userAddr, retObj.tokensOut)
 
         await slp.broadcastTokenTx(tokenConfig)
       }
@@ -344,7 +337,9 @@ class TokenLiquidity {
               isTokenTx
             )
             const tokenTXID = await slp.broadcastTokenTx(tokenConfig)
-            wlogger.info(`Newly recieved tokens sent to 245 derivation path: ${tokenTXID}`)
+            wlogger.info(
+              `Newly recieved tokens sent to 245 derivation path: ${tokenTXID}`
+            )
 
             // User sent BCH
           } else {
@@ -544,13 +539,16 @@ class TokenLiquidity {
       throw err
     }
   }
+
   async pRetryProcessTx (obj) {
-    // Update global var with obj
-    // This because the function that executes the p-retry library...
-    // ...cannot pass attributes as parameters
-    _this.setObjProcessTx(obj)
-    if (!obj) throw new Error('Error in "pRetryProcessTx" functions')
     try {
+      // Update global var with obj
+      // This because the function that executes the p-retry library
+      // cannot pass attributes as parameters
+      _this.setObjProcessTx(obj)
+
+      if (!obj) throw new Error('Error in "pRetryProcessTx" functions')
+
       const result = await pRetry(_this.tryProcessTx, {
         onFailedAttempt: async () => {
           //   failed attempt.
@@ -559,27 +557,38 @@ class TokenLiquidity {
         },
         retries: 5 // Retry 5 times
       })
+
+      // Reset the global object to an empty object.
       _this.setObjProcessTx({})
       return result
     } catch (error) {
-      // console.log('ERROR from pRetryProcessTx function', error)
+      console.log('Error in token-liquidity.js/pRetryProcessTx()')
       return error
       // console.log(error)
     }
   }
+
   sleep (ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
   }
-  // Function called by p-retry library
+
+  // Function called by p-retry library.
+  // Trys to process a transaction.
   async tryProcessTx () {
-    console.log(`Trying Process Tx`)
-    const obj = await _this.getObjProcessTx()
     try {
+      // Get global obj
+      // This because the function that executes the p-retry library
+      // cannot pass attributes as parameters
+      const obj = await _this.getObjProcessTx()
+
+      console.log(`Trying to process TXID ${obj.txid}`)
+
       const result = await _this.processTx(obj)
       return result
       // console.log('result', result)
     } catch (error) {
       // console.log('ERROR from tryProcessTx function', error)
+      console.log(`Error in token-liquidity.js/tryProcessTx()`)
       throw error
     }
   }

@@ -160,7 +160,7 @@ class BCH {
       const walletInfo = tlUtils.openWallet()
 
       const addrDetails = await this.getBCHBalance(config.BCH_ADDR, false)
-      wlogger.debug(`addrDetails: ${JSON.stringify(addrDetails, null, 2)}`)
+      // wlogger.debug(`addrDetails: ${JSON.stringify(addrDetails, null, 2)}`)
 
       const balance = addrDetails.balance
       wlogger.verbose(

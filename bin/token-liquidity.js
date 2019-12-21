@@ -41,7 +41,7 @@ util.inspect.defaultOptions = {
 // const TOKEN_ID = config.TOKEN_ID
 
 // const FIVE_MINUTES = 60000 * 5
-const CONSOLIDATE_INTERVAL = 60000 * 10
+const CONSOLIDATE_INTERVAL = 60000 * 100
 let timerHandle
 
 let bchBalance
