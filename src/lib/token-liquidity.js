@@ -390,7 +390,7 @@ class TokenLiquidity {
       // console.log('result', result)
     } catch (error) {
       // console.log('ERROR from tryProcessTx function', error)
-      console.log(`Error in token-liquidity.js/tryProcessTx()`)
+      console.log(`Error in token-liquidity.js/tryProcessTx(): `, error)
       throw error
     }
   }

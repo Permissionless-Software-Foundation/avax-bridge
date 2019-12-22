@@ -144,6 +144,7 @@ class SLP {
       )
       const change = this.bchjs.HDNode.derivePath(account, '0/0')
       const changeBCH = this.bchjs.HDNode.derivePath(accountBCH, '0/0')
+
       // Generate an EC key pair for signing the transaction.
       const keyPair = this.bchjs.HDNode.toKeyPair(change)
 
@@ -160,11 +161,11 @@ class SLP {
 
       // Get UTXOs held by this address. Derivation 245
       const utxos = await this.bchjs.Blockbook.utxo(cashAddress)
-      // console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
+      console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
 
       // Utxos from address derivation 145
       const utxosBCH = await this.bchjs.Blockbook.utxo(cashAddressBCH)
-      // console.log(`utxosBCH: ${JSON.stringify(utxosBCH, null, 2)}`)
+      console.log(`utxosBCH: ${JSON.stringify(utxosBCH, null, 2)}`)
 
       if (utxos.length === 0) throw new Error('No token UTXOs to spend! Exiting.')
 
@@ -180,7 +181,7 @@ class SLP {
       tokenUtxos = tokenUtxos.filter((utxo, index) => {
         if (utxo && utxo.tokenId === config.SLP_TOKEN_ID) return true
       })
-      // console.log(`tokenUtxos: ${JSON.stringify(tokenUtxos, null, 2)}`)
+      console.log(`tokenUtxos: ${JSON.stringify(tokenUtxos, null, 2)}`)
 
       // Choose a BCH sUTXO to pay for the transaction.
       const bchUtxo = bch.findBiggestUtxo(utxosBCH)
@@ -288,7 +289,7 @@ class SLP {
 
       // output rawhex
       const hex = tx.toHex()
-      // console.log(`Transaction raw hex: `, hex)
+      console.log(`Transaction raw hex: `, hex)
 
       // END transaction construction.
 
@@ -307,7 +308,7 @@ class SLP {
 
       return txidStr
     } catch (err) {
-      wlogger.error(`Error in slp.js/broadcastTokenTx()`)
+      wlogger.error(`Error in slp.js/broadcastTokenTx(): `, err)
       throw err
     }
   }
