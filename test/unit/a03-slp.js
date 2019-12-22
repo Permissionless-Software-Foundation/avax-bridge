@@ -234,6 +234,7 @@ describe('#slp', () => {
         sandbox
           .stub(slp.bchjs.SLP.Utils, 'tokenUtxoDetails')
           .resolves(slpMockData.tokenUtxos)
+        sandbox.stub(slp.bch, 'findBiggestUtxo').resolves(slpMockData.utxos[0])
       }
 
       const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'

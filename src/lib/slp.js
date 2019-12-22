@@ -32,6 +32,7 @@ class SLP {
     }
 
     this.bchjs = bchjs
+    this.bch = bch
   }
 
   // Get the token balance of an address.
@@ -184,7 +185,7 @@ class SLP {
       console.log(`tokenUtxos: ${JSON.stringify(tokenUtxos, null, 2)}`)
 
       // Choose a BCH sUTXO to pay for the transaction.
-      const bchUtxo = await bch.findBiggestUtxo(utxosBCH)
+      const bchUtxo = await this.bch.findBiggestUtxo(utxosBCH)
       // console.log(`bchUtxo: ${JSON.stringify(bchUtxo, null, 2)}`)
 
       // Add Insight property that is missing from Blockbook.
@@ -366,7 +367,7 @@ class SLP {
       // console.log(`tokenUtxos: ${JSON.stringify(tokenUtxos, null, 2)}`)
 
       // Choose a UTXO to pay for the transaction.
-      const bchUtxo = await bch.findBiggestUtxo(bchUtxos)
+      const bchUtxo = await this.bch.findBiggestUtxo(bchUtxos)
       // console.log(`bchUtxo: ${JSON.stringify(bchUtxo, null, 2)}`)
 
       // Add Insight property that is missing from Blockbook.

@@ -166,12 +166,14 @@ class TokenLiquidity {
         }
         wlogger.debug(`obj.satoshisToSend: ${obj.satoshisToSend}`)
 
+        // Send BCH to the user.
         const hex = await bch.createBchTx(obj)
         const userBCHTXID = await bch.broadcastBchTx(hex)
         wlogger.info(`BCH sent to user: ${userBCHTXID}`)
 
-        // Send the tokens to the apps token address on the 245 derivation path.
-        const tokenConfig = await slp.createTokenTx(config.SLP_ADDR, isTokenTx)
+        // Send the user's tokens to the apps token address on the 245
+        // derivation path.
+        const tokenConfig = await slp.createTokenTx2(config.SLP_ADDR, isTokenTx)
         const tokenTXID = await slp.broadcastTokenTx(tokenConfig)
         wlogger.info(
           `Newly recieved tokens sent to 245 derivation path: ${tokenTXID}`
