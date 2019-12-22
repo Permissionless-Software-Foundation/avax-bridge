@@ -240,7 +240,7 @@ describe('#slp', () => {
       const qty = 1
 
       const result = await slp.createTokenTx(addr, qty)
-      console.log(`result: ${JSON.stringify(result, null, 2)}`)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
       assert.isString(result)
       assert.equal(result.indexOf('0200'), 0, 'First part of string matches.')

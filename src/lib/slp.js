@@ -184,7 +184,7 @@ class SLP {
       console.log(`tokenUtxos: ${JSON.stringify(tokenUtxos, null, 2)}`)
 
       // Choose a BCH sUTXO to pay for the transaction.
-      const bchUtxo = bch.findBiggestUtxo(utxosBCH)
+      const bchUtxo = await bch.findBiggestUtxo(utxosBCH)
       // console.log(`bchUtxo: ${JSON.stringify(bchUtxo, null, 2)}`)
 
       // Add Insight property that is missing from Blockbook.
@@ -358,13 +358,15 @@ class SLP {
       }
 
       // Filter out the token UTXOs that match the user-provided token ID.
+      // Note: Sometimes random tokens will get sent to this address, so we need
+      // to filter them out.
       tokenUtxos = tokenUtxos.filter((utxo, index) => {
         if (utxo && utxo.tokenId === config.SLP_TOKEN_ID) return true
       })
       // console.log(`tokenUtxos: ${JSON.stringify(tokenUtxos, null, 2)}`)
 
       // Choose a UTXO to pay for the transaction.
-      const bchUtxo = bch.findBiggestUtxo(bchUtxos)
+      const bchUtxo = await bch.findBiggestUtxo(bchUtxos)
       // console.log(`bchUtxo: ${JSON.stringify(bchUtxo, null, 2)}`)
 
       // Add Insight property that is missing from Blockbook.

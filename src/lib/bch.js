@@ -78,9 +78,11 @@ class BCH {
   }
 
   // Returns the utxo with the biggest balance from an array of utxos.
-  findBiggestUtxo (utxos) {
+  async findBiggestUtxo (utxos) {
     try {
       wlogger.silly(`Entering findBiggestUtxo().`)
+
+      if (!Array.isArray(utxos)) throw new Error(`utxos needs to be an array`)
 
       let largestAmount = 0
       let largestIndex = 0
@@ -89,6 +91,10 @@ class BCH {
         const thisUtxo = utxos[i]
 
         if (thisUtxo.satoshis > largestAmount) {
+          // Verify the UTXO is valid. Skip if not.
+          const isValid = this.BITBOX.Blockchain.getTxOut(thisUtxo.txid, thisUtxo.vout)
+          if (isValid === null) continue
+
           largestAmount = thisUtxo.satoshis
           largestIndex = i
         }
@@ -180,7 +186,7 @@ class BCH {
       const utxos = await this.BITBOX.Blockbook.utxo(config.BCH_ADDR)
       // console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
 
-      const utxo = this.findBiggestUtxo(utxos)
+      const utxo = await this.findBiggestUtxo(utxos)
       // console.log(`selected utxo`, utxo)
       utxo.value = utxo.amount
 
