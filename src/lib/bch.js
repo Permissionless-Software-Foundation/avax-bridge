@@ -92,7 +92,8 @@ class BCH {
 
         if (thisUtxo.satoshis > largestAmount) {
           // Verify the UTXO is valid. Skip if not.
-          const isValid = this.BITBOX.Blockchain.getTxOut(thisUtxo.txid, thisUtxo.vout)
+          const isValid = await this.BITBOX.Blockchain.getTxOut(thisUtxo.txid, thisUtxo.vout)
+          // console.log(`isValid: ${JSON.stringify(isValid, null, 2)}`)
           if (isValid === null) continue
 
           largestAmount = thisUtxo.satoshis

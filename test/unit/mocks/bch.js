@@ -19,31 +19,6 @@ const balance = {
 }
 
 const utxos = [
-  // {
-  //   txid: '44b61963a5cc4485a3f37c1257af94e51d8a6ee78c6a850d82a240317914c622',
-  //   vout: 0,
-  //   amount: 5.48330146,
-  //   satoshis: 548330146,
-  //   height: 1279681,
-  //   confirmations: 16277
-  // },
-  // {
-  //   txid: 'e038c8e519ee465864cc26ba83026a58e2856095809d64db98ffd9b76537b7ea',
-  //   vout: 0,
-  //   amount: 0.01,
-  //   satoshis: 1000000,
-  //   height: 1279680,
-  //   confirmations: 16278
-  // },
-  // {
-  //   txid: '67e9bf196362e00325d2ac458204a33c23f55651e2956647bc357ce2e67f7006',
-  //   vout: 0,
-  //   amount: 0.01,
-  //   satoshis: 1000000,
-  //   height: 1275999,
-  //   confirmations: 19959
-  // }
-
   {
     txid: '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
     vout: 2,
@@ -101,10 +76,28 @@ const txDetails = {
     '0200000001f5ee6d6ac88e081be02884f2213c85eee08656de3d7699d5ee0e9f99cd238760010000006b483045022100f1179e212430284fd164cd8aeac78270d2f4d82a401e9dd306fb1027a79152f8022046b10900ae517f22e6dbd5418b70e04313f7e7b7d7bba38bcb0509a6e734cdaa412103991b899172d3e509d2e58c5077b9fb6deabfb88696d06f318a9a8dbc147678b6ffffffff02e8030000000000001976a914d9354d4a3f7b129b81c38b273db14c8fd31ac4d588aca0919800000000001976a91459435560414151ed898e27df12542b6097146a3988ac00000000'
 }
 
+const getTxOutValid =
+{
+  'bestblock': '000000000012d5d3818d15496b177d7cf94704c40e9f5419186b00864d0b573c',
+  'confirmations': 3,
+  'value': 12.04311016,
+  'scriptPubKey': {
+    'asm': 'OP_DUP OP_HASH160 454be45106c439c84d4f1f15a7c90eb1d78ff0e8 OP_EQUALVERIFY OP_CHECKSIG',
+    'hex': '76a914454be45106c439c84d4f1f15a7c90eb1d78ff0e888ac',
+    'reqSigs': 1,
+    'type': 'pubkeyhash',
+    'addresses': [
+      'bchtest:qpz5hez3qmzrnjzdfu03tf7fp6ca0rlsaqvrxmfpyd'
+    ]
+  },
+  'coinbase': false
+}
+
 const bchMockData = {
   balance,
   utxos,
-  txDetails
+  txDetails,
+  getTxOutValid
 }
 
 module.exports = bchMockData
