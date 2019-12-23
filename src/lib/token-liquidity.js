@@ -173,7 +173,7 @@ class TokenLiquidity {
 
         // Send the user's tokens to the apps token address on the 245
         // derivation path.
-        const tokenConfig = await slp.createTokenTx2(config.SLP_ADDR, isTokenTx)
+        const tokenConfig = await slp.createTokenTx(config.SLP_ADDR, isTokenTx)
         const tokenTXID = await slp.broadcastTokenTx(tokenConfig)
         wlogger.info(
           `Newly recieved tokens sent to 245 derivation path: ${tokenTXID}`
@@ -366,7 +366,7 @@ class TokenLiquidity {
       _this.setObjProcessTx({})
       return result
     } catch (error) {
-      console.log('Error in token-liquidity.js/pRetryProcessTx()')
+      console.log('Error in token-liquidity.js/pRetryProcessTx(): ', error)
       return error
       // console.log(error)
     }
@@ -385,7 +385,8 @@ class TokenLiquidity {
       // cannot pass attributes as parameters
       const obj = await _this.getObjProcessTx()
 
-      console.log(`Trying to process TXID ${obj.txid}`)
+      console.log(`Trying to process TXID ${obj.txid} with this data:`)
+      console.log(`${JSON.stringify(obj, null, 2)}`)
 
       const result = await _this.processTx(obj)
       return result
@@ -393,7 +394,8 @@ class TokenLiquidity {
     } catch (error) {
       // console.log('ERROR from tryProcessTx function', error)
       console.log(`Error in token-liquidity.js/tryProcessTx(): `, error)
-      throw error
+      // throw error
+      throw new Error(`Error in tryProcessTx. Try again.`)
     }
   }
 }
