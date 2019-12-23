@@ -157,7 +157,7 @@ class SLP {
 
       // Choose a BCH UTXO to pay for the transaction.
       const bchUtxo = await this.bch.findBiggestUtxo(utxosBCH)
-      console.log(`bchUtxo: ${JSON.stringify(bchUtxo, null, 2)}`)
+      // console.log(`bchUtxo: ${JSON.stringify(bchUtxo, null, 2)}`)
 
       // Add Insight property that is missing from Blockbook.
       bchUtxo.satoshis = Number(bchUtxo.value)
@@ -180,7 +180,7 @@ class SLP {
       // get the cash address
       const cashAddress = this.bchjs.HDNode.toCashAddress(change)
       const slpAddress = this.bchjs.HDNode.toSLPAddress(change)
-      console.log(`cashAddress: ${JSON.stringify(cashAddress, null, 2)}`)
+      // console.log(`cashAddress: ${JSON.stringify(cashAddress, null, 2)}`)
 
       // Get UTXOs held by this address. Derivation 245
       const utxos = await this.bchjs.Blockbook.utxo(cashAddress)
@@ -198,38 +198,29 @@ class SLP {
       tokenUtxos = tokenUtxos.filter((utxo, index) => {
         if (utxo && utxo.tokenId === config.SLP_TOKEN_ID) return true
       })
-      console.log(
-        `tokenUtxos (filter 1): ${JSON.stringify(tokenUtxos, null, 2)}`
-      )
-
-      // Further filter out the invalid token UTXOs
-      // const validUtxos = await tokenUtxos.filter(async (utxo, index) => {
-      //   const isValidUtxo = await this.bchjs.Blockchain.getTxOut(utxo.txid, utxo.vout)
-      //   console.log(`isValidUtxo: ${JSON.stringify(isValidUtxo, null, 2)}`)
-      //
-      //   if (isValidUtxo === null) return false
-      //   return true
-      // })
-      // console.log(`validUtxos: ${JSON.stringify(validUtxos, null, 2)}`)
+      // console.log(
+      //   `tokenUtxos (filter 1): ${JSON.stringify(tokenUtxos, null, 2)}`
+      // )
 
       // Further filter out the invalid token UTXOs
       for (let i = 0; i < tokenUtxos.length; i++) {
         const thisUtxos = tokenUtxos[i]
 
+        // Ask the full node to validate the UTXO.
         const isValidUtxo = await this.bchjs.Blockchain.getTxOut(
           thisUtxos.txid,
           thisUtxos.vout
         )
-        console.log(`isValidUtxo: ${JSON.stringify(isValidUtxo, null, 2)}`)
+        // console.log(`isValidUtxo: ${JSON.stringify(isValidUtxo, null, 2)}`)
 
+        // Delete the current element from the array if the UTXO is not valid.
         if (isValidUtxo === null) {
-          console.log(`Deleting element from array.`)
           tokenUtxos.splice(i, 1)
         }
       }
-      console.log(
-        `tokenUtxos (filter 2): ${JSON.stringify(tokenUtxos, null, 2)}`
-      )
+      // console.log(
+      //   `tokenUtxos (filter 2): ${JSON.stringify(tokenUtxos, null, 2)}`
+      // )
 
       // Bail out if no token UTXOs are found.
       if (tokenUtxos.length === 0) {
@@ -335,7 +326,7 @@ class SLP {
 
       // output rawhex
       const hex = tx.toHex()
-      console.log(`Transaction raw hex: `, hex)
+      // console.log(`Transaction raw hex: `, hex)
 
       // END transaction construction.
 

@@ -112,6 +112,7 @@ describe('#token-liquidity', () => {
       ])
     })
   })
+
   describe('#pRetryProcessTx function', () => {
     it('should throw error if parameters are not defined', async () => {
       try {
