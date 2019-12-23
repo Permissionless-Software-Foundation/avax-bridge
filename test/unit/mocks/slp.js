@@ -331,12 +331,28 @@ const tokenUtxos = [
   }
 ]
 
+const validUtxo = {
+  bestblock: '00000000000389b2ea2eb04db7468374bc943fb3e4bcc55719d954b26e38b815',
+  confirmations: 5,
+  value: 0.00000546,
+  scriptPubKey: {
+    asm:
+      'OP_DUP OP_HASH160 57eae7d54fa8ed43d869c650d13cdb1b7024a5a2 OP_EQUALVERIFY OP_CHECKSIG',
+    hex: '76a91457eae7d54fa8ed43d869c650d13cdb1b7024a5a288ac',
+    reqSigs: 1,
+    type: 'pubkeyhash',
+    addresses: ['bchtest:qpt74e74f75w6s7cd8r9p5fumvdhqf995gp3mkk6xw']
+  },
+  coinbase: false
+}
+
 const slpMockData = {
   tokenTx,
   nonTokenTx,
   otherTokenTx,
   utxos,
-  tokenUtxos
+  tokenUtxos,
+  validUtxo
 }
 
 module.exports = slpMockData
