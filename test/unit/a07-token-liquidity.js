@@ -106,10 +106,7 @@ describe('#token-liquidity', () => {
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
       assert.isArray(result)
-      assert.hasAllKeys(result[0], [
-        'txid',
-        'confirmations'
-      ])
+      assert.hasAllKeys(result[0], ['txid', 'confirmations'])
     })
   })
 
@@ -121,22 +118,19 @@ describe('#token-liquidity', () => {
         assert.include(error.message, `Error in "pRetryProcessTx" functions`)
       }
     })
+
     it('Should return object', async () => {
       console.log('init test')
       const obj = {
-        txid: '14df82e3ec54fa0227531309f7189ed695bafad6f5062407d3a528fbeddc4a09',
+        txid:
+          '14df82e3ec54fa0227531309f7189ed695bafad6f5062407d3a528fbeddc4a09',
         bchBalance: 12.01044695,
-        tokenBalance: 1 }
-      sandbox
-        .stub(lib, 'processTx')
-        .resolves(libMockData.processTx)
+        tokenBalance: 1
+      }
+      sandbox.stub(lib, 'processTx').resolves(libMockData.processTx)
       try {
         const result = await lib.pRetryProcessTx(obj)
-        assert.hasAllKeys(result, [
-          'txid',
-          'bchBalance',
-          'tokenBalance'
-        ])
+        assert.hasAllKeys(result, ['txid', 'bchBalance', 'tokenBalance'])
       } catch (error) {
         console.log(error)
         // assert.include(error.message, `Error in "pRetryProcessTx" functions`)

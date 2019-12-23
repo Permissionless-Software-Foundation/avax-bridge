@@ -5,6 +5,7 @@
 'use strict'
 
 const collect = require('collect.js')
+const pRetry = require('p-retry')
 
 const config = require('../../config')
 
@@ -39,7 +40,7 @@ const TOKENS_QTY_ORIGINAL = config.TOKENS_QTY_ORIGINAL
 const BCH_QTY_ORIGINAL = config.BCH_QTY_ORIGINAL
 
 // p-retry library
-const pRetry = require('p-retry')
+// const pRetry = require('p-retry')
 
 const seenTxs = [] // Track processed TXIDs
 let _this
@@ -227,6 +228,45 @@ class TokenLiquidity {
     }
   }
 
+  // This function wraps the tryProcessTx() function with the p-retry library.
+  // This will allow it to try multiple times in the event of an error.
+  async pRetryProcessTx (obj) {
+    try {
+      // Update global var with obj
+      // This is because the function that executes the p-retry library
+      // cannot pass attributes as parameters
+      // _this.setObjProcessTx(obj)
+
+      if (!obj) throw new Error('obj is undefined')
+
+      const result = await pRetry(() => _this.processTx(obj), {
+        onFailedAttempt: async error => {
+          //   failed attempt.
+          console.log(
+            `Attempt ${error.attemptNumber} failed. There are ${
+              error.retriesLeft
+            } retries left. Waiting 2 minutes before trying again.`
+          )
+
+          await _this.sleep(60000 * 2) // Sleep for 2 minutes
+        },
+        retries: 5 // Retry 5 times
+      })
+
+      // Reset the global object to an empty object.
+      _this.setObjProcessTx({})
+      return result
+    } catch (error) {
+      console.log('Error in token-liquidity.js/pRetryProcessTx(): ', error)
+      return error
+      // console.log(error)
+    }
+  }
+
+  sleep (ms) {
+    return new Promise(resolve => setTimeout(resolve, ms))
+  }
+
   // Calculates the numbers of tokens to send.
   exchangeBCHForTokens (obj) {
     try {
@@ -341,61 +381,6 @@ class TokenLiquidity {
     } catch (err) {
       wlogger.error(`Error in token-liquidity.js/getBlockchainBalances().`)
       throw err
-    }
-  }
-
-  async pRetryProcessTx (obj) {
-    try {
-      // Update global var with obj
-      // This because the function that executes the p-retry library
-      // cannot pass attributes as parameters
-      _this.setObjProcessTx(obj)
-
-      if (!obj) throw new Error('Error in "pRetryProcessTx" functions')
-
-      const result = await pRetry(_this.tryProcessTx, {
-        onFailedAttempt: async () => {
-          //   failed attempt.
-          console.log('P-retry error')
-          await _this.sleep(60000 * 2) // Sleep for 2 minutes
-        },
-        retries: 5 // Retry 5 times
-      })
-
-      // Reset the global object to an empty object.
-      _this.setObjProcessTx({})
-      return result
-    } catch (error) {
-      console.log('Error in token-liquidity.js/pRetryProcessTx(): ', error)
-      return error
-      // console.log(error)
-    }
-  }
-
-  sleep (ms) {
-    return new Promise(resolve => setTimeout(resolve, ms))
-  }
-
-  // Function called by p-retry library.
-  // Trys to process a transaction.
-  async tryProcessTx () {
-    try {
-      // Get global obj
-      // This because the function that executes the p-retry library
-      // cannot pass attributes as parameters
-      const obj = await _this.getObjProcessTx()
-
-      console.log(`Trying to process TXID ${obj.txid} with this data:`)
-      console.log(`${JSON.stringify(obj, null, 2)}`)
-
-      const result = await _this.processTx(obj)
-      return result
-      // console.log('result', result)
-    } catch (error) {
-      // console.log('ERROR from tryProcessTx function', error)
-      console.log(`Error in token-liquidity.js/tryProcessTx(): `, error)
-      // throw error
-      throw new Error(`Error in tryProcessTx. Try again.`)
     }
   }
 }

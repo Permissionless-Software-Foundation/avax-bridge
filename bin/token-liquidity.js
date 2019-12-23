@@ -13,6 +13,13 @@ const slp = new SLP()
 const BCH = require('../src/lib/bch')
 const bch = new BCH()
 
+// Queue Library
+// const Queue = require('./queue')
+// const queue = new Queue()
+
+const { default: PQueue } = require('p-queue')
+const queue = new PQueue({ concurrency: 1 })
+
 // App utility functions library.
 // const TLUtils = require('../src/lib/util')
 // const tlUtil = new TLUtils()
@@ -153,8 +160,9 @@ async function processingLoop (seenTxs) {
 
       // TODO: Instead of calling processTx(), call p-retry so that it will
       // retry processTx() several times if it errors out.
-      console.log(obj)
-      const result = await lib.pRetryProcessTx(obj)
+      console.log(`Processing new transaction with this data: ${JSON.stringify(obj, null, 2)}`)
+      // const result = await queue.pRetryProcessTx(obj)
+      const result = await queue.add(() => lib.pRetryProcessTx(obj))
       console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
       // Update the app balances. This temporarily updates the app balances until
