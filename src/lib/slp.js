@@ -218,9 +218,9 @@ class SLP {
           tokenUtxos.splice(i, 1)
         }
       }
-      // console.log(
-      //   `tokenUtxos (filter 2): ${JSON.stringify(tokenUtxos, null, 2)}`
-      // )
+      console.log(
+        `tokenUtxos (filter 2): ${JSON.stringify(tokenUtxos, null, 2)}`
+      )
 
       // Bail out if no token UTXOs are found.
       if (tokenUtxos.length === 0) {
@@ -228,9 +228,10 @@ class SLP {
       }
 
       // Generate the OP_RETURN code.
+      console.log(`qty: ${qty}`)
       const slpSendObj = this.bchjs.SLP.TokenType1.generateSendOpReturn(
         tokenUtxos,
-        qty
+        Number(qty)
       )
       const slpData = this.bchjs.Script.encode(slpSendObj.script)
       // console.log(`slpOutputs: ${slpSendObj.outputs}`)

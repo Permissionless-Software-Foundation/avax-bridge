@@ -127,6 +127,9 @@ class TokenLiquidity {
           `userAddr === app address. Exiting compareLastTransaction()`
         )
 
+        // Signal that this was a self-generated transaction.
+        inObj.txid = null
+
         return inObj
       }
 
@@ -242,19 +245,22 @@ class TokenLiquidity {
       const result = await pRetry(() => _this.processTx(obj), {
         onFailedAttempt: async error => {
           //   failed attempt.
+          console.log(' ')
           console.log(
             `Attempt ${error.attemptNumber} failed. There are ${
               error.retriesLeft
-            } retries left. Waiting 2 minutes before trying again.`
+            } retries left. Waiting 4 minutes before trying again.`
           )
+          console.log(' ')
 
-          await _this.sleep(60000 * 2) // Sleep for 2 minutes
+          await _this.sleep(60000 * 4) // Sleep for 4 minutes
         },
         retries: 5 // Retry 5 times
       })
 
       // Reset the global object to an empty object.
-      _this.setObjProcessTx({})
+      // _this.setObjProcessTx({})
+
       return result
     } catch (error) {
       console.log('Error in token-liquidity.js/pRetryProcessTx(): ', error)
