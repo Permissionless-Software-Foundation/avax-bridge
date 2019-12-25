@@ -422,6 +422,50 @@ class BCH {
       throw error
     }
   }
+
+  // Checks BCH transactions to see if they have an OP_RETURN. Returns an object.
+  // If no OP_RETURN is present, the isValid property will be false.
+  // If OP_RETURN is present, it will attempt to be decoded.
+  async readOpReturn (txid) {
+    const retObj = {
+      isValid: false // Return false by default.
+    }
+
+    try {
+      // Get the raw transaction data.
+      const txData = await this.BITBOX.RawTransactions.getRawTransaction(txid, true)
+      // console.log(`txData: ${JSON.stringify(txData, null, 2)}`)
+
+      // Decode the hex into normal text.
+      const script = this.BITBOX.Script.toASM(
+        Buffer.from(txData.vout[0].scriptPubKey.hex, 'hex')
+      ).split(' ')
+      // console.log(`script: ${JSON.stringify(script, null, 2)}`)
+
+      // If there is no OP_RETURN present, then
+      if (script[0] !== 'OP_RETURN') return retObj
+
+      // Decode the command
+      let cmd = Buffer.from(script[2], 'hex').toString('ascii')
+      cmd = cmd.split(' ')
+      // console.log(`cmd: ${JSON.stringify(cmd, null, 2)}`)
+
+      if (cmd[0] === 'BURN') {
+        let qty = Number(cmd[1])
+        // console.log(`qty: ${qty}`)
+        qty = Number(qty)
+
+        retObj.isValid = true
+        retObj.type = 'burn'
+        retObj.qty = qty
+      }
+
+      return retObj
+    } catch (err) {
+      wlogger.error(`Error in bch.js/readOpReturn(): `, err)
+      return retObj
+    }
+  }
 }
 
 module.exports = BCH

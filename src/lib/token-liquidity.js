@@ -211,6 +211,26 @@ class TokenLiquidity {
         wlogger.info(`New BCH balance: ${newBchBalance}`)
         wlogger.info(`New token balance: ${newTokenBalance}`)
         console.log('retObj.tokensOut', retObj.tokensOut)
+
+        // Check if transaction includes an OP_RETURN instruction
+        // const opReturnData = bch.readOpReturn(txid)
+
+        // If the TX contains a valid OP_RETURN code
+        // if(opReturnData.isValid) {
+        //
+        //   if(opReturnData.type ==== 'burn') {
+        //     // Call a method in the slp library to burn a select amount of tokens
+        //     // instead of sending them to a return address.
+        //   }
+        //
+        // // Normal BCH transaction with no OP_RETURN.
+        // } else {
+        //   // Send Tokens
+        //   const tokenConfig = await slp.createTokenTx(userAddr, retObj.tokensOut)
+        //
+        //   await slp.broadcastTokenTx(tokenConfig)
+        // }
+
         // Send Tokens
         const tokenConfig = await slp.createTokenTx(userAddr, retObj.tokensOut)
 

@@ -192,4 +192,20 @@ describe('#bch', () => {
       ])
     })
   })
+
+  describe('#readOpReturn', () => {
+    it('should processes a valid burn command', async () => {
+      // Mock network calls.
+      sandbox.stub(bch.BITBOX.RawTransactions, 'getRawTransaction').resolves(bchMockData.burnOpReturnTx)
+
+      const txid = `73e0b24ab94413c8bf003168c533653b91c9409218cf4ed601b77734856770d1`
+
+      const opReturnData = await bch.readOpReturn(txid)
+      // console.log(`opReturnData: ${JSON.stringify(opReturnData, null, 2)}`)
+
+      assert.equal(opReturnData.isValid, true)
+      assert.equal(opReturnData.type, 'burn')
+      assert.equal(opReturnData.qty, 10)
+    })
+  })
 })
