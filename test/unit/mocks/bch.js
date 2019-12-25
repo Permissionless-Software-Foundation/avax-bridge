@@ -141,12 +141,96 @@ const burnOpReturnTx = {
   blocktime: 1577234056
 }
 
+const noOpReturnTx = {
+  txid: '4894f89965809733f728e3b3f22d0015c0bf87b6a809db00a82f2841303d9de3',
+  hash: '4894f89965809733f728e3b3f22d0015c0bf87b6a809db00a82f2841303d9de3',
+  version: 2,
+  size: 480,
+  locktime: 0,
+  vin: [
+    {
+      txid: '602de6b1c855d6cb0f01769dbc85bef40108052edb1acb2199dfaf6a24d720f7',
+      vout: 3,
+      scriptSig: {
+        asm:
+          '3045022100b9878b6ca4b370074389863ef5796676e4a9968f43aee1ce145881b54a6391d50220092be08753ac88ea91975fe7efb49fd558493e2a764e513caef7932dda62e882[ALL|FORKID] 02359e2272ab2b94b4b40250b0dd3fefc9571b542449a282d9f12a8e0675afff2b',
+        hex:
+          '483045022100b9878b6ca4b370074389863ef5796676e4a9968f43aee1ce145881b54a6391d50220092be08753ac88ea91975fe7efb49fd558493e2a764e513caef7932dda62e882412102359e2272ab2b94b4b40250b0dd3fefc9571b542449a282d9f12a8e0675afff2b'
+      },
+      sequence: 4294967295
+    },
+    {
+      txid: '602de6b1c855d6cb0f01769dbc85bef40108052edb1acb2199dfaf6a24d720f7',
+      vout: 2,
+      scriptSig: {
+        asm:
+          '304402207a861858875f0fa7ba7d65cf39453d774cf70ce091eecbbaeb6b4051ca8defba02201cce2aa13e19c5cac824ae10f2ad2164a70e19438a447fae80e53591784316aa[ALL|FORKID] 02359e2272ab2b94b4b40250b0dd3fefc9571b542449a282d9f12a8e0675afff2b',
+        hex:
+          '47304402207a861858875f0fa7ba7d65cf39453d774cf70ce091eecbbaeb6b4051ca8defba02201cce2aa13e19c5cac824ae10f2ad2164a70e19438a447fae80e53591784316aa412102359e2272ab2b94b4b40250b0dd3fefc9571b542449a282d9f12a8e0675afff2b'
+      },
+      sequence: 4294967295
+    }
+  ],
+  vout: [
+    {
+      value: 0,
+      n: 0,
+      scriptPubKey: {
+        asm:
+          'OP_RETURN 5262419 1 1145980243 155784a206873c98acc09e8dabcccf6abf13c4c14d8662190534138a16bb93ce 000000746a528800 000001001d1bf800',
+        hex:
+          '6a04534c500001010453454e4420155784a206873c98acc09e8dabcccf6abf13c4c14d8662190534138a16bb93ce08000000746a52880008000001001d1bf800',
+        type: 'nulldata'
+      }
+    },
+    {
+      value: 0.00000546,
+      n: 1,
+      scriptPubKey: {
+        asm:
+          'OP_DUP OP_HASH160 454be45106c439c84d4f1f15a7c90eb1d78ff0e8 OP_EQUALVERIFY OP_CHECKSIG',
+        hex: '76a914454be45106c439c84d4f1f15a7c90eb1d78ff0e888ac',
+        reqSigs: 1,
+        type: 'pubkeyhash',
+        addresses: ['bchtest:qpz5hez3qmzrnjzdfu03tf7fp6ca0rlsaqvrxmfpyd']
+      }
+    },
+    {
+      value: 0.00000546,
+      n: 2,
+      scriptPubKey: {
+        asm:
+          'OP_DUP OP_HASH160 5abf10197e3d6e1fc4769d3d0eace311432498db OP_EQUALVERIFY OP_CHECKSIG',
+        hex: '76a9145abf10197e3d6e1fc4769d3d0eace311432498db88ac',
+        reqSigs: 1,
+        type: 'pubkeyhash',
+        addresses: ['bchtest:qpdt7yqe0c7ku87yw6wn6r4vuvg5xfycmvmhlwzehx']
+      }
+    },
+    {
+      value: 0.27812838,
+      n: 3,
+      scriptPubKey: {
+        asm:
+          'OP_DUP OP_HASH160 5abf10197e3d6e1fc4769d3d0eace311432498db OP_EQUALVERIFY OP_CHECKSIG',
+        hex: '76a9145abf10197e3d6e1fc4769d3d0eace311432498db88ac',
+        reqSigs: 1,
+        type: 'pubkeyhash',
+        addresses: ['bchtest:qpdt7yqe0c7ku87yw6wn6r4vuvg5xfycmvmhlwzehx']
+      }
+    }
+  ],
+  hex:
+    '0200000002f720d7246aafdf9921cb1adb2e050801f4be85bc9d76010fcbd655c8b1e62d60030000006b483045022100b9878b6ca4b370074389863ef5796676e4a9968f43aee1ce145881b54a6391d50220092be08753ac88ea91975fe7efb49fd558493e2a764e513caef7932dda62e882412102359e2272ab2b94b4b40250b0dd3fefc9571b542449a282d9f12a8e0675afff2bfffffffff720d7246aafdf9921cb1adb2e050801f4be85bc9d76010fcbd655c8b1e62d60020000006a47304402207a861858875f0fa7ba7d65cf39453d774cf70ce091eecbbaeb6b4051ca8defba02201cce2aa13e19c5cac824ae10f2ad2164a70e19438a447fae80e53591784316aa412102359e2272ab2b94b4b40250b0dd3fefc9571b542449a282d9f12a8e0675afff2bffffffff040000000000000000406a04534c500001010453454e4420155784a206873c98acc09e8dabcccf6abf13c4c14d8662190534138a16bb93ce08000000746a52880008000001001d1bf80022020000000000001976a914454be45106c439c84d4f1f15a7c90eb1d78ff0e888ac22020000000000001976a9145abf10197e3d6e1fc4769d3d0eace311432498db88ace663a801000000001976a9145abf10197e3d6e1fc4769d3d0eace311432498db88ac00000000'
+}
+
 const bchMockData = {
   balance,
   utxos,
   txDetails,
   getTxOutValid,
-  burnOpReturnTx
+  burnOpReturnTx,
+  noOpReturnTx
 }
 
 module.exports = bchMockData

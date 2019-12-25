@@ -106,7 +106,9 @@ describe('#bch', () => {
       ]
 
       // Stub the getTxOut network call.
-      sandbox.stub(bch.BITBOX.Blockchain, 'getTxOut').resolves(bchMockData.getTxOutValid)
+      sandbox
+        .stub(bch.BITBOX.Blockchain, 'getTxOut')
+        .resolves(bchMockData.getTxOutValid)
 
       const result = await bch.findBiggestUtxo(utxos)
       // console.log(`blah result: ${JSON.stringify(result, null, 2)}`)
@@ -194,9 +196,42 @@ describe('#bch', () => {
   })
 
   describe('#readOpReturn', () => {
+    it('should return isValid=false for invalid txid', async () => {
+      // Mock network calls.
+      sandbox
+        .stub(bch.BITBOX.RawTransactions, 'getRawTransaction')
+        .throws({
+          error:
+            'No such mempool or blockchain transaction. Use gettransaction for wallet transactions.'
+        })
+
+      const txid = `4894f89965809733f728e3b3f22d0015c0bf87b6a809db00a82f2841303d9555`
+
+      const opReturnData = await bch.readOpReturn(txid)
+      // console.log(`opReturnData: ${JSON.stringify(opReturnData, null, 2)}`)
+
+      assert.equal(opReturnData.isValid, false)
+    })
+
+    it('should return isValid=false for non-op-return tx', async () => {
+      // Mock network calls.
+      sandbox
+        .stub(bch.BITBOX.RawTransactions, 'getRawTransaction')
+        .resolves(bchMockData.noOpReturnTx)
+
+      const txid = `4894f89965809733f728e3b3f22d0015c0bf87b6a809db00a82f2841303d9de3`
+
+      const opReturnData = await bch.readOpReturn(txid)
+      // console.log(`opReturnData: ${JSON.stringify(opReturnData, null, 2)}`)
+
+      assert.equal(opReturnData.isValid, false)
+    })
+
     it('should processes a valid burn command', async () => {
       // Mock network calls.
-      sandbox.stub(bch.BITBOX.RawTransactions, 'getRawTransaction').resolves(bchMockData.burnOpReturnTx)
+      sandbox
+        .stub(bch.BITBOX.RawTransactions, 'getRawTransaction')
+        .resolves(bchMockData.burnOpReturnTx)
 
       const txid = `73e0b24ab94413c8bf003168c533653b91c9409218cf4ed601b77734856770d1`
 
