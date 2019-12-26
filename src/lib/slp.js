@@ -9,6 +9,8 @@
 const util = require('util')
 util.inspect.defaultOptions = { depth: 5 }
 
+const pRetry = require('p-retry')
+
 const config = require('../../config')
 
 const TLUtils = require('./util')
@@ -24,6 +26,8 @@ const wlogger = require('../utils/logging')
 // Mainnet by default
 let bchjs = new config.BCHLIB({ restURL: config.MAINNET_REST })
 
+let _this
+
 class SLP {
   constructor () {
     // Determine if this is a testnet wallet or a mainnet wallet.
@@ -33,6 +37,8 @@ class SLP {
 
     this.bchjs = bchjs
     this.bch = bch
+
+    _this = this
   }
 
   // Get the token balance of an address.
@@ -122,7 +128,9 @@ class SLP {
   async createTokenTx (addr, qty, path) {
     try {
       console.log(`path: ${path}`)
-      if (path !== 145 || path !== 245) throw new Error(`path must have a value of 145 or 245`)
+      if (path !== 145 && path !== 245) {
+        throw new Error(`path must have a value of 145 or 245`)
+      }
 
       // Open the wallet controlling the tokens
       const walletInfo = tlUtils.openWallet()
@@ -583,6 +591,61 @@ class SLP {
     } catch (err) {
       wlogger.error(`Error in slp.js/broadcastTokenTx(): `, err)
       throw err
+    }
+  }
+
+  // This function wraps the create and broadcast token TX functions with the
+  // p-retry library. This is used to move tokens from the 145 path to the 245
+  // path. This will allow it to try mutliple times in the event of an error.
+  async moveTokens (obj) {
+    try {
+      // Update global var with obj
+      // This is because the function that executes the p-retry library
+      // cannot pass attributes as parameters
+      // _this.setObjProcessTx(obj)
+
+      if (!obj) throw new Error('obj is undefined')
+
+      const result = await pRetry(
+        async () => {
+          // Send the user's tokens to the apps token address on the 245
+          // derivation path.
+          const tokenConfig = await _this.createTokenTx(
+            config.SLP_ADDR,
+            obj.tokenQty,
+            145
+          )
+          const tokenTXID = await _this.broadcastTokenTx(tokenConfig)
+          wlogger.info(
+            `Newly recieved tokens sent to 245 derivation path: ${tokenTXID}`
+          )
+
+          return tokenTXID
+        },
+        {
+          onFailedAttempt: async error => {
+            //   failed attempt.
+            console.log(' ')
+            console.log(
+              `Attempt ${
+                error.attemptNumber
+              } to send tokens to the 245 path failed. There are ${
+                error.retriesLeft
+              } retries left. Waiting 4 minutes before trying again.`
+            )
+            console.log(' ')
+
+            await tlUtils.sleep(60000 * 4) // Sleep for 4 minutes
+          },
+          retries: 5 // Retry 5 times
+        }
+      )
+
+      return result
+    } catch (error) {
+      console.log('Error in slp.js/moveTokens(): ', error)
+      return error
+      // console.log(error)
     }
   }
 }

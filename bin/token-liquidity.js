@@ -174,6 +174,12 @@ async function processingLoop (seenTxs) {
       console.log(`queue.size: ${queue.size}`)
       console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
+      // If the app received tokens, send them to the 245 path.
+      if (result.type === 'token') {
+        const obj = { tokenQty: result.tokenQty }
+        await queue.add(() => slp.moveTokens(obj))
+      }
+
       // Update the app balances. This temporarily updates the app balances until
       // processing is complete, at which time the app can get its balance from
       // an indexer.

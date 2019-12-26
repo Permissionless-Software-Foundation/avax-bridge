@@ -175,14 +175,6 @@ class TokenLiquidity {
         const userBCHTXID = await bch.broadcastBchTx(hex)
         wlogger.info(`BCH sent to user: ${userBCHTXID}`)
 
-        // Send the user's tokens to the apps token address on the 245
-        // derivation path.
-        const tokenConfig = await slp.createTokenTx(config.SLP_ADDR, isTokenTx, 145)
-        const tokenTXID = await slp.broadcastTokenTx(tokenConfig)
-        wlogger.info(
-          `Newly recieved tokens sent to 245 derivation path: ${tokenTXID}`
-        )
-
         // User sent BCH
       } else {
         // Get the BCH send amount.
@@ -245,8 +237,11 @@ class TokenLiquidity {
       }
 
       // Report the type of transaction we just processed.
-      if (isTokenTx) retObj.type = 'token'
-      else retObj.type = 'bch'
+      // If tokens, report the qty of tokens.
+      if (isTokenTx) {
+        retObj.type = 'token'
+        retObj.tokenQty = isTokenTx
+      } else retObj.type = 'bch'
 
       // Return the newly detected txid.
       return retObj
@@ -278,7 +273,7 @@ class TokenLiquidity {
           )
           console.log(' ')
 
-          await _this.sleep(60000 * 4) // Sleep for 4 minutes
+          await tlUtil.sleep(60000 * 4) // Sleep for 4 minutes
         },
         retries: 5 // Retry 5 times
       })
@@ -292,10 +287,6 @@ class TokenLiquidity {
       return error
       // console.log(error)
     }
-  }
-
-  sleep (ms) {
-    return new Promise(resolve => setTimeout(resolve, ms))
   }
 
   // Calculates the numbers of tokens to send.
