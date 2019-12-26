@@ -30,6 +30,9 @@ const queue = new PQueue({ concurrency: 1 })
 const TokenLiquidity = require('../src/lib/token-liquidity')
 const lib = new TokenLiquidity()
 
+// Add the queue to the token-liquidity library
+lib.queue = queue
+
 const config = require('../config')
 config.bchBalance = config.BCH_QTY_ORIGINAL
 config.tokenBalance = config.TOKENS_QTY_ORIGINAL

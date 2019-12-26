@@ -177,7 +177,7 @@ class TokenLiquidity {
 
         // Send the user's tokens to the apps token address on the 245
         // derivation path.
-        const tokenConfig = await slp.createTokenTx(config.SLP_ADDR, isTokenTx)
+        const tokenConfig = await slp.createTokenTx(config.SLP_ADDR, isTokenTx, 145)
         const tokenTXID = await slp.broadcastTokenTx(tokenConfig)
         wlogger.info(
           `Newly recieved tokens sent to 245 derivation path: ${tokenTXID}`
@@ -218,9 +218,10 @@ class TokenLiquidity {
         // If the TX contains a valid OP_RETURN code
         // if(opReturnData.isValid) {
         //
-        //   if(opReturnData.type ==== 'burn') {
+        //   if(opReturnData.type === 'burn') {
         //     // Call a method in the slp library to burn a select amount of tokens
         //     // instead of sending them to a return address.
+        //     const hex = await slp.burnTokenTx(newTokenBalance)
         //   }
         //
         // // Normal BCH transaction with no OP_RETURN.
@@ -232,7 +233,7 @@ class TokenLiquidity {
         // }
 
         // Send Tokens
-        const tokenConfig = await slp.createTokenTx(userAddr, retObj.tokensOut)
+        const tokenConfig = await slp.createTokenTx(userAddr, retObj.tokensOut, 245)
 
         await slp.broadcastTokenTx(tokenConfig)
       }
@@ -242,6 +243,10 @@ class TokenLiquidity {
         bchBalance: tlUtil.round8(newBchBalance),
         tokenBalance: tlUtil.round8(newTokenBalance)
       }
+
+      // Report the type of transaction we just processed.
+      if (isTokenTx) retObj.type = 'token'
+      else retObj.type = 'bch'
 
       // Return the newly detected txid.
       return retObj
