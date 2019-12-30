@@ -57,8 +57,10 @@ describe('#token-liquidity', () => {
         tokenOriginalBalance: 5000
       }
 
-      const result = lib.exchangeTokensForBCH(exchangeObj)
-      // console.log(`result: ${result}`)
+      const retObj = lib.exchangeTokensForBCH(exchangeObj)
+      // console.log(`retObj: ${JSON.stringify(retObj,null,2)}`)
+
+      const result = retObj.bchOut
 
       assert.isNumber(result)
       assert.equal(result, 1.1814112, `Should match spreadsheet`)
@@ -72,8 +74,10 @@ describe('#token-liquidity', () => {
         tokenOriginalBalance: 5000
       }
 
-      const result = lib.exchangeTokensForBCH(exchangeObj)
-      // console.log(`result: ${result}`)
+      const retObj = lib.exchangeTokensForBCH(exchangeObj)
+      // console.log(`retObj: ${JSON.stringify(retObj,null,2)}`)
+
+      const result = retObj.bchOut
 
       assert.isNumber(result)
       assert.equal(result, 2.13870808, `Should match spreadsheet`)
@@ -87,8 +91,10 @@ describe('#token-liquidity', () => {
         tokenOriginalBalance: 5000
       }
 
-      const result = lib.exchangeTokensForBCH(exchangeObj)
-      // console.log(`result: ${result}`)
+      const retObj = lib.exchangeTokensForBCH(exchangeObj)
+      // console.log(`retObj: ${JSON.stringify(retObj,null,2)}`)
+
+      const result = retObj.bchOut
 
       assert.isNumber(result)
       assert.equal(result, 5.29470823, `Should match spreadsheet`)

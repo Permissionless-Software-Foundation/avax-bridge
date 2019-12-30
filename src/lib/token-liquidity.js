@@ -152,7 +152,10 @@ class TokenLiquidity {
           tokenOriginalBalance: TOKENS_QTY_ORIGINAL
         }
 
-        const bchOut = _this.exchangeTokensForBCH(exchangeObj)
+        const retObj = _this.exchangeTokensForBCH(exchangeObj)
+        wlogger.debug(`retObj: `, retObj)
+
+        const bchOut = retObj.bchOut
         wlogger.info(
           `Ready to send ${bchOut} BCH in exchange for ${isTokenTx} tokens`
         )
@@ -358,7 +361,15 @@ class TokenLiquidity {
         `bch1: ${bch1}, bch2: ${bch2}, token1: ${token1}, token2: ${token2}, bchOut: ${bchOut}`
       )
 
-      return Math.abs(tlUtil.round8(bchOut))
+      // return Math.abs(tlUtil.round8(bchOut))
+
+      const retObj = {
+        bchOut: Math.abs(tlUtil.round8(bchOut)),
+        bch2,
+        token2
+      }
+
+      return retObj
     } catch (err) {
       wlogger.error(`Error in token-liquidity.js/exchangeTokensForBCH().`)
       throw err
