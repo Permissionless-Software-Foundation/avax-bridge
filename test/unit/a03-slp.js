@@ -235,7 +235,7 @@ describe('#slp', () => {
         const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
         const qty = 1
 
-        await slp.createTokenTx(addr, qty)
+        await slp.createTokenTx(addr, qty, 245)
         // console.log(`result: ${JSON.stringify(result, null, 2)}`)
       } catch (err) {
         // console.log(`err.message: ${err.message}`)
@@ -254,7 +254,7 @@ describe('#slp', () => {
         const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
         const qty = 1
 
-        await slp.createTokenTx(addr, qty)
+        await slp.createTokenTx(addr, qty, 245)
         // console.log(`result: ${JSON.stringify(result, null, 2)}`)
       } catch (err) {
         // console.log(`err.message: ${err.message}`)
@@ -275,7 +275,7 @@ describe('#slp', () => {
         const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
         const qty = 1
 
-        await slp.createTokenTx(addr, qty)
+        await slp.createTokenTx(addr, qty, 245)
         // console.log(`result: ${JSON.stringify(result, null, 2)}`)
       } catch (err) {
         // console.log(`err.message: ${err.message}`)
@@ -297,7 +297,7 @@ describe('#slp', () => {
       const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
       const qty = 1
 
-      const result = await slp.createTokenTx(addr, qty)
+      const result = await slp.createTokenTx(addr, qty, 245)
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
       assert.isString(result)
