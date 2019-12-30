@@ -300,14 +300,16 @@ class TokenLiquidity {
       } = obj
 
       const bch1 = bchBalance
-      const bch2 = bch1 - bchIn - 0.0000027 // Subtract 270 satoshi tx fee
+
+      // Subtract 270 satoshi tx fee
+      const bch2 = bch1 + bchIn - 0.0000027
 
       const token1 =
-        -1 * tokenOriginalBalance * Math.log(bch1 / bchOriginalBalance)
+        tokenOriginalBalance * Math.log(bch1 / bchOriginalBalance)
       const token2 =
-        -1 * tokenOriginalBalance * Math.log(bch2 / bchOriginalBalance)
+        tokenOriginalBalance * Math.log(bch2 / bchOriginalBalance)
 
-      const tokensOut = token2 - token1
+      const tokensOut = this.tlUtil.round8(Math.abs(token2 - token1))
 
       wlogger.debug(
         `bch1: ${bch1}, bch2: ${bch2}, token1: ${token1}, token2: ${token2}, tokensOut: ${tokensOut}`
