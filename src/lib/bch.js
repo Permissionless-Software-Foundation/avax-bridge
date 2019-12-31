@@ -45,6 +45,8 @@ class BCH {
     }
 
     this.BITBOX = BITBOX
+
+    this.tlUtils = tlUtils
   }
 
   // Get the balance in BCH of a BCH address.
@@ -143,7 +145,7 @@ class BCH {
           wlogger.debug(`address: `, address)
           address = this.BITBOX.Address.toCashAddress(address)
 
-          if (address === addr) return tlUtils.round8(value / SATS_PER_BCH)
+          if (address === addr) return this.tlUtils.round8(value / SATS_PER_BCH)
         }
       }
 
@@ -164,7 +166,7 @@ class BCH {
       const RECV_ADDR = obj.recvAddr
       const satoshisToSend = obj.satoshisToSend
 
-      const walletInfo = tlUtils.openWallet()
+      const walletInfo = this.tlUtils.openWallet()
 
       const addrDetails = await this.getBCHBalance(config.BCH_ADDR, false)
       // wlogger.debug(`addrDetails: ${JSON.stringify(addrDetails, null, 2)}`)
@@ -331,7 +333,7 @@ class BCH {
       console.log('Consolidating UTXOs.')
 
       // Open the wallet controlling the bch
-      const walletInfo = tlUtils.openWallet()
+      const walletInfo = this.tlUtils.openWallet()
 
       // Get mnemonic from wallet info
       const mnemonic = walletInfo.mnemonic

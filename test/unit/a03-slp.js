@@ -10,6 +10,7 @@ const nock = require('nock')
 
 // Mocking-data
 const slpMockData = require('./mocks/slp')
+const mockWallet = require('./mocks/testwallet.json')
 // const slpMock = require('slp-sdk-mock')
 
 const config = require('../../config')
@@ -230,6 +231,7 @@ describe('#slp', () => {
     it('should throw an error if there are no BCH UTXOs', async () => {
       try {
         // Mock out down-stream dependencies for a unit test.
+        sandbox.stub(slp.tlUtils, 'openWallet').returns(mockWallet)
         sandbox.stub(slp.bchjs.Blockbook, 'utxo').resolves([])
 
         const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
@@ -246,6 +248,7 @@ describe('#slp', () => {
     it('should throw an error if there are no token UTXOs', async () => {
       try {
         // Mock out down-stream dependencies for a unit test.
+        sandbox.stub(slp.tlUtils, 'openWallet').returns(mockWallet)
         sandbox.stub(slp.bchjs.Blockbook, 'utxo').resolves(slpMockData.utxos)
         sandbox
           .stub(slp.bchjs.SLP.Utils, 'tokenUtxoDetails')
@@ -265,6 +268,7 @@ describe('#slp', () => {
     it('should throw an error if there are no valid token UTXOs', async () => {
       try {
         // Mock out down-stream dependencies for a unit test.
+        sandbox.stub(slp.tlUtils, 'openWallet').returns(mockWallet)
         sandbox.stub(slp.bchjs.Blockbook, 'utxo').resolves(slpMockData.utxos)
         sandbox
           .stub(slp.bchjs.SLP.Utils, 'tokenUtxoDetails')
@@ -285,6 +289,7 @@ describe('#slp', () => {
 
     it('should generate a transaction hex', async () => {
       // Mock out down-stream dependencies for a unit test.
+      sandbox.stub(slp.tlUtils, 'openWallet').returns(mockWallet)
       sandbox.stub(slp.bchjs.Blockbook, 'utxo').resolves(slpMockData.utxos)
       sandbox
         .stub(slp.bchjs.SLP.Utils, 'tokenUtxoDetails')

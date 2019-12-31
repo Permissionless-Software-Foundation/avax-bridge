@@ -37,6 +37,7 @@ class SLP {
 
     this.bchjs = bchjs
     this.bch = bch
+    this.tlUtils = tlUtils
 
     _this = this
   }
@@ -133,7 +134,7 @@ class SLP {
       }
 
       // Open the wallet controlling the tokens
-      const walletInfo = tlUtils.openWallet()
+      const walletInfo = this.tlUtils.openWallet()
       const mnemonic = walletInfo.mnemonic
 
       // root seed buffer
@@ -359,7 +360,7 @@ class SLP {
   async burnTokenTx (newBalance) {
     try {
       // Open the wallet controlling the tokens
-      const walletInfo = tlUtils.openWallet()
+      const walletInfo = this.tlUtils.openWallet()
       const mnemonic = walletInfo.mnemonic
 
       // root seed buffer
@@ -635,7 +636,7 @@ class SLP {
             )
             console.log(' ')
 
-            await tlUtils.sleep(60000 * 4) // Sleep for 4 minutes
+            await this.tlUtils.sleep(60000 * 4) // Sleep for 4 minutes
           },
           retries: 5 // Retry 5 times
         }

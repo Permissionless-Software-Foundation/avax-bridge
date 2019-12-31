@@ -12,6 +12,7 @@ const BCH = require('../../src/lib/bch')
 
 // const bitboxMock = require('bitbox-mock')
 const bchMockData = require('./mocks/bch')
+const mockWallet = require('./mocks/testwallet.json')
 
 const config = require('../../config')
 
@@ -158,6 +159,8 @@ describe('#bch', () => {
     it('should send BCH', async () => {
       // If unit test, use the mocking library instead of live network calls.
       if (process.env.TEST_ENV === 'unit') {
+        sandbox.stub(bch.tlUtils, 'openWallet').returns(mockWallet)
+
         sandbox.stub(bch, 'getBCHBalance').resolves(bchMockData.balance)
 
         sandbox.stub(bch.BITBOX.Blockbook, 'utxo').resolves(bchMockData.utxos)
