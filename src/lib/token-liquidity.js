@@ -318,11 +318,11 @@ class TokenLiquidity {
 
       const tokensOut = this.tlUtil.round8(Math.abs(token2 - token1))
 
-      wlogger.debug(
-        `bch1: ${bch1}, bch2: ${bch2}, token1: ${token1}, token2: ${token2}, tokensOut: ${tokensOut}`
-      )
-
-      wlogger.debug(`${tokensOut} tokens sent in exchange for ${bchIn} BCH`)
+      // wlogger.debug(
+      //   `bch1: ${bch1}, bch2: ${bch2}, token1: ${token1}, token2: ${token2}, tokensOut: ${tokensOut}`
+      // )
+      //
+      // wlogger.debug(`${tokensOut} tokens sent in exchange for ${bchIn} BCH`)
 
       const retObj = {
         tokensOut: Math.abs(this.tlUtil.round8(tokensOut)),
