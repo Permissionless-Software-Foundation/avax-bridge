@@ -292,7 +292,9 @@ class TokenLiquidity {
     }
   }
 
-  // Calculates the numbers of tokens to send.
+  // Calculates the numbers of tokens to send to user, in exchange for the BCH
+  // the user sent to the app.
+  // This function only uses the BCH to calculate the token output.
   exchangeBCHForTokens (obj) {
     try {
       const {
@@ -333,7 +335,11 @@ class TokenLiquidity {
     }
   }
 
-  // Calculates the amount of BCH to send.
+  // Calculates the amount of BCH to send to the user, in exchange for the BCH
+  // the user sent to the app.
+  // TODO: This function only considers the token balance. It would be nice
+  // to refactor this so that it only uses the BCH balance to calculate the token
+  // output.
   exchangeTokensForBCH (obj) {
     try {
       wlogger.silly(`Entering exchangeTokensForBCH.`, obj)
@@ -357,9 +363,9 @@ class TokenLiquidity {
 
       const bchOut = bch2 - bch1 - 0.0000027 // Subtract 270 satoshi tx fee
 
-      wlogger.debug(
-        `bch1: ${bch1}, bch2: ${bch2}, token1: ${token1}, token2: ${token2}, bchOut: ${bchOut}`
-      )
+      // wlogger.debug(
+      //   `bch1: ${bch1}, bch2: ${bch2}, token1: ${token1}, token2: ${token2}, bchOut: ${bchOut}`
+      // )
 
       // return Math.abs(tlUtil.round8(bchOut))
 

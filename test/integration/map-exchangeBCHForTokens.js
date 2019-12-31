@@ -31,8 +31,8 @@ function runTest () {
 
       const tokenInfo = lib.exchangeBCHForTokens(obj)
 
-      // console.log(`balance: ${i}, bchIn: ${INCREMENT}, tokensToSend: ${tokenInfo.tokensOut}, bch2: ${tokenInfo.bch2}, tokenBalance: ${tokenInfo.token2}`)
-      console.log(`${tlUtil.round8(i + INCREMENT)},${tlUtil.round8(tokenInfo.token2)},${tlUtil.round8(tokenInfo.tokensOut)}`)
+      console.log(`balance: ${i}, bchIn: ${INCREMENT}, tokensToSend: ${tokenInfo.tokensOut}, bch2: ${tokenInfo.bch2}, tokenBalance: ${tokenInfo.token2}`)
+      // console.log(`${tlUtil.round8(i + INCREMENT)},${tlUtil.round8(tokenInfo.token2)},${tlUtil.round8(tokenInfo.tokensOut)}`)
     }
   } catch (err) {
     console.log(`Error in runTest(): `, err)

@@ -21,7 +21,7 @@ const INCREMENT = 500
 function runTest () {
   try {
     // Loop through linear increases in BCH.
-    for (let i = INCREMENT; i < 20000; i += INCREMENT) {
+    for (let i = -5000; i < 30000; i += INCREMENT) {
       const obj = {
         tokenIn: INCREMENT,
         tokenBalance: i,
@@ -31,10 +31,10 @@ function runTest () {
 
       const bchOut = lib.exchangeTokensForBCH(obj)
 
-      console.log(`balance: ${i}, tokensIn: ${INCREMENT}`)
-      console.log(`bchOut: ${bchOut}`)
-      // console.log(`${i+INCREMENT},${}`)
-      // console.log(`${tlUtil.round8(i + INCREMENT)},${tlUtil.round8(tokenInfo.token2)},${tlUtil.round8(tokenInfo.tokensOut)}`)
+      // console.log(`token balance: ${i}, tokensIn: ${INCREMENT}, bchOut: ${bchOut.bchOut}, new bch balance: ${bchOut.bch2}, new token balance: ${bchOut.token2 + TOKENS_QTY_ORIGINAL}`)
+      // console.log(`bchOut: ${JSON.stringify(bchOut, null, 2)}`)
+
+      console.log(`${bchOut.token2 + TOKENS_QTY_ORIGINAL},${bchOut.bch2},${bchOut.bchOut}`)
     }
   } catch (err) {
     console.log(`Error in runTest(): `, err)
