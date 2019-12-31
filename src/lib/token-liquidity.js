@@ -5,6 +5,7 @@
 'use strict'
 
 const collect = require('collect.js')
+const pRetry = require('p-retry')
 
 const config = require('../../config')
 
@@ -39,7 +40,7 @@ const TOKENS_QTY_ORIGINAL = config.TOKENS_QTY_ORIGINAL
 const BCH_QTY_ORIGINAL = config.BCH_QTY_ORIGINAL
 
 // p-retry library
-const pRetry = require('p-retry')
+// const pRetry = require('p-retry')
 
 const seenTxs = [] // Track processed TXIDs
 let _this
@@ -54,12 +55,15 @@ class TokenLiquidity {
     this.txs = txs
     this.tlUtil = tlUtil
   }
+
   async getObjProcessTx () {
     return _this.objProcessTx
   }
+
   async setObjProcessTx (obj) {
     _this.objProcessTx = obj
   }
+
   // seenTxs = array of txs that have already been processed.
   // curTxs = Gets a list of transactions associated with the address.
   // diffTxs = diff seenTxs from curTxs
@@ -123,6 +127,9 @@ class TokenLiquidity {
           `userAddr === app address. Exiting compareLastTransaction()`
         )
 
+        // Signal that this was a self-generated transaction.
+        inObj.txid = null
+
         return inObj
       }
 
@@ -145,15 +152,16 @@ class TokenLiquidity {
           tokenOriginalBalance: TOKENS_QTY_ORIGINAL
         }
 
-        const bchOut = _this.exchangeTokensForBCH(exchangeObj)
+        const retObj = _this.exchangeTokensForBCH(exchangeObj)
+        wlogger.debug(`retObj: `, retObj)
+
+        const bchOut = retObj.bchOut
         wlogger.info(
           `Ready to send ${bchOut} BCH in exchange for ${isTokenTx} tokens`
         )
 
         // Update the balances
-        newTokenBalance = tlUtil.round8(
-          exchangeObj.tokenBalance + isTokenTx
-        )
+        newTokenBalance = tlUtil.round8(exchangeObj.tokenBalance + isTokenTx)
         newBchBalance = tlUtil.round8(bchBalance - bchOut)
         wlogger.info(`New BCH balance: ${newBchBalance}`)
         wlogger.info(`New token balance: ${newTokenBalance}`)
@@ -165,17 +173,10 @@ class TokenLiquidity {
         }
         wlogger.debug(`obj.satoshisToSend: ${obj.satoshisToSend}`)
 
+        // Send BCH to the user.
         const hex = await bch.createBchTx(obj)
         const userBCHTXID = await bch.broadcastBchTx(hex)
         wlogger.info(`BCH sent to user: ${userBCHTXID}`)
-
-        // Send the tokens to the apps token address on the 245 derivation path.
-        const tokenConfig = await slp.createTokenTx(
-          config.SLP_ADDR,
-          isTokenTx
-        )
-        const tokenTXID = await slp.broadcastTokenTx(tokenConfig)
-        wlogger.info(`Newly recieved tokens sent to 245 derivation path: ${tokenTXID}`)
 
         // User sent BCH
       } else {
@@ -199,21 +200,35 @@ class TokenLiquidity {
         )
 
         // Calculate the new balances
-        newBchBalance = tlUtil.round8(
-          Number(bchBalance) + exchangeObj.bchIn
-        )
-        newTokenBalance = tlUtil.round8(
-          Number(tokenBalance) - retObj.tokensOut
-        )
+        newBchBalance = tlUtil.round8(Number(bchBalance) + exchangeObj.bchIn)
+        newTokenBalance = tlUtil.round8(Number(tokenBalance) - retObj.tokensOut)
         wlogger.debug(`retObj: ${util.inspect(retObj)}`)
         wlogger.info(`New BCH balance: ${newBchBalance}`)
         wlogger.info(`New token balance: ${newTokenBalance}`)
         console.log('retObj.tokensOut', retObj.tokensOut)
+
+        // Check if transaction includes an OP_RETURN instruction
+        // const opReturnData = bch.readOpReturn(txid)
+
+        // If the TX contains a valid OP_RETURN code
+        // if(opReturnData.isValid) {
+        //
+        //   if(opReturnData.type === 'burn') {
+        //     // Call a method in the slp library to burn a select amount of tokens
+        //     // instead of sending them to a return address.
+        //     const hex = await slp.burnTokenTx(newTokenBalance)
+        //   }
+        //
+        // // Normal BCH transaction with no OP_RETURN.
+        // } else {
+        //   // Send Tokens
+        //   const tokenConfig = await slp.createTokenTx(userAddr, retObj.tokensOut)
+        //
+        //   await slp.broadcastTokenTx(tokenConfig)
+        // }
+
         // Send Tokens
-        const tokenConfig = await slp.createTokenTx(
-          userAddr,
-          retObj.tokensOut
-        )
+        const tokenConfig = await slp.createTokenTx(userAddr, retObj.tokensOut, 245)
 
         await slp.broadcastTokenTx(tokenConfig)
       }
@@ -224,6 +239,13 @@ class TokenLiquidity {
         tokenBalance: tlUtil.round8(newTokenBalance)
       }
 
+      // Report the type of transaction we just processed.
+      // If tokens, report the qty of tokens.
+      if (isTokenTx) {
+        retObj.type = 'token'
+        retObj.tokenQty = isTokenTx
+      } else retObj.type = 'bch'
+
       // Return the newly detected txid.
       return retObj
     } catch (err) {
@@ -232,203 +254,47 @@ class TokenLiquidity {
     }
   }
 
-  // DEPRECATED - This is an older version of the processing code. This will
-  // be deleted once the new code is complete.
-  // Checks the last TX associated with the BCH address. If it changed, then
-  // the program reacts to it. Otherwise it exits.
-  // Here is the general flow of this function:
-  // -Organize the transactions and return an array of 1-conf transactions
-  // -if there are no 1-conf transactions (2-conf or greater)...
-  // --Retrieve the BCH and token balances from the blockchain and return those
-  // -else loop through each transaction in the 1-conf array
-  // --if the current transaction is different than the last processed transaction...
-  // ---if the users address matches the app address, ignore and skip.
-  // ---if the user sent tokens...
-  // ----calculate and send BCH
-  // ---if the user sent BCH...
-  // ----calculate and send tokens
-  // ---Calculate the new BCH and token balances and return them.
-  async compareLastTransaction (obj) {
+  // This function wraps the tryProcessTx() function with the p-retry library.
+  // This will allow it to try multiple times in the event of an error.
+  async pRetryProcessTx (obj) {
     try {
-      const { bchAddr, txid, bchBalance, tokenBalance } = obj
+      // Update global var with obj
+      // This is because the function that executes the p-retry library
+      // cannot pass attributes as parameters
+      // _this.setObjProcessTx(obj)
 
-      let newBchBalance = bchBalance
-      let newTokenBalance = tokenBalance
+      if (!obj) throw new Error('obj is undefined')
 
-      // Get an array of 1-conf transactions
-      const lastTransactions = await txs.getLastConfirmedTransactions(bchAddr)
+      const result = await pRetry(() => _this.processTx(obj), {
+        onFailedAttempt: async error => {
+          //   failed attempt.
+          console.log(' ')
+          console.log(
+            `Attempt ${error.attemptNumber} failed. There are ${
+              error.retriesLeft
+            } retries left. Waiting 4 minutes before trying again.`
+          )
+          console.log(' ')
 
-      // If there are no 0 or 1-conf transactions.
-      const isOnly2Conf = await txs.only2Conf(BCH_ADDR1)
-      if (isOnly2Conf) {
-        // Retrieve the balances from the blockchain.
-        const retObj2 = await _this.getBlockchainBalances(BCH_ADDR1)
-        retObj2.lastTransaction = txid
-        return retObj2
-      }
+          await tlUtil.sleep(60000 * 4) // Sleep for 4 minutes
+        },
+        retries: 5 // Retry 5 times
+      })
 
-      // Loop through each 1-conf transaction.
-      for (let i = 0; i < lastTransactions.length; i++) {
-        const lastTransaction = lastTransactions[i]
+      // Reset the global object to an empty object.
+      // _this.setObjProcessTx({})
 
-        // Check to see if this Tx has already been processed.
-        const notSeen = seenTxs.indexOf(lastTransaction) === -1
-
-        // Is this a new, unseen transaction?
-        if (lastTransaction !== txid && notSeen) {
-          wlogger.info(`New TXID ${lastTransaction} detected.`)
-
-          // Get the sender's address for this transaction.
-          const userAddr = await txs.getUserAddr(lastTransaction)
-          wlogger.info(`userAddr: ${util.inspect(userAddr)}`)
-
-          // Exit if the userAddr is the same as the bchAddr for this app.
-          // This occurs when the app sends bch or tokens to the user.
-          if (userAddr === bchAddr) {
-            wlogger.info(
-              `userAddr === app address. Exiting compareLastTransaction()`
-            )
-            seenTxs.push(lastTransaction)
-            const retObj = {
-              lastTransaction: lastTransaction,
-              bchBalance: newBchBalance,
-              tokenBalance: newTokenBalance
-            }
-            return retObj
-          }
-
-          // Process new txid.
-          // const isTokenTx = await tokenTxInfo(lastTransaction, wormhole)
-          const isTokenTx = await slp.tokenTxInfo(lastTransaction)
-          wlogger.debug(`isTokenTx: ${isTokenTx}`)
-
-          // User sent tokens.
-          if (isTokenTx) {
-            wlogger.info(`${isTokenTx} tokens recieved.`)
-
-            // Exchange tokens for BCH
-            const exchangeObj = {
-              tokenIn: isTokenTx,
-              tokenBalance: Number(tokenBalance),
-              bchOriginalBalance: BCH_QTY_ORIGINAL,
-              tokenOriginalBalance: TOKENS_QTY_ORIGINAL
-            }
-
-            const bchOut = _this.exchangeTokensForBCH(exchangeObj)
-            wlogger.info(
-              `Ready to send ${bchOut} BCH in exchange for ${isTokenTx} tokens`
-            )
-
-            // Update the balances
-            newTokenBalance = tlUtil.round8(
-              exchangeObj.tokenBalance + isTokenTx
-            )
-            newBchBalance = tlUtil.round8(bchBalance - bchOut)
-            wlogger.info(`New BCH balance: ${newBchBalance}`)
-            wlogger.info(`New token balance: ${newTokenBalance}`)
-
-            // Send BCH
-            const obj = {
-              recvAddr: userAddr,
-              satoshisToSend: Math.floor(bchOut * 100000000)
-            }
-            wlogger.debug(`obj.satoshisToSend: ${obj.satoshisToSend}`)
-
-            const hex = await bch.createBchTx(obj)
-            const userBCHTXID = await bch.broadcastBchTx(hex)
-            wlogger.info(`BCH sent to user: ${userBCHTXID}`)
-
-            // Send the tokens to the apps token address on the 245 derivation path.
-            const tokenConfig = await slp.createTokenTx(
-              config.SLP_ADDR,
-              isTokenTx
-            )
-            const tokenTXID = await slp.broadcastTokenTx(tokenConfig)
-            wlogger.info(`Newly recieved tokens sent to 245 derivation path: ${tokenTXID}`)
-
-            // User sent BCH
-          } else {
-            // Get the BCH send amount.
-            const bchQty = await bch.recievedBch(lastTransaction, BCH_ADDR1)
-            wlogger.info(`${bchQty} BCH recieved.`)
-
-            // Exchange BCH for tokens
-            const exchangeObj = {
-              bchIn: Number(bchQty),
-              bchBalance: Number(bchBalance),
-              bchOriginalBalance: BCH_QTY_ORIGINAL,
-              tokenOriginalBalance: TOKENS_QTY_ORIGINAL
-            }
-            const retObj = _this.exchangeBCHForTokens(exchangeObj)
-
-            wlogger.info(
-              `Ready to send ${
-                retObj.tokensOut
-              } tokens in exchange for ${bchQty} BCH`
-            )
-
-            // Calculate the new balances
-            // newBchBalance = retObj.bch2
-            newBchBalance = tlUtil.round8(
-              Number(bchBalance) + exchangeObj.bchIn
-            )
-            newTokenBalance = tlUtil.round8(
-              Number(tokenBalance) - retObj.tokensOut
-            )
-            wlogger.debug(`retObj: ${util.inspect(retObj)}`)
-            wlogger.info(`New BCH balance: ${newBchBalance}`)
-            wlogger.info(`New token balance: ${newTokenBalance}`)
-
-            // Send Tokens
-            // const obj = {
-            //  recvAddr: userAddr,
-            //  tokensToSend: retObj.tokensOut
-            // }
-
-            // await tknLib.sendTokens(obj)
-            const tokenConfig = await slp.createTokenTx(
-              userAddr,
-              retObj.tokensOut
-            )
-            await slp.broadcastTokenTx(tokenConfig)
-          }
-
-          // Add the last transaction TXID to the seenTxs array so that it's not
-          // processed twice. Allows processing of multiple transactions in the
-          // same block.
-          seenTxs.push(lastTransaction)
-
-          const retObj = {
-            lastTransaction: lastTransaction,
-            bchBalance: tlUtil.round8(newBchBalance),
-            tokenBalance: tlUtil.round8(newTokenBalance)
-          }
-
-          // Return the newly detected txid.
-          return retObj
-        }
-      }
-
-      // Return false to signal no detected change in txid.
-      wlogger.debug(`compareLastTransaction returning false.`)
-      return false
-    } catch (err) {
-      if (err.code === 'ENETUNREACH' || err.code === 'ETIMEDOUT') {
-        console.log(`Could not connect to rest.bitcoin.com. Will try again.`)
-        return
-      }
-
-      wlogger.error(
-        `Error in token-liquidity.js/compareLastTransaction(): `,
-        err
-      )
-      wlogger.error(`obj: ${JSON.stringify(obj, null, 2)}`)
-      wlogger.error(`err.code: ${err.code}`)
-      // throw err
+      return result
+    } catch (error) {
+      console.log('Error in token-liquidity.js/pRetryProcessTx(): ', error)
+      return error
+      // console.log(error)
     }
   }
 
-  // Calculates the numbers of tokens to send.
+  // Calculates the numbers of tokens to send to user, in exchange for the BCH
+  // the user sent to the app.
+  // This function only uses the BCH to calculate the token output.
   exchangeBCHForTokens (obj) {
     try {
       const {
@@ -439,14 +305,16 @@ class TokenLiquidity {
       } = obj
 
       const bch1 = bchBalance
-      const bch2 = bch1 - bchIn - 0.0000027 // Subtract 270 satoshi tx fee
+
+      // Subtract 270 satoshi tx fee
+      const bch2 = bch1 + bchIn - 0.0000027
 
       const token1 =
-        -1 * tokenOriginalBalance * Math.log(bch1 / bchOriginalBalance)
+        tokenOriginalBalance * Math.log(bch1 / bchOriginalBalance)
       const token2 =
-        -1 * tokenOriginalBalance * Math.log(bch2 / bchOriginalBalance)
+        tokenOriginalBalance * Math.log(bch2 / bchOriginalBalance)
 
-      const tokensOut = token2 - token1
+      const tokensOut = this.tlUtil.round8(Math.abs(token2 - token1))
 
       wlogger.debug(
         `bch1: ${bch1}, bch2: ${bch2}, token1: ${token1}, token2: ${token2}, tokensOut: ${tokensOut}`
@@ -467,7 +335,11 @@ class TokenLiquidity {
     }
   }
 
-  // Calculates the amount of BCH to send.
+  // Calculates the amount of BCH to send to the user, in exchange for the BCH
+  // the user sent to the app.
+  // TODO: This function only considers the token balance. It would be nice
+  // to refactor this so that it only uses the BCH balance to calculate the token
+  // output.
   exchangeTokensForBCH (obj) {
     try {
       wlogger.silly(`Entering exchangeTokensForBCH.`, obj)
@@ -491,11 +363,19 @@ class TokenLiquidity {
 
       const bchOut = bch2 - bch1 - 0.0000027 // Subtract 270 satoshi tx fee
 
-      wlogger.debug(
-        `bch1: ${bch1}, bch2: ${bch2}, token1: ${token1}, token2: ${token2}, bchOut: ${bchOut}`
-      )
+      // wlogger.debug(
+      //   `bch1: ${bch1}, bch2: ${bch2}, token1: ${token1}, token2: ${token2}, bchOut: ${bchOut}`
+      // )
 
-      return Math.abs(tlUtil.round8(bchOut))
+      // return Math.abs(tlUtil.round8(bchOut))
+
+      const retObj = {
+        bchOut: Math.abs(tlUtil.round8(bchOut)),
+        bch2,
+        token2
+      }
+
+      return retObj
     } catch (err) {
       wlogger.error(`Error in token-liquidity.js/exchangeTokensForBCH().`)
       throw err
@@ -542,45 +422,6 @@ class TokenLiquidity {
     } catch (err) {
       wlogger.error(`Error in token-liquidity.js/getBlockchainBalances().`)
       throw err
-    }
-  }
-  async pRetryProcessTx (obj) {
-    // Update global var with obj
-    // This because the function that executes the p-retry library...
-    // ...cannot pass attributes as parameters
-    _this.setObjProcessTx(obj)
-    if (!obj) throw new Error('Error in "pRetryProcessTx" functions')
-    try {
-      const result = await pRetry(_this.tryProcessTx, {
-        onFailedAttempt: async () => {
-          //   failed attempt.
-          console.log('P-retry error')
-          await _this.sleep(60000 * 2) // Sleep for 2 minutes
-        },
-        retries: 5 // Retry 5 times
-      })
-      _this.setObjProcessTx({})
-      return result
-    } catch (error) {
-      // console.log('ERROR from pRetryProcessTx function', error)
-      return error
-      // console.log(error)
-    }
-  }
-  sleep (ms) {
-    return new Promise(resolve => setTimeout(resolve, ms))
-  }
-  // Function called by p-retry library
-  async tryProcessTx () {
-    console.log(`Trying Process Tx`)
-    const obj = await _this.getObjProcessTx()
-    try {
-      const result = await _this.processTx(obj)
-      return result
-      // console.log('result', result)
-    } catch (error) {
-      // console.log('ERROR from tryProcessTx function', error)
-      throw error
     }
   }
 }

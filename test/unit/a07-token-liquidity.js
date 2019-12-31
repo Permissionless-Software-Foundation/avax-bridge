@@ -57,18 +57,55 @@ describe('#token-liquidity', () => {
         tokenOriginalBalance: 5000
       }
 
-      const result = lib.exchangeTokensForBCH(exchangeObj)
-      // console.log(`result: ${result}`)
+      const retObj = lib.exchangeTokensForBCH(exchangeObj)
+      // console.log(`retObj: ${JSON.stringify(retObj,null,2)}`)
+
+      const result = retObj.bchOut
 
       assert.isNumber(result)
       assert.equal(result, 1.1814112, `Should match spreadsheet`)
+    })
+
+    it('should calculate values in the spreadsheet', () => {
+      const exchangeObj = {
+        tokenIn: 5000,
+        tokenBalance: 15000,
+        bchOriginalBalance: 25,
+        tokenOriginalBalance: 5000
+      }
+
+      const retObj = lib.exchangeTokensForBCH(exchangeObj)
+      // console.log(`retObj: ${JSON.stringify(retObj,null,2)}`)
+
+      const result = retObj.bchOut
+
+      assert.isNumber(result)
+      assert.equal(result, 2.13870808, `Should match spreadsheet`)
+    })
+
+    it('should calculate values in the spreadsheet', () => {
+      const exchangeObj = {
+        tokenIn: 500,
+        tokenBalance: 1000,
+        bchOriginalBalance: 25,
+        tokenOriginalBalance: 5000
+      }
+
+      const retObj = lib.exchangeTokensForBCH(exchangeObj)
+      // console.log(`retObj: ${JSON.stringify(retObj,null,2)}`)
+
+      const result = retObj.bchOut
+
+      assert.isNumber(result)
+      assert.equal(result, 5.29470823, `Should match spreadsheet`)
     })
   })
 
   describe('exchangeBCHForTokens', () => {
     it('should calculate values in the spreadsheet', () => {
       const exchangeObj = {
-        bchIn: 1.181410849,
+        // bchIn: 1.181410849,
+        bchIn: 1.30565831,
         bchBalance: 12.41463259,
         bchOriginalBalance: 25,
         tokenOriginalBalance: 5000
@@ -80,7 +117,28 @@ describe('#token-liquidity', () => {
       assert.hasAllKeys(result, ['tokensOut', 'bch2', 'token2'])
       assert.equal(
         Math.floor(result.tokensOut),
-        500,
+        499,
+        `Should match spreadsheet`
+      )
+      assert.isNumber(result.bch2)
+      assert.isNumber(result.token2)
+    })
+
+    it('should calculate values in the spreadsheet', () => {
+      const exchangeObj = {
+        bchIn: 5.81360394,
+        bchBalance: 3.38338208,
+        bchOriginalBalance: 25,
+        tokenOriginalBalance: 5000
+      }
+
+      const result = lib.exchangeBCHForTokens(exchangeObj)
+      // console.log(`result: ${util.inspect(result)}`)
+
+      assert.hasAllKeys(result, ['tokensOut', 'bch2', 'token2'])
+      assert.equal(
+        Math.floor(result.tokensOut),
+        4999,
         `Should match spreadsheet`
       )
       assert.isNumber(result.bch2)
@@ -106,12 +164,10 @@ describe('#token-liquidity', () => {
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
       assert.isArray(result)
-      assert.hasAllKeys(result[0], [
-        'txid',
-        'confirmations'
-      ])
+      assert.hasAllKeys(result[0], ['txid', 'confirmations'])
     })
   })
+
   describe('#pRetryProcessTx function', () => {
     it('should throw error if parameters are not defined', async () => {
       try {
@@ -120,22 +176,19 @@ describe('#token-liquidity', () => {
         assert.include(error.message, `Error in "pRetryProcessTx" functions`)
       }
     })
+
     it('Should return object', async () => {
       console.log('init test')
       const obj = {
-        txid: '14df82e3ec54fa0227531309f7189ed695bafad6f5062407d3a528fbeddc4a09',
+        txid:
+          '14df82e3ec54fa0227531309f7189ed695bafad6f5062407d3a528fbeddc4a09',
         bchBalance: 12.01044695,
-        tokenBalance: 1 }
-      sandbox
-        .stub(lib, 'processTx')
-        .resolves(libMockData.processTx)
+        tokenBalance: 1
+      }
+      sandbox.stub(lib, 'processTx').resolves(libMockData.processTx)
       try {
         const result = await lib.pRetryProcessTx(obj)
-        assert.hasAllKeys(result, [
-          'txid',
-          'bchBalance',
-          'tokenBalance'
-        ])
+        assert.hasAllKeys(result, ['txid', 'bchBalance', 'tokenBalance'])
       } catch (error) {
         console.log(error)
         // assert.include(error.message, `Error in "pRetryProcessTx" functions`)

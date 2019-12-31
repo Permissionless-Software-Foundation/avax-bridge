@@ -13,15 +13,25 @@ const slp = new SLP()
 const BCH = require('../src/lib/bch')
 const bch = new BCH()
 
-// App utility functions library.
-const TLUtils = require('../src/lib/util')
-const tlUtil = new TLUtils()
+// Queue Library
+// const Queue = require('./queue')
+// const queue = new Queue()
 
-const Transactions = require('../src/lib/transactions')
-const txs = new Transactions()
+const { default: PQueue } = require('p-queue')
+const queue = new PQueue({ concurrency: 1 })
+
+// App utility functions library.
+// const TLUtils = require('../src/lib/util')
+// const tlUtil = new TLUtils()
+
+// const Transactions = require('../src/lib/transactions')
+// const txs = new Transactions()
 
 const TokenLiquidity = require('../src/lib/token-liquidity')
 const lib = new TokenLiquidity()
+
+// Add the queue to the token-liquidity library
+lib.queue = queue
 
 const config = require('../config')
 config.bchBalance = config.BCH_QTY_ORIGINAL
@@ -37,10 +47,11 @@ util.inspect.defaultOptions = {
   colors: true
 }
 
-const BCH_ADDR1 = config.BCH_ADDR
+// const BCH_ADDR1 = config.BCH_ADDR
 // const TOKEN_ID = config.TOKEN_ID
 
 const FIVE_MINUTES = 60000 * 5
+const CONSOLIDATE_INTERVAL = 60000 * 100
 let timerHandle
 
 let bchBalance
@@ -100,6 +111,11 @@ async function startTokenLiquidity () {
   timerHandle = setInterval(async function () {
     await processingLoop(seenTxs)
   }, 60000 * 2)
+
+  // Interval to consolidate UTXOs (maintenance)
+  setInterval(async function () {
+    await bch.consolidateUtxos()
+  }, CONSOLIDATE_INTERVAL)
 }
 
 async function processingLoop (seenTxs) {
@@ -147,9 +163,22 @@ async function processingLoop (seenTxs) {
 
       // TODO: Instead of calling processTx(), call p-retry so that it will
       // retry processTx() several times if it errors out.
-      console.log(obj)
-      const result = await lib.pRetryProcessTx(obj)
+      console.log(' ')
+      console.log(' ')
+      console.log(`Processing new transaction with this data: ${JSON.stringify(obj, null, 2)}`)
+
+      clearInterval(timerHandle)
+
+      // const result = await queue.pRetryProcessTx(obj)
+      const result = await queue.add(() => lib.pRetryProcessTx(obj))
+      console.log(`queue.size: ${queue.size}`)
       console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      // If the app received tokens, send them to the 245 path.
+      if (result.type === 'token') {
+        const obj = { tokenQty: result.tokenQty }
+        await queue.add(() => slp.moveTokens(obj))
+      }
 
       // Update the app balances. This temporarily updates the app balances until
       // processing is complete, at which time the app can get its balance from
@@ -160,9 +189,12 @@ async function processingLoop (seenTxs) {
       console.log(` `)
 
       // Sleep for 5 minutes to give Blockbook time to process the last transaction.
-      // TODO: This is a really bad way to do it. This part should be able to be
-      // eliminated once the retry code is implemented.
-      // await waitForBlockbook(seenTxs)
+      // If result.txid === null, it's a self-generated TX, so we don't need to wait.
+      if (result.txid !== null) { await waitForBlockbook(seenTxs) }
+
+      timerHandle = setInterval(async function () {
+        await processingLoop(seenTxs)
+      }, 60000 * 2)
     }
   } catch (err) {
     wlogger.error(`Error in token-liquidity.js.`, err)
@@ -173,7 +205,7 @@ async function processingLoop (seenTxs) {
 
 // Sleep for 5 minutes to give Blockbook time to process the last transaction.
 // Disables the processing loop while it waits.
-/* async function waitForBlockbook (seenTxs) {
+async function waitForBlockbook (seenTxs) {
   const now = new Date()
   wlogger.info(
     `${
@@ -181,19 +213,15 @@ async function processingLoop (seenTxs) {
     }: Waiting 5 minutes before processing next transaction...`
   )
 
-  clearInterval(timerHandle)
+  // clearInterval(timerHandle)
   await sleep(FIVE_MINUTES)
   console.log(`...continuing processing.`)
-
-  timerHandle = setInterval(async function () {
-    await processingLoop(seenTxs)
-  }, 60000 * 2)
 }
 
 function sleep (ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
-*/
+
 module.exports = {
   startTokenLiquidity
 }

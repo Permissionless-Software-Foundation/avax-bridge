@@ -10,6 +10,7 @@ const nock = require('nock')
 
 // Mocking-data
 const slpMockData = require('./mocks/slp')
+const mockWallet = require('./mocks/testwallet.json')
 // const slpMock = require('slp-sdk-mock')
 
 const config = require('../../config')
@@ -227,20 +228,82 @@ describe('#slp', () => {
   })
 
   describe('#createTokenTx', () => {
-    it('should generate a transaction hex', async () => {
-      // Mock out dependencies for a unit test.
-      if (process.env.TEST_ENV === 'unit') {
+    it('should throw an error if there are no BCH UTXOs', async () => {
+      try {
+        // Mock out down-stream dependencies for a unit test.
+        sandbox.stub(slp.tlUtils, 'openWallet').returns(mockWallet)
+        sandbox.stub(slp.bchjs.Blockbook, 'utxo').resolves([])
+
+        const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
+        const qty = 1
+
+        await slp.createTokenTx(addr, qty, 245)
+        // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+      } catch (err) {
+        // console.log(`err.message: ${err.message}`)
+        assert.include(err.message, 'Wallet does not have a BCH UTXO to pay miner fees')
+      }
+    })
+
+    it('should throw an error if there are no token UTXOs', async () => {
+      try {
+        // Mock out down-stream dependencies for a unit test.
+        sandbox.stub(slp.tlUtils, 'openWallet').returns(mockWallet)
+        sandbox.stub(slp.bchjs.Blockbook, 'utxo').resolves(slpMockData.utxos)
+        sandbox
+          .stub(slp.bchjs.SLP.Utils, 'tokenUtxoDetails')
+          .resolves([false, false])
+
+        const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
+        const qty = 1
+
+        await slp.createTokenTx(addr, qty, 245)
+        // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+      } catch (err) {
+        // console.log(`err.message: ${err.message}`)
+        assert.include(err.message, 'No token UTXOs are available')
+      }
+    })
+
+    it('should throw an error if there are no valid token UTXOs', async () => {
+      try {
+        // Mock out down-stream dependencies for a unit test.
+        sandbox.stub(slp.tlUtils, 'openWallet').returns(mockWallet)
         sandbox.stub(slp.bchjs.Blockbook, 'utxo').resolves(slpMockData.utxos)
         sandbox
           .stub(slp.bchjs.SLP.Utils, 'tokenUtxoDetails')
           .resolves(slpMockData.tokenUtxos)
+        sandbox.stub(slp.bch, 'findBiggestUtxo').resolves(slpMockData.utxos[0])
+        sandbox.stub(slp.bchjs.Blockchain, 'getTxOut').resolves(null)
+
+        const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
+        const qty = 1
+
+        await slp.createTokenTx(addr, qty, 245)
+        // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+      } catch (err) {
+        // console.log(`err.message: ${err.message}`)
+        assert.include(err.message, 'No token UTXOs are available')
       }
+    })
+
+    it('should generate a transaction hex', async () => {
+      // Mock out down-stream dependencies for a unit test.
+      sandbox.stub(slp.tlUtils, 'openWallet').returns(mockWallet)
+      sandbox.stub(slp.bchjs.Blockbook, 'utxo').resolves(slpMockData.utxos)
+      sandbox
+        .stub(slp.bchjs.SLP.Utils, 'tokenUtxoDetails')
+        .resolves(slpMockData.tokenUtxos)
+      sandbox.stub(slp.bch, 'findBiggestUtxo').resolves(slpMockData.utxos[0])
+      sandbox
+        .stub(slp.bchjs.Blockchain, 'getTxOut')
+        .resolves(slpMockData.validUtxo)
 
       const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
       const qty = 1
 
-      const result = await slp.createTokenTx(addr, qty)
-      // console.log(`result: ${util.inspect(result)}`)
+      const result = await slp.createTokenTx(addr, qty, 245)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
       assert.isString(result)
       assert.equal(result.indexOf('0200'), 0, 'First part of string matches.')

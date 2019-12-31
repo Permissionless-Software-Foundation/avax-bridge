@@ -79,6 +79,10 @@ class TLUtils {
       throw new Error(`wallet file not found`)
     }
   }
+
+  sleep (ms) {
+    return new Promise(resolve => setTimeout(resolve, ms))
+  }
 }
 
 module.exports = TLUtils
