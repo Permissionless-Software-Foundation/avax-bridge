@@ -134,10 +134,13 @@ class BCH {
         // Skip if value is zero.
         if (thisVout.value === 0.0) continue
 
+        // Skip if address array is empty.
+        if (thisVout.addresses.length === 0) continue
+
         // Skip if vout has no addresses field.
         if (thisVout.addresses) {
           const addresses = thisVout.addresses
-          // console.log(`addresses: ${JSON.stringify(addresses, null, 2)}`);
+          // console.log(`addresses: ${JSON.stringify(addresses, null, 2)}`)
 
           // Note: Assuming addresses[] only has 1 element.
           // Not sure how there can be multiple addresses if the value is not an array.

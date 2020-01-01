@@ -211,23 +211,26 @@ class TokenLiquidity {
         // If the TX contains a valid OP_RETURN code
         if (opReturnData.isValid) {
           if (opReturnData.type === 'burn') {
+            console.log(`BURN OP_RETURN detected. Burning ${retObj.tokensOut} tokens.`)
+
             // Call a method in the slp library to burn a select amount of tokens
             // instead of sending them to a return address.
             const hex = await slp.burnTokenTx(retObj.tokensOut)
+            await slp.broadcastTokenTx(hex)
           }
 
         // Normal BCH transaction with no OP_RETURN.
         } else {
           // Send Tokens
-          const tokenConfig = await slp.createTokenTx(userAddr, retObj.tokensOut)
+          const tokenHex = await slp.createTokenTx(userAddr, retObj.tokensOut, 245)
 
-          await slp.broadcastTokenTx(tokenConfig)
+          await slp.broadcastTokenTx(tokenHex)
         }
 
         // Send Tokens
-        const tokenConfig = await slp.createTokenTx(userAddr, retObj.tokensOut, 245)
+        // const tokenConfig = await slp.createTokenTx(userAddr, retObj.tokensOut, 245)
 
-        await slp.broadcastTokenTx(tokenConfig)
+        // await slp.broadcastTokenTx(tokenConfig)
       }
 
       const retObj = {
