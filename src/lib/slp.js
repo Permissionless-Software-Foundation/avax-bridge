@@ -357,7 +357,7 @@ class SLP {
 
   // Craft a SLP token TX to burn a quantity of tokens.
   // Sends tokens from the 245 address, but pays miner fees from the 145 address.
-  async burnTokenTx (newBalance) {
+  async burnTokenTx (burnQty) {
     try {
       // Open the wallet controlling the tokens
       const walletInfo = this.tlUtils.openWallet()
@@ -461,9 +461,6 @@ class SLP {
           tokenUtxos.splice(i, 1)
         }
       }
-      console.log(
-        `tokenUtxos (filter 2): ${JSON.stringify(tokenUtxos, null, 2)}`
-      )
 
       // Bail out if no token UTXOs are found.
       if (tokenUtxos.length === 0) {
@@ -471,13 +468,13 @@ class SLP {
       }
 
       // Generate the OP_RETURN code.
-      console.log(`qty: ${qty}`)
-      const slpSendObj = this.bchjs.SLP.TokenType1.generateSendOpReturn(
+      console.log(`burnQty: ${burnQty}`)
+      const script = this.bchjs.SLP.TokenType1.generateBurnOpReturn(
         tokenUtxos,
-        Number(newBalance)
+        Number(burnQty)
         // TODO: research this call and make sure I'm passing the right qty.
       )
-      const slpData = this.bchjs.Script.encode(slpSendObj.script)
+      const slpData = this.bchjs.Script.encode(script)
       // console.log(`slpOutputs: ${slpSendObj.outputs}`)
 
       // END - Get token UTXOs for SLP transaction
@@ -525,21 +522,13 @@ class SLP {
 
       // Send dust transaction representing tokens being sent.
       transactionBuilder.addOutput(
-        this.bchjs.SLP.Address.toLegacyAddress(addr),
+        this.bchjs.SLP.Address.toLegacyAddress(config.SLP_ADDR),
         546
       )
 
-      // Return any token change back to the sender.
-      if (slpSendObj.outputs > 1) {
-        transactionBuilder.addOutput(
-          this.bchjs.SLP.Address.toLegacyAddress(slpAddress),
-          546
-        )
-      }
-
       // Last output: send the BCH change back to the wallet.
       transactionBuilder.addOutput(
-        this.bchjs.Address.toLegacyAddress(cashAddressBCH),
+        this.bchjs.Address.toLegacyAddress(config.BCH_ADDR),
         remainder
       )
 
