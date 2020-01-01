@@ -161,10 +161,8 @@ class TokenLiquidity {
         )
 
         // Update the balances
-        newTokenBalance = this.tlUtil.round8(exchangeObj.tokenBalance + isTokenTx)
-        newBchBalance = this.tlUtil.round8(bchBalance - bchOut)
-        wlogger.info(`New BCH balance: ${newBchBalance}`)
-        wlogger.info(`New token balance: ${newTokenBalance}`)
+        wlogger.info(`New BCH balance: ${retObj.bch2}`)
+        wlogger.info(`New token balance: ${retObj.token2}`)
 
         // Send BCH
         const obj = {
@@ -246,6 +244,8 @@ class TokenLiquidity {
         retObj.tokenQty = isTokenTx
       } else retObj.type = 'bch'
 
+      console.log(`processTx() retObj: ${JSON.stringify(retObj, null, 2)}`)
+
       // Return the newly detected txid.
       return retObj
     } catch (err) {
@@ -318,11 +318,11 @@ class TokenLiquidity {
 
       const tokensOut = this.tlUtil.round8(Math.abs(token2 - token1))
 
-      // wlogger.debug(
-      //   `bch1: ${bch1}, bch2: ${bch2}, token1: ${token1}, token2: ${token2}, tokensOut: ${tokensOut}`
-      // )
-      //
-      // wlogger.debug(`${tokensOut} tokens sent in exchange for ${bchIn} BCH`)
+      wlogger.debug(
+        `bch1: ${bch1}, bch2: ${bch2}, token1: ${token1}, token2: ${token2}, tokensOut: ${tokensOut}`
+      )
+
+      wlogger.debug(`${tokensOut} tokens sent in exchange for ${bchIn} BCH`)
 
       const retObj = {
         tokensOut: Math.abs(this.tlUtil.round8(tokensOut)),
@@ -370,11 +370,9 @@ class TokenLiquidity {
       let bchOut = bch2 - bch1 - 0.0000027 // Subtract 270 satoshi tx fee
       bchOut = Math.abs(tlUtil.round8(bchOut))
 
-      // wlogger.debug(
-      //   `bch1: ${bch1}, bch2: ${bch2}, token1: ${token1}, token2: ${token2}, bchOut: ${bchOut}`
-      // )
-
-      // return Math.abs(tlUtil.round8(bchOut))
+      wlogger.debug(
+        `bch1: ${bch1}, bch2: ${bch2}, token1: ${token1}, token2: ${token2}, bchOut: ${bchOut}`
+      )
 
       const retObj = {
         bchOut,
@@ -394,7 +392,7 @@ class TokenLiquidity {
   getSpotPrice (bchBalance, usdPerBCH) {
     try {
       const obj = {
-        bchIn: -1.0,
+        bchIn: 1.0,
         bchBalance: bchBalance,
         bchOriginalBalance: 25.0,
         tokenOriginalBalance: 5000
