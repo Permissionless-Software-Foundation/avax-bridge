@@ -206,12 +206,13 @@ class TokenLiquidity {
         console.log('retObj.tokensOut', retObj.tokensOut)
 
         // Check if transaction includes an OP_RETURN instruction
-        const opReturnData = bch.readOpReturn(txid)
+        const opReturnData = await bch.readOpReturn(txid)
+        // console.log(`opReturnData: ${JSON.stringify(opReturnData, null, 2)}`)
 
         // If the TX contains a valid OP_RETURN code
         if (opReturnData.isValid) {
           if (opReturnData.type === 'burn') {
-            console.log(`BURN OP_RETURN detected. Burning ${retObj.tokensOut} tokens.`)
+            wlogger.info(`BURN OP_RETURN detected. Burning ${retObj.tokensOut} tokens.`)
 
             // Call a method in the slp library to burn a select amount of tokens
             // instead of sending them to a return address.

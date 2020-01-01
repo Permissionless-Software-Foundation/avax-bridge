@@ -452,17 +452,18 @@ class BCH {
 
       // Decode the command
       let cmd = Buffer.from(script[2], 'hex').toString('ascii')
-      cmd = cmd.split(' ')
+      // cmd = cmd.split(' ')
       // console.log(`cmd: ${JSON.stringify(cmd, null, 2)}`)
 
-      if (cmd[0] === 'BURN') {
-        let qty = Number(cmd[1])
+      // if (cmd[0] === 'BURN') {
+      if (cmd.indexOf('BURN') > -1) {
+        // let qty = Number(cmd[1])
         // console.log(`qty: ${qty}`)
-        qty = Number(qty)
+        // qty = Number(qty)
 
         retObj.isValid = true
         retObj.type = 'burn'
-        retObj.qty = qty
+        // retObj.qty = qty
       }
 
       return retObj
