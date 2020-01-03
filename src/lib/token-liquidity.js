@@ -182,6 +182,12 @@ class TokenLiquidity {
         const bchQty = await bch.recievedBch(lastTransaction, BCH_ADDR1)
         wlogger.info(`${bchQty} BCH recieved.`)
 
+        if (bchQty < 547) {
+          throw new Error(
+            `Dust recieved. This is probably a token tx that SLPDB doesn't know about.`
+          )
+        }
+
         // Exchange BCH for tokens
         const exchangeObj = {
           bchIn: Number(bchQty),
@@ -198,8 +204,12 @@ class TokenLiquidity {
         )
 
         // Calculate the new balances
-        newBchBalance = this.tlUtil.round8(Number(bchBalance) + exchangeObj.bchIn)
-        newTokenBalance = this.tlUtil.round8(Number(tokenBalance) - retObj.tokensOut)
+        newBchBalance = this.tlUtil.round8(
+          Number(bchBalance) + exchangeObj.bchIn
+        )
+        newTokenBalance = this.tlUtil.round8(
+          Number(tokenBalance) - retObj.tokensOut
+        )
         wlogger.debug(`retObj: ${util.inspect(retObj)}`)
         wlogger.info(`New BCH balance: ${newBchBalance}`)
         wlogger.info(`New token balance: ${newTokenBalance}`)
@@ -212,7 +222,9 @@ class TokenLiquidity {
         // If the TX contains a valid OP_RETURN code
         if (opReturnData.isValid) {
           if (opReturnData.type === 'burn') {
-            wlogger.info(`BURN OP_RETURN detected. Burning ${retObj.tokensOut} tokens.`)
+            wlogger.info(
+              `BURN OP_RETURN detected. Burning ${retObj.tokensOut} tokens.`
+            )
 
             // Call a method in the slp library to burn a select amount of tokens
             // instead of sending them to a return address.
@@ -220,10 +232,14 @@ class TokenLiquidity {
             await slp.broadcastTokenTx(hex)
           }
 
-        // Normal BCH transaction with no OP_RETURN.
+          // Normal BCH transaction with no OP_RETURN.
         } else {
           // Send Tokens
-          const tokenHex = await slp.createTokenTx(userAddr, retObj.tokensOut, 245)
+          const tokenHex = await slp.createTokenTx(
+            userAddr,
+            retObj.tokensOut,
+            245
+          )
 
           await slp.broadcastTokenTx(tokenHex)
         }
@@ -368,7 +384,7 @@ class TokenLiquidity {
 
       const bch2 =
         bchOriginalBalance *
-        Math.pow(Math.E, (-1 * token2 / tokenOriginalBalance))
+        Math.pow(Math.E, (-1 * token2) / tokenOriginalBalance)
 
       let bchOut = bch2 - bch1 - 0.0000027 // Subtract 270 satoshi tx fee
       bchOut = Math.abs(tlUtil.round8(bchOut))
