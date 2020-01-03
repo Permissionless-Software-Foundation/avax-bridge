@@ -147,7 +147,7 @@ class TokenLiquidity {
         // Exchange tokens for BCH
         const exchangeObj = {
           tokenIn: isTokenTx,
-          tokenBalance: Number(tokenBalance),
+          bchBalance: Number(bchBalance),
           bchOriginalBalance: BCH_QTY_ORIGINAL,
           tokenOriginalBalance: TOKENS_QTY_ORIGINAL
         }
@@ -161,10 +161,8 @@ class TokenLiquidity {
         )
 
         // Update the balances
-        newTokenBalance = tlUtil.round8(exchangeObj.tokenBalance + isTokenTx)
-        newBchBalance = tlUtil.round8(bchBalance - bchOut)
-        wlogger.info(`New BCH balance: ${newBchBalance}`)
-        wlogger.info(`New token balance: ${newTokenBalance}`)
+        wlogger.info(`New BCH balance: ${retObj.bch2}`)
+        wlogger.info(`New token balance: ${retObj.token2}`)
 
         // Send BCH
         const obj = {
@@ -200,43 +198,46 @@ class TokenLiquidity {
         )
 
         // Calculate the new balances
-        newBchBalance = tlUtil.round8(Number(bchBalance) + exchangeObj.bchIn)
-        newTokenBalance = tlUtil.round8(Number(tokenBalance) - retObj.tokensOut)
+        newBchBalance = this.tlUtil.round8(Number(bchBalance) + exchangeObj.bchIn)
+        newTokenBalance = this.tlUtil.round8(Number(tokenBalance) - retObj.tokensOut)
         wlogger.debug(`retObj: ${util.inspect(retObj)}`)
         wlogger.info(`New BCH balance: ${newBchBalance}`)
         wlogger.info(`New token balance: ${newTokenBalance}`)
         console.log('retObj.tokensOut', retObj.tokensOut)
 
         // Check if transaction includes an OP_RETURN instruction
-        // const opReturnData = bch.readOpReturn(txid)
+        const opReturnData = await bch.readOpReturn(txid)
+        // console.log(`opReturnData: ${JSON.stringify(opReturnData, null, 2)}`)
 
         // If the TX contains a valid OP_RETURN code
-        // if(opReturnData.isValid) {
-        //
-        //   if(opReturnData.type === 'burn') {
-        //     // Call a method in the slp library to burn a select amount of tokens
-        //     // instead of sending them to a return address.
-        //     const hex = await slp.burnTokenTx(newTokenBalance)
-        //   }
-        //
-        // // Normal BCH transaction with no OP_RETURN.
-        // } else {
-        //   // Send Tokens
-        //   const tokenConfig = await slp.createTokenTx(userAddr, retObj.tokensOut)
-        //
-        //   await slp.broadcastTokenTx(tokenConfig)
-        // }
+        if (opReturnData.isValid) {
+          if (opReturnData.type === 'burn') {
+            wlogger.info(`BURN OP_RETURN detected. Burning ${retObj.tokensOut} tokens.`)
+
+            // Call a method in the slp library to burn a select amount of tokens
+            // instead of sending them to a return address.
+            const hex = await slp.burnTokenTx(retObj.tokensOut)
+            await slp.broadcastTokenTx(hex)
+          }
+
+        // Normal BCH transaction with no OP_RETURN.
+        } else {
+          // Send Tokens
+          const tokenHex = await slp.createTokenTx(userAddr, retObj.tokensOut, 245)
+
+          await slp.broadcastTokenTx(tokenHex)
+        }
 
         // Send Tokens
-        const tokenConfig = await slp.createTokenTx(userAddr, retObj.tokensOut, 245)
+        // const tokenConfig = await slp.createTokenTx(userAddr, retObj.tokensOut, 245)
 
-        await slp.broadcastTokenTx(tokenConfig)
+        // await slp.broadcastTokenTx(tokenConfig)
       }
 
       const retObj = {
         txid,
-        bchBalance: tlUtil.round8(newBchBalance),
-        tokenBalance: tlUtil.round8(newTokenBalance)
+        bchBalance: this.tlUtil.round8(newBchBalance),
+        tokenBalance: this.tlUtil.round8(newTokenBalance)
       }
 
       // Report the type of transaction we just processed.
@@ -245,6 +246,8 @@ class TokenLiquidity {
         retObj.type = 'token'
         retObj.tokenQty = isTokenTx
       } else retObj.type = 'bch'
+
+      console.log(`processTx() retObj: ${JSON.stringify(retObj, null, 2)}`)
 
       // Return the newly detected txid.
       return retObj
@@ -276,7 +279,7 @@ class TokenLiquidity {
           )
           console.log(' ')
 
-          await tlUtil.sleep(60000 * 4) // Sleep for 4 minutes
+          await this.tlUtil.sleep(60000 * 4) // Sleep for 4 minutes
         },
         retries: 5 // Retry 5 times
       })
@@ -304,15 +307,17 @@ class TokenLiquidity {
         tokenOriginalBalance
       } = obj
 
+      if (!bchBalance) throw new Error(`bchBalance must be defined.`)
+
       const bch1 = bchBalance
 
       // Subtract 270 satoshi tx fee
       const bch2 = bch1 + bchIn - 0.0000027
 
       const token1 =
-        tokenOriginalBalance * Math.log(bch1 / bchOriginalBalance)
+        -1 * tokenOriginalBalance * Math.log(bch1 / bchOriginalBalance)
       const token2 =
-        tokenOriginalBalance * Math.log(bch2 / bchOriginalBalance)
+        -1 * tokenOriginalBalance * Math.log(bch2 / bchOriginalBalance)
 
       const tokensOut = this.tlUtil.round8(Math.abs(token2 - token1))
 
@@ -323,9 +328,9 @@ class TokenLiquidity {
       wlogger.debug(`${tokensOut} tokens sent in exchange for ${bchIn} BCH`)
 
       const retObj = {
-        tokensOut: Math.abs(tlUtil.round8(tokensOut)),
-        bch2,
-        token2
+        tokensOut: Math.abs(this.tlUtil.round8(tokensOut)),
+        bch2: this.tlUtil.round8(bch2),
+        token2: this.tlUtil.round8(token2)
       }
 
       return retObj
@@ -346,33 +351,36 @@ class TokenLiquidity {
 
       const {
         tokenIn,
-        tokenBalance,
+        // tokenBalance,
+        bchBalance,
         bchOriginalBalance,
         tokenOriginalBalance
       } = obj
 
-      const token1 = tokenBalance - tokenOriginalBalance
+      if (!bchBalance) throw new Error(`bchBalance must be defined.`)
+
+      const bch1 = bchBalance
+
+      const token1 =
+        -1 * tokenOriginalBalance * Math.log(bchBalance / bchOriginalBalance)
+
       const token2 = token1 + tokenIn
 
-      const bch1 =
-        bchOriginalBalance *
-        Math.pow(Math.E, (-1 * token1) / tokenOriginalBalance)
       const bch2 =
         bchOriginalBalance *
-        Math.pow(Math.E, (-1 * token2) / tokenOriginalBalance)
+        Math.pow(Math.E, (-1 * token2 / tokenOriginalBalance))
 
-      const bchOut = bch2 - bch1 - 0.0000027 // Subtract 270 satoshi tx fee
+      let bchOut = bch2 - bch1 - 0.0000027 // Subtract 270 satoshi tx fee
+      bchOut = Math.abs(tlUtil.round8(bchOut))
 
-      // wlogger.debug(
-      //   `bch1: ${bch1}, bch2: ${bch2}, token1: ${token1}, token2: ${token2}, bchOut: ${bchOut}`
-      // )
-
-      // return Math.abs(tlUtil.round8(bchOut))
+      wlogger.debug(
+        `bch1: ${bch1}, bch2: ${bch2}, token1: ${token1}, token2: ${token2}, bchOut: ${bchOut}`
+      )
 
       const retObj = {
-        bchOut: Math.abs(tlUtil.round8(bchOut)),
-        bch2,
-        token2
+        bchOut,
+        bch2: this.tlUtil.round8(bch2),
+        token2: this.tlUtil.round8(token2)
       }
 
       return retObj
@@ -387,7 +395,7 @@ class TokenLiquidity {
   getSpotPrice (bchBalance, usdPerBCH) {
     try {
       const obj = {
-        bchIn: -1.0,
+        bchIn: 1.0,
         bchBalance: bchBalance,
         bchOriginalBalance: 25.0,
         tokenOriginalBalance: 5000

@@ -52,13 +52,14 @@ describe('#token-liquidity', () => {
     it('should calculate values in the spreadsheet', () => {
       const exchangeObj = {
         tokenIn: 500,
-        tokenBalance: 8500,
+        // tokenBalance: 8500,
+        bchBalance: 12.41463259,
         bchOriginalBalance: 25,
         tokenOriginalBalance: 5000
       }
 
       const retObj = lib.exchangeTokensForBCH(exchangeObj)
-      // console.log(`retObj: ${JSON.stringify(retObj,null,2)}`)
+      // console.log(`retObj: ${JSON.stringify(retObj, null, 2)}`)
 
       const result = retObj.bchOut
 
@@ -69,13 +70,14 @@ describe('#token-liquidity', () => {
     it('should calculate values in the spreadsheet', () => {
       const exchangeObj = {
         tokenIn: 5000,
-        tokenBalance: 15000,
+        // tokenBalance: 15000,
+        bchBalance: 3.38338208,
         bchOriginalBalance: 25,
         tokenOriginalBalance: 5000
       }
 
       const retObj = lib.exchangeTokensForBCH(exchangeObj)
-      // console.log(`retObj: ${JSON.stringify(retObj,null,2)}`)
+      // console.log(`retObj: ${JSON.stringify(retObj, null, 2)}`)
 
       const result = retObj.bchOut
 
@@ -86,7 +88,8 @@ describe('#token-liquidity', () => {
     it('should calculate values in the spreadsheet', () => {
       const exchangeObj = {
         tokenIn: 500,
-        tokenBalance: 1000,
+        // tokenBalance: 1000,
+        bchBalance: 55.63852321,
         bchOriginalBalance: 25,
         tokenOriginalBalance: 5000
       }
@@ -98,6 +101,14 @@ describe('#token-liquidity', () => {
 
       assert.isNumber(result)
       assert.equal(result, 5.29470823, `Should match spreadsheet`)
+    })
+
+    it('should throw error if bchBalance is not defined', async () => {
+      try {
+        await lib.exchangeTokensForBCH({})
+      } catch (error) {
+        assert.include(error.message, `bchBalance must be defined`)
+      }
     })
   })
 
@@ -143,6 +154,14 @@ describe('#token-liquidity', () => {
       )
       assert.isNumber(result.bch2)
       assert.isNumber(result.token2)
+    })
+
+    it('should throw error if bchBalance is not defined', async () => {
+      try {
+        await lib.exchangeBCHForTokens({})
+      } catch (error) {
+        assert.include(error.message, `bchBalance must be defined`)
+      }
     })
   })
 
