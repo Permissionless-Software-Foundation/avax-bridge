@@ -351,7 +351,9 @@ class SLP {
       return hex
     } catch (err) {
       wlogger.error(`Error in createTokenTx: ${err.message}`, err)
-      throw err
+
+      if (err.message) throw new Error(err.message)
+      else throw new Error(`Error in createTokenTx()`)
     }
   }
 
@@ -566,7 +568,7 @@ class SLP {
 
       return hex
     } catch (err) {
-      wlogger.error(`Error in createTokenTx: ${err.message}`, err)
+      wlogger.error(`Error in burnTokenTx: ${err.message}`, err)
       throw err
     }
   }

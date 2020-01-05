@@ -179,8 +179,12 @@ class TokenLiquidity {
         // User sent BCH
       } else {
         // Get the BCH send amount.
-        const bchQty = await bch.recievedBch(lastTransaction, BCH_ADDR1)
+        let bchQty = await bch.recievedBch(lastTransaction, BCH_ADDR1)
         wlogger.info(`${bchQty} BCH recieved.`)
+
+        // Ensure bchQty is a number
+        bchQty = Number(bchQty)
+        if (isNaN(bchQty)) throw new Error(`bchQty could not be converted to a number.`)
 
         if (bchQty < 547) {
           throw new Error(
@@ -288,11 +292,12 @@ class TokenLiquidity {
         onFailedAttempt: async error => {
           //   failed attempt.
           console.log(' ')
-          console.log(
+          wlogger.info(
             `Attempt ${error.attemptNumber} failed. There are ${
               error.retriesLeft
             } retries left. Waiting 4 minutes before trying again.`
           )
+          wlogger.error(`error caught by pRetryProcessTx(): `, error)
           console.log(' ')
 
           await this.tlUtil.sleep(60000 * 4) // Sleep for 4 minutes
