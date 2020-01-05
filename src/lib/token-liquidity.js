@@ -186,7 +186,7 @@ class TokenLiquidity {
         bchQty = Number(bchQty)
         if (isNaN(bchQty)) throw new Error(`bchQty could not be converted to a number.`)
 
-        if (bchQty < 547) {
+        if (bchQty < 0.00000547) {
           throw new Error(
             `Dust recieved. This is probably a token tx that SLPDB doesn't know about.`
           )
