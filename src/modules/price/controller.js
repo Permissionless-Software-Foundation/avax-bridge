@@ -46,7 +46,7 @@ async function getPrice (ctx) {
 
   // Calculate the current exchange rate of tokens for 1 BCH.
   const obj = {
-    bchIn: -1.0,
+    bchIn: 1.0,
     bchBalance: state.bchBalance,
     bchOriginalBalance: 25.0,
     tokenOriginalBalance: 5000
