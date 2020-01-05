@@ -133,6 +133,10 @@ class SLP {
         throw new Error(`path must have a value of 145 or 245`)
       }
 
+      if (isNaN(Number(qty)) || Number(qty) <= 0) {
+        throw new Error(`qty must be a positive number.`)
+      }
+
       // Open the wallet controlling the tokens
       const walletInfo = this.tlUtils.openWallet()
       const mnemonic = walletInfo.mnemonic
@@ -361,6 +365,10 @@ class SLP {
   // Sends tokens from the 245 address, but pays miner fees from the 145 address.
   async burnTokenTx (burnQty) {
     try {
+      if (isNaN(Number(burnQty)) || Number(burnQty) <= 0) {
+        throw new Error(`qty must be a positive number.`)
+      }
+
       // Open the wallet controlling the tokens
       const walletInfo = this.tlUtils.openWallet()
       const mnemonic = walletInfo.mnemonic
