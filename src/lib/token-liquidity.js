@@ -267,7 +267,7 @@ class TokenLiquidity {
         retObj.tokenQty = isTokenTx
       } else retObj.type = 'bch'
 
-      console.log(`processTx() retObj: ${JSON.stringify(retObj, null, 2)}`)
+      wlogger.debug(`processTx() retObj: ${JSON.stringify(retObj, null, 2)}`)
 
       // Return the newly detected txid.
       return retObj

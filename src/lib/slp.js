@@ -239,9 +239,9 @@ class SLP {
           tokenUtxos.splice(i, 1)
         }
       }
-      console.log(
-        `tokenUtxos (filter 2): ${JSON.stringify(tokenUtxos, null, 2)}`
-      )
+      // console.log(
+      //   `tokenUtxos (filter 2): ${JSON.stringify(tokenUtxos, null, 2)}`
+      // )
 
       // Bail out if no token UTXOs are found.
       if (tokenUtxos.length === 0) {
@@ -366,7 +366,7 @@ class SLP {
   async burnTokenTx (burnQty) {
     try {
       if (isNaN(Number(burnQty)) || Number(burnQty) <= 0) {
-        throw new Error(`qty must be a positive number.`)
+        throw new Error(`burn quantity must be a positive number.`)
       }
 
       // Open the wallet controlling the tokens
