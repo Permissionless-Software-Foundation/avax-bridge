@@ -179,8 +179,18 @@ class TokenLiquidity {
         // User sent BCH
       } else {
         // Get the BCH send amount.
-        const bchQty = await bch.recievedBch(lastTransaction, BCH_ADDR1)
+        let bchQty = await bch.recievedBch(lastTransaction, BCH_ADDR1)
         wlogger.info(`${bchQty} BCH recieved.`)
+
+        // Ensure bchQty is a number
+        bchQty = Number(bchQty)
+        if (isNaN(bchQty)) throw new Error(`bchQty could not be converted to a number.`)
+
+        if (bchQty < 0.00000547) {
+          throw new Error(
+            `Dust recieved. This is probably a token tx that SLPDB doesn't know about.`
+          )
+        }
 
         // Exchange BCH for tokens
         const exchangeObj = {
@@ -198,8 +208,12 @@ class TokenLiquidity {
         )
 
         // Calculate the new balances
-        newBchBalance = this.tlUtil.round8(Number(bchBalance) + exchangeObj.bchIn)
-        newTokenBalance = this.tlUtil.round8(Number(tokenBalance) - retObj.tokensOut)
+        newBchBalance = this.tlUtil.round8(
+          Number(bchBalance) + exchangeObj.bchIn
+        )
+        newTokenBalance = this.tlUtil.round8(
+          Number(tokenBalance) - retObj.tokensOut
+        )
         wlogger.debug(`retObj: ${util.inspect(retObj)}`)
         wlogger.info(`New BCH balance: ${newBchBalance}`)
         wlogger.info(`New token balance: ${newTokenBalance}`)
@@ -212,7 +226,9 @@ class TokenLiquidity {
         // If the TX contains a valid OP_RETURN code
         if (opReturnData.isValid) {
           if (opReturnData.type === 'burn') {
-            wlogger.info(`BURN OP_RETURN detected. Burning ${retObj.tokensOut} tokens.`)
+            wlogger.info(
+              `BURN OP_RETURN detected. Burning ${retObj.tokensOut} tokens.`
+            )
 
             // Call a method in the slp library to burn a select amount of tokens
             // instead of sending them to a return address.
@@ -220,10 +236,14 @@ class TokenLiquidity {
             await slp.broadcastTokenTx(hex)
           }
 
-        // Normal BCH transaction with no OP_RETURN.
+          // Normal BCH transaction with no OP_RETURN.
         } else {
           // Send Tokens
-          const tokenHex = await slp.createTokenTx(userAddr, retObj.tokensOut, 245)
+          const tokenHex = await slp.createTokenTx(
+            userAddr,
+            retObj.tokensOut,
+            245
+          )
 
           await slp.broadcastTokenTx(tokenHex)
         }
@@ -247,7 +267,7 @@ class TokenLiquidity {
         retObj.tokenQty = isTokenTx
       } else retObj.type = 'bch'
 
-      console.log(`processTx() retObj: ${JSON.stringify(retObj, null, 2)}`)
+      wlogger.debug(`processTx() retObj: ${JSON.stringify(retObj, null, 2)}`)
 
       // Return the newly detected txid.
       return retObj
@@ -272,11 +292,12 @@ class TokenLiquidity {
         onFailedAttempt: async error => {
           //   failed attempt.
           console.log(' ')
-          console.log(
+          wlogger.info(
             `Attempt ${error.attemptNumber} failed. There are ${
               error.retriesLeft
             } retries left. Waiting 4 minutes before trying again.`
           )
+          wlogger.error(`error caught by pRetryProcessTx(): `, error)
           console.log(' ')
 
           await this.tlUtil.sleep(60000 * 4) // Sleep for 4 minutes
@@ -368,7 +389,7 @@ class TokenLiquidity {
 
       const bch2 =
         bchOriginalBalance *
-        Math.pow(Math.E, (-1 * token2 / tokenOriginalBalance))
+        Math.pow(Math.E, (-1 * token2) / tokenOriginalBalance)
 
       let bchOut = bch2 - bch1 - 0.0000027 // Subtract 270 satoshi tx fee
       bchOut = Math.abs(tlUtil.round8(bchOut))

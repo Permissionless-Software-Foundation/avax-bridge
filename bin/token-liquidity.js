@@ -172,7 +172,7 @@ async function processingLoop (seenTxs) {
       // const result = await queue.pRetryProcessTx(obj)
       const result = await queue.add(() => lib.pRetryProcessTx(obj))
       console.log(`queue.size: ${queue.size}`)
-      console.log(`result: ${JSON.stringify(result, null, 2)}`)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
       // If the app received tokens, send them to the 245 path.
       if (result.type === 'token') {

@@ -133,6 +133,10 @@ class SLP {
         throw new Error(`path must have a value of 145 or 245`)
       }
 
+      if (isNaN(Number(qty)) || Number(qty) <= 0) {
+        throw new Error(`qty must be a positive number.`)
+      }
+
       // Open the wallet controlling the tokens
       const walletInfo = this.tlUtils.openWallet()
       const mnemonic = walletInfo.mnemonic
@@ -235,9 +239,9 @@ class SLP {
           tokenUtxos.splice(i, 1)
         }
       }
-      console.log(
-        `tokenUtxos (filter 2): ${JSON.stringify(tokenUtxos, null, 2)}`
-      )
+      // console.log(
+      //   `tokenUtxos (filter 2): ${JSON.stringify(tokenUtxos, null, 2)}`
+      // )
 
       // Bail out if no token UTXOs are found.
       if (tokenUtxos.length === 0) {
@@ -351,7 +355,9 @@ class SLP {
       return hex
     } catch (err) {
       wlogger.error(`Error in createTokenTx: ${err.message}`, err)
-      throw err
+
+      if (err.message) throw new Error(err.message)
+      else throw new Error(`Error in createTokenTx()`)
     }
   }
 
@@ -359,6 +365,10 @@ class SLP {
   // Sends tokens from the 245 address, but pays miner fees from the 145 address.
   async burnTokenTx (burnQty) {
     try {
+      if (isNaN(Number(burnQty)) || Number(burnQty) <= 0) {
+        throw new Error(`burn quantity must be a positive number.`)
+      }
+
       // Open the wallet controlling the tokens
       const walletInfo = this.tlUtils.openWallet()
       const mnemonic = walletInfo.mnemonic
@@ -566,7 +576,7 @@ class SLP {
 
       return hex
     } catch (err) {
-      wlogger.error(`Error in createTokenTx: ${err.message}`, err)
+      wlogger.error(`Error in burnTokenTx: ${err.message}`, err)
       throw err
     }
   }
