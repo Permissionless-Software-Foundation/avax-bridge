@@ -64,3 +64,7 @@ wallet-test.json
 database
 state.json
 **-audit.json
+
+system-user-*.json
+
+!README.md

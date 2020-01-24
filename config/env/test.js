@@ -1,13 +1,12 @@
 /*
-export default {
-  session: 'secret-boilerplate-token',
-  token: 'secret-jwt-token',
-  database: 'mongodb://localhost:27017/p2pvps-server-test'
-}
+  These are the environment settings for the TEST environment.
+  This is the environment run with `npm start` if KOA_ENV=test.
+  This is the environment run by the test suite.
 */
 
 module.exports = {
   session: 'secret-boilerplate-token',
   token: 'secret-jwt-token',
-  database: 'mongodb://localhost:27017/psf-token-server-test'
+  database: 'mongodb://localhost:27017/psf-token-server-test',
+  env: 'test'
 }

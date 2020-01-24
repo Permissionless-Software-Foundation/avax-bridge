@@ -10,10 +10,11 @@
     "lint": "eslint src/**/*.js",
     "docs": "./node_modules/.bin/apidoc -i src/ -o docs",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
-    "coverage:report": "nyc --reporter=html mocha --exit"
+    "coverage:report": "nyc --reporter=html mocha --exit",
+    "prep-test": "node util/users/delete-all-test-users.js"
   },
   "keywords": [
-    "koa2-api-boilerplate",
+    "koa-api-boilerplate",
     "api",
     "koa",
     "koa2",
@@ -36,7 +37,7 @@
   "repository": "Permissionless-Software-Foundation/token-liquidity",
   "dependencies": {
     "@chris.troutner/bch-js": "^2.1.9",
-    "apidoc": "^0.17.6",
+    "apidoc": "^0.20.0",
     "bcryptjs": "^2.4.3",
     "bitbox-sdk": "^8.8.0",
     "collect.js": "^4.16.6",
@@ -51,10 +52,10 @@
     "koa-logger": "^3.1.0",
     "koa-mount": "^4.0.0",
     "koa-passport": "^4.1.1",
-    "koa-router": "^7.0.1",
+    "koa-router": "^8.0.6",
     "koa-static": "^5.0.0",
     "line-reader": "^0.4.0",
-    "mongoose": "^5.5.4",
+    "mongoose": "^5.5.12",
     "p-queue": "^6.2.1",
     "p-retry": "^4.2.0",
     "passport-local": "^1.0.0",
@@ -62,8 +63,8 @@
     "request-promise": "^4.2.2",
     "shelljs": "^0.8.3",
     "slp-sdk": "^4.11.0",
-    "winston": "^3.1.0",
-    "winston-daily-rotate-file": "^3.6.0"
+    "winston": "^3.2.1",
+    "winston-daily-rotate-file": "^4.0.0"
   },
   "devDependencies": {
     "ajv": "^5.5.2",
@@ -74,13 +75,13 @@
     "eslint-config-promise": "^2.0.0",
     "eslint-config-standard": "^12.0.0",
     "eslint-plugin-import": "^2.14.0",
-    "eslint-plugin-node": "^8.0.0",
+    "eslint-plugin-node": "^9.0.0",
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
     "mocha": "^6.2.0",
     "nock": "^10.0.6",
-    "nyc": "^14.1.1",
-    "semantic-release": "^15.13.24",
+    "nyc": "^15.0.0",
+    "semantic-release": "^16.0.0",
     "sinon": "^7.3.2",
     "slp-sdk-mock": "^1.0.2"
   },
