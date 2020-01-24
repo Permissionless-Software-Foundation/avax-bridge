@@ -1,5 +1,5 @@
-// const expect = require('chai').expect
-// const should = require('chai').should
+const expect = require('chai').expect
+const should = require('chai').should
 const utils = require('./utils')
 const rp = require('request-promise')
 const assert = require('chai').assert
@@ -10,34 +10,12 @@ util.inspect.defaultOptions = { depth: 1 }
 
 const LOCALHOST = `http://localhost:${config.port}`
 
+should()
 const context = {}
 
 describe('Users', () => {
   before(async () => {
-    // console.log(`config: ${JSON.stringify(config, null, 2)}`)
-
-    // Create a second test user.
-    const userObj = {
-      username: 'test2',
-      password: 'pass2'
-    }
-    const testUser = await utils.createUser(userObj)
-    // console.log(`testUser2: ${JSON.stringify(testUser, null, 2)}`)
-
-    context.user2 = testUser.user
-    context.token2 = testUser.token
-    context.id2 = testUser.user._id
-
-    // Get the JWT used to log in as the admin 'system' user.
-    const adminJWT = await utils.getAdminJWT()
-    // console.log(`adminJWT: ${adminJWT}`)
-    context.adminJWT = adminJWT
-
-    // const admin = await testUtils.loginAdminUser()
-    // context.adminJWT = admin.token
-
-    // const admin = await adminLib.loginAdmin()
-    // console.log(`admin: ${JSON.stringify(admin, null, 2)}`)
+    utils.cleanDb()
   })
 
   describe('POST /users', () => {
@@ -83,21 +61,13 @@ describe('Users', () => {
         }
 
         let result = await rp(options)
-        // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+        result.body.user.should.have.property('username')
+        result.body.user.username.should.equal('supercoolname')
+        expect(result.body.user.password).to.not.exist
 
         context.user = result.body.user
         context.token = result.body.token
-
-        assert(result.statusCode === 200, 'Status Code 200 expected.')
-        assert(
-          result.body.user.username === 'supercoolname',
-          'Username of test expected'
-        )
-        assert(
-          result.body.user.password === undefined,
-          'Password expected to be omited'
-        )
-        assert.property(result.body, 'token', 'Token property exists.')
       } catch (err) {
         console.log(
           'Error authenticating test user: ' + JSON.stringify(err, null, 2)
@@ -208,7 +178,7 @@ describe('Users', () => {
       // console.log(`users: ${util.inspect(users)}`)
 
       assert.hasAnyKeys(users[0], ['type', '_id', 'username'])
-      assert.isNumber(users.length)
+      assert.equal(users.length, 1)
     })
   })
 
@@ -307,7 +277,7 @@ describe('Users', () => {
       }
     })
 
-    it('should throw 401 if non-admin updating other user', async () => {
+    it("should throw 1 if user doesn't exist", async () => {
       const { token } = context
 
       try {
@@ -362,95 +332,6 @@ describe('Users', () => {
       )
       assert.equal(user.username, 'updatedcoolname')
     })
-
-    it('should not be able to update user type', async () => {
-      try {
-        const options = {
-          method: 'PUT',
-          uri: `${LOCALHOST}/users/${context.user._id.toString()}`,
-          resolveWithFullResponse: true,
-          json: true,
-          headers: {
-            Authorization: `Bearer ${context.token}`
-          },
-          body: {
-            user: {
-              name: 'new name',
-              type: 'test'
-            }
-          }
-        }
-
-        let result = await rp(options)
-
-        // console.log(`Users: ${JSON.stringify(result, null, 2)}`)
-
-        assert(result.statusCode === 200, 'Status Code 200 expected.')
-        assert(result.body.user.type === 'user', 'Type should be unchanged.')
-      } catch (err) {
-        console.error('Error: ', err)
-        console.log('Error stringified: ' + JSON.stringify(err, null, 2))
-        throw err
-      }
-    })
-
-    it('should not be able to update other user when not admin', async () => {
-      try {
-        const options = {
-          method: 'PUT',
-          uri: `${LOCALHOST}/users/${context.user2._id.toString()}`,
-          resolveWithFullResponse: true,
-          json: true,
-          headers: {
-            Authorization: `Bearer ${context.token}`
-          },
-          body: {
-            user: {
-              name: 'This should not work'
-            }
-          }
-        }
-
-        let result = await rp(options)
-
-        console.log(`result stringified: ${JSON.stringify(result, null, 2)}`)
-        assert(false, 'Unexpected result')
-      } catch (err) {
-        if (err.statusCode === 401) {
-          assert(err.statusCode === 401, 'Error code 401 expected.')
-        } else {
-          console.error('Error: ', err)
-          console.log('Error stringified: ' + JSON.stringify(err, null, 2))
-          throw err
-        }
-      }
-    })
-
-    it('should be able to update other user when admin', async () => {
-      const adminJWT = context.adminJWT
-      console.log(`adminJWT: ${JSON.stringify(adminJWT, null, 2)}`)
-
-      const options = {
-        method: 'PUT',
-        uri: `${LOCALHOST}/users/${context.user2._id.toString()}`,
-        resolveWithFullResponse: true,
-        json: true,
-        headers: {
-          Authorization: `Bearer ${adminJWT}`
-        },
-        body: {
-          user: {
-            name: 'This should work'
-          }
-        }
-      }
-
-      let result = await rp(options)
-      // console.log(`result stringified: ${JSON.stringify(result, null, 2)}`)
-
-      const userName = result.body.user.name
-      assert.equal(userName, 'This should work')
-    })
   })
 
   describe('DELETE /users/:id', () => {
@@ -474,7 +355,7 @@ describe('Users', () => {
       }
     })
 
-    it('should throw 401 if deleting other user', async () => {
+    it('should throw 401 if user doesn\'t exist', async () => {
       const { token } = context
 
       try {
@@ -496,34 +377,7 @@ describe('Users', () => {
       }
     })
 
-    it('should not be able to delete other users unless admin', async () => {
-      try {
-        const options = {
-          method: 'DELETE',
-          uri: `${LOCALHOST}/users/${context.user2._id.toString()}`,
-          resolveWithFullResponse: true,
-          json: true,
-          headers: {
-            Authorization: `Bearer ${context.token}`
-          }
-        }
-
-        let result = await rp(options)
-
-        console.log(`result stringified: ${JSON.stringify(result, null, 2)}`)
-        assert(false, 'Unexpected result')
-      } catch (err) {
-        if (err.statusCode === 401) {
-          assert(err.statusCode === 401, 'Error code 401 expected.')
-        } else {
-          console.error('Error: ', err)
-          console.log('Error stringified: ' + JSON.stringify(err, null, 2))
-          throw err
-        }
-      }
-    })
-
-    it('should delete own user', async () => {
+    it('should delete user', async () => {
       const {
         user: { _id },
         token
@@ -537,27 +391,6 @@ describe('Users', () => {
         headers: {
           Accept: 'application/json',
           Authorization: `Bearer ${token}`
-        }
-      }
-
-      const result = await rp(options)
-      // console.log(`result: ${util.inspect(result.body)}`)
-
-      assert.equal(result.body.success, true)
-    })
-
-    it('should be able to delete other users when admin', async () => {
-      const id = context.id2
-      const adminJWT = context.adminJWT
-
-      const options = {
-        method: 'DELETE',
-        uri: `${LOCALHOST}/users/${id}`,
-        resolveWithFullResponse: true,
-        json: true,
-        headers: {
-          Accept: 'application/json',
-          Authorization: `Bearer ${adminJWT}`
         }
       }
 

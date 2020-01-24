@@ -577,7 +577,7 @@ class SLP {
       return hex
     } catch (err) {
       wlogger.error(`Error in burnTokenTx: ${err.message}`, err)
-      if (err.error) throw new Error(err.error)
+      if (err.message) throw new Error(err.message)
       else {
         console.log(`Error in slp.js/burnTokenTx: `, err)
         throw new Error(`Error in burnTokenTx`)
