@@ -1,3 +1,4 @@
+
 const app = require('../../bin/server')
 const utils = require('./utils')
 const rp = require('request-promise')
@@ -85,10 +86,18 @@ describe('Auth', () => {
         // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
         assert(result.statusCode === 200, 'Status Code 200 expected.')
-        assert(result.body.user.username === 'test', 'Username of test expected')
-        assert(result.body.user.password === undefined, 'Password expected to be omited')
+        assert(
+          result.body.user.username === 'test',
+          'Username of test expected'
+        )
+        assert(
+          result.body.user.password === undefined,
+          'Password expected to be omited'
+        )
       } catch (err) {
-        console.log('Error authenticating test user: ' + JSON.stringify(err, null, 2))
+        console.log(
+          'Error authenticating test user: ' + JSON.stringify(err, null, 2)
+        )
         throw err
       }
     })

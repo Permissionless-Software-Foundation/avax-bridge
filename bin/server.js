@@ -2,6 +2,7 @@
   Create and launch the koa web server.
 */
 
+// npm libraries
 const Koa = require('koa')
 const bodyParser = require('koa-bodyparser')
 const convert = require('koa-convert')
@@ -13,7 +14,9 @@ const mount = require('koa-mount')
 const serve = require('koa-static')
 const cors = require('kcors')
 
-const config = require('../config')
+// Local libraries
+const config = require('../config') // this first.
+const adminLib = require('../src/lib/admin')
 const errorMiddleware = require('../src/middleware')
 
 // Winston logger
@@ -28,8 +31,14 @@ async function startServer () {
 
   // Connect to the Mongo Database.
   mongoose.Promise = global.Promise
-  await mongoose.connect(config.database, { useNewUrlParser: true })
   mongoose.set('useCreateIndex', true) // Stop deprecation warning.
+  await mongoose.connect(
+    config.database,
+    {
+      useUnifiedTopology: true,
+      useNewUrlParser: true
+    }
+  )
 
   // MIDDLEWARE START
 
@@ -39,7 +48,10 @@ async function startServer () {
   app.use(errorMiddleware())
 
   // Used to generate the docs.
-  app.use(convert(mount('/docs', serve(`${process.cwd()}/docs`))))
+  app.use(mount('/', serve(`${process.cwd()}/docs`)))
+
+  // Mount the page for displaying logs.
+  app.use(mount('/logs', serve(`${process.cwd()}/config/logs`)))
 
   // User Authentication
   require('../config/passport')
@@ -55,12 +67,16 @@ async function startServer () {
 
   // MIDDLEWARE END
 
-  // app.listen(config.port, () => {
-  //  console.log(`Server started on ${config.port}`)
-  // })
+  console.log(`Running server in environment: ${config.env}`)
+  wlogger.info(`Running server in environment: ${config.env}`)
+
   await app.listen(config.port)
   console.log(`Server started on ${config.port}`)
   wlogger.info(`Server started on ${config.port}`)
+
+  // Create the system admin user.
+  const success = await adminLib.createSystemUser()
+  if (success) console.log(`System admin user created.`)
 
   return app
 }

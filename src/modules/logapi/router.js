@@ -1,15 +1,16 @@
-const validator = require('../../middleware/validators')
-const user = require('./controller')
+// const validator = require('../../middleware/validators')
+const LogApi = require('./controller')
+const logApi = new LogApi()
 
-// export const baseUrl = '/users'
-module.exports.baseUrl = '/users'
+module.exports.baseUrl = '/logapi'
 
 module.exports.routes = [
   {
     method: 'POST',
     route: '/',
-    handlers: [user.createUser]
-  },
+    handlers: [logApi.getLogs]
+  }
+  /*
   {
     method: 'GET',
     route: '/',
@@ -30,4 +31,5 @@ module.exports.routes = [
     route: '/:id',
     handlers: [validator.ensureTargetUserOrAdmin, user.getUser, user.deleteUser]
   }
+  */
 ]

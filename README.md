@@ -13,7 +13,14 @@ The price formula used in this program was inspired by the Bancor whitepaper, bu
 
 [![Coverage Status](https://coveralls.io/repos/github/Permissionless-Software-Foundation/token-liquidity/badge.svg?branch=unstable)](https://coveralls.io/github/Permissionless-Software-Foundation/token-liquidity?branch=unstable)
 
+
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
+
+## IPFS
+v2.3.0 uploaded to IPFS:
+
+- Get it: `ipfs get QmUz4b2KwNLNvHZRTYcgrPCuKAhMB73XWN8vY8LLVVEYV1`
+- Pin it: `ipfs pin add -r QmUz4b2KwNLNvHZRTYcgrPCuKAhMB73XWN8vY8LLVVEYV1`
 
 ## License
 MIT

@@ -322,7 +322,7 @@ describe('#slp', () => {
         await slp.burnTokenTx(qty)
         // console.log(`result: ${JSON.stringify(result, null, 2)}`)
       } catch (err) {
-        // console.log(`err.message: ${err.message}`)
+        console.log(`err.message: ${err.message}`)
         assert.include(err.message, 'Wallet does not have a BCH UTXO to pay miner fees')
       }
     })
