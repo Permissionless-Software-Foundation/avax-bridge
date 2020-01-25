@@ -12,11 +12,11 @@ const util = require('util')
 util.inspect.defaultOptions = { depth: 1 }
 
 /**
- * @api {get} /users Get all users
- * @apiPermission user
+ * @api {get} /price Get spot price of PSF token
+ * @apiPermission anonymous
  * @apiVersion 1.0.0
- * @apiName GetUsers
- * @apiGroup Users
+ * @apiName GetPrice
+ * @apiGroup Price
  *
  * @apiExample Example usage:
  * curl -H "Content-Type: application/json" -X GET localhost:5000/price
@@ -36,7 +36,6 @@ util.inspect.defaultOptions = { depth: 1 }
  *       }]
  *     }
  *
- * @apiUse TokenError
  */
 async function getPrice (ctx) {
   // Read the current state
