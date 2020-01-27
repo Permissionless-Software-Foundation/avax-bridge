@@ -69,3 +69,4 @@ state.json
 system-user-*.json
 
 !README.md
+docs
