@@ -59,8 +59,8 @@ class LogsApi {
         thisMonth = ('0' + thisMonth).slice(-2)
         // console.log(`thisMonth: ${thisMonth}`)
 
-        const filename = `koa-dev-2020-${thisMonth}-${thisDate}.log`
-        // console.log(`filename: ${filename}`)
+        const filename = `koa-development-2020-${thisMonth}-${thisDate}.log`
+        console.log(`filename: ${filename}`)
         const logDir = `${__dirname}/../../../logs/`
         const fullPath = `${logDir}${filename}`
         // console.log(`fullPath: ${fullPath}`)
