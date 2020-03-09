@@ -10,8 +10,8 @@
 */
 
 'use strict'
-
-const rp = require('request-promise')
+const axios = require('axios').default
+const mongoose = require('mongoose')
 const User = require('../models/users')
 const jsonFiles = require('./utils/json-files')
 const config = require('../../config')
@@ -32,21 +32,19 @@ async function createSystemUser () {
 
     const options = {
       method: 'POST',
-      uri: `${LOCALHOST}/users`,
-      resolveWithFullResponse: true,
-      json: true,
-      body: {
+      url: `${LOCALHOST}/users`,
+      data: {
         user: {
-          username: 'system',
+          email: 'system@system.com',
           password: context.password
         }
       }
     }
-    let result = await rp(options)
+    const result = await axios(options)
 
-    context.username = result.body.user.username
-    context.id = result.body.user._id
-    context.token = result.body.token
+    context.email = result.data.user.email
+    context.id = result.data.user._id
+    context.token = result.data.token
 
     // Get the mongoDB entry
     const user = await User.findById(context.id)
@@ -68,7 +66,7 @@ async function createSystemUser () {
     return context
   } catch (err) {
     // Handle existing system user.
-    if (err.statusCode === 422) {
+    if (err.response.status === 422) {
       try {
         // Delete the existing user
         await deleteExistingSystemUser()
@@ -76,7 +74,7 @@ async function createSystemUser () {
         // Call this function again.
         return createSystemUser()
       } catch (err2) {
-        console.error(`Error in admin.js/createSystemUser() while trying generate new system user.`)
+        console.error('Error in admin.js/createSystemUser() while trying generate new system user.')
         // process.end(1)
         throw err2
       }
@@ -90,27 +88,14 @@ async function createSystemUser () {
 
 async function deleteExistingSystemUser () {
   try {
-    let result = await loginAdmin()
+    mongoose.Promise = global.Promise
+    mongoose.set('useCreateIndex', true) // Stop deprecation warning.
 
-    const token = result.body.token
-    const id = result.body.user._id.toString()
+    await mongoose.connect(config.database, { useNewUrlParser: true, useUnifiedTopology: true })
 
-    // Delete the user.
-    const options = {
-      method: 'DELETE',
-      uri: `${LOCALHOST}/users/${id}`,
-      resolveWithFullResponse: true,
-      json: true,
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    }
-    result = await rp(options)
-    // console.log(`result2: ${JSON.stringify(result, null, 2)}`)
-
-    return result.body.success
+    await User.deleteOne({ email: 'system@system.com' })
   } catch (err) {
-    console.log(`Error in admin.js/deleteExistingSystemUser()`)
+    console.log('Error in admin.js/deleteExistingSystemUser()')
     throw err
   }
 }
@@ -125,22 +110,20 @@ async function loginAdmin () {
     // console.log(`existingUser: ${JSON.stringify(existingUser, null, 2)}`)
 
     // Log in as the user.
-    let options = {
+    const options = {
       method: 'POST',
-      uri: `${LOCALHOST}/auth`,
-      resolveWithFullResponse: true,
-      json: true,
-      body: {
-        username: 'system',
+      url: `${LOCALHOST}/auth`,
+      data: {
+        email: 'system@system.com',
         password: existingUser.password
       }
     }
-    let result = await rp(options)
+    const result = await axios(options)
     // console.log(`result1: ${JSON.stringify(result, null, 2)}`)
 
     return result
   } catch (err) {
-    console.error(`Error in admin.js/loginAdmin().`)
+    console.error('Error in admin.js/loginAdmin().')
 
     // console.error(`existingUser: ${JSON.stringify(existingUser, null, 2)}`)
 

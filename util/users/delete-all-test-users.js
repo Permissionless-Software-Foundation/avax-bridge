@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 // Force test environment
-process.env.KOA_ENV = 'test'
+process.env.APP_ENV = 'test'
 const config = require('../../config')
 
 const User = require('../../src/models/users')
@@ -10,7 +10,10 @@ async function deleteUsers () {
   // Connect to the Mongo Database.
   mongoose.Promise = global.Promise
   mongoose.set('useCreateIndex', true) // Stop deprecation warning.
-  await mongoose.connect(config.database, { useNewUrlParser: true })
+  await mongoose.connect(config.database, {
+    useUnifiedTopology: true,
+    useNewUrlParser: true
+  })
 
   // Get all the users in the DB.
   const users = await User.find({}, '-password')
