@@ -34,9 +34,10 @@ class Transactions {
   async getTransactions (addr) {
     try {
       const txdata = await this.BITBOX.Address.transactions(addr)
+      // const txdata = await this.BITBOX.Blockbook.balance(addr)
       // console.log(`txdata: ${JSON.stringify(txdata, null, 2)}`)
 
-      return txdata
+      return txdata.txids
     } catch (err) {
       wlogger.error(`Error in transactions.js/getTransactions().`)
       throw err
