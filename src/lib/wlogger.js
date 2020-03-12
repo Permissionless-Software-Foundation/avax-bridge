@@ -30,7 +30,7 @@ transport.on('rotate', function (oldFilename, newFilename) {
 
 // This controls what goes into the log FILES
 var wlogger = winston.createLogger({
-  level: 'verbose',
+  level: 'debug',
   format: winston.format.json(),
   transports: [
     //
