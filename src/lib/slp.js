@@ -81,14 +81,14 @@ class SLP {
       if (!txValid[0].valid) return false
 
       // const result = await rp(options)
-      const result = this.bchjs.Util.txDetails(txid)
+      const result = await this.bchjs.Util.txDetails(txid)
       // console.log(`txDetails: ${util.inspect(result)}`)
 
       return result
     } catch (err) {
       // This catch will activate on non-token txs.
       // Leave this commented out.
-      // wlogger.error(`Error in slp.js/txDetails()`)
+      // wlogger.error(`Error in slp.js/txDetails(): `, err)
       // wlogger.debug(`Not a token tx`, err)
       throw err
     }
@@ -110,7 +110,7 @@ class SLP {
 
       let tokens = result.tokenInfo.sendOutputs[1]
       tokens = tokens / Math.pow(10, 8)
-      // console.log(`tokens transfered: ${tokens}`)
+      console.log(`tokens transfered: ${tokens}`)
 
       return tokens
     } catch (err) {

@@ -5,7 +5,8 @@
 'use strict'
 
 // default rest API.
-let RESTAPI = 'bchjs'
+let RESTAPI = 'fullstack.cash'
+// let RESTAPI = 'bitcoin.com'
 
 // Override the RESTAPI setting if envronment variable is set.
 if (process.env.RESTAPI && process.env.RESTAPI !== '') { RESTAPI = process.env.RESTAPI }
@@ -18,10 +19,10 @@ const BITBOX = require('slp-sdk')
 
 const config = {}
 
-if (RESTAPI === 'bchjs') {
+if (RESTAPI === 'fullstack.cash') {
   config.BCHLIB = BCHJS.BitboxShim()
-  config.MAINNET_REST = `https://api.bchjs.cash/v3/`
-  config.TESTNET_REST = `https://tapi.bchjs.cash/v3/`
+  config.MAINNET_REST = `https://api.fullstack.cash/v3/`
+  config.TESTNET_REST = `https://tapi.fullstack.cash/v3/`
   config.RESTAPI = 'bchjs'
 }
 

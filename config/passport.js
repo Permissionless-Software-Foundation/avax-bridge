@@ -16,11 +16,11 @@ passport.deserializeUser(async (id, done) => {
 })
 
 passport.use('local', new Strategy({
-  usernameField: 'username',
+  usernameField: 'email',
   passwordField: 'password'
-}, async (username, password, done) => {
+}, async (email, password, done) => {
   try {
-    const user = await User.findOne({ username })
+    const user = await User.findOne({ email })
     if (!user) { return done(null, false) }
 
     try {
@@ -32,7 +32,6 @@ passport.use('local', new Strategy({
     } catch (err) {
       done(err)
     }
-
   } catch (err) {
     return done(err)
   }
