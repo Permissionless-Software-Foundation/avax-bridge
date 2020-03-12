@@ -32,13 +32,10 @@ async function startServer () {
   // Connect to the Mongo Database.
   mongoose.Promise = global.Promise
   mongoose.set('useCreateIndex', true) // Stop deprecation warning.
-  await mongoose.connect(
-    config.database,
-    {
-      useUnifiedTopology: true,
-      useNewUrlParser: true
-    }
-  )
+  await mongoose.connect(config.database, {
+    useUnifiedTopology: true,
+    useNewUrlParser: true
+  })
 
   // MIDDLEWARE START
 
@@ -76,7 +73,7 @@ async function startServer () {
 
   // Create the system admin user.
   const success = await adminLib.createSystemUser()
-  if (success) console.log(`System admin user created.`)
+  if (success) console.log('System admin user created.')
 
   return app
 }

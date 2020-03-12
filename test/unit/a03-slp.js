@@ -186,7 +186,7 @@ describe('#slp', () => {
       }
 
       const txid =
-        '02ed1b8882eb356f864a21eb59b7f222f13c36efc230329050f569b5580bf6ce'
+        '1e217cbb29bc58a945d5ab1e623bd5c4ab63c699052438dbe06f96d8043d2714'
 
       const tokenInfo = await slp.tokenTxInfo(txid)
       // console.log(`tokenInfo: ${util.inspect(tokenInfo)}`)

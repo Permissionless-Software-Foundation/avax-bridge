@@ -118,6 +118,8 @@ async function startTokenLiquidity () {
   }, CONSOLIDATE_INTERVAL)
 }
 
+// This 'processing loop' function is called periodically to identify and process
+// any new transactions.
 async function processingLoop (seenTxs) {
   try {
     const now = new Date()
