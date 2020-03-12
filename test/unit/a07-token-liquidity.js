@@ -176,8 +176,8 @@ describe('#token-liquidity', () => {
       // If unit test, use the mocking library instead of live calls.
       if (process.env.TEST_ENV === 'unit') {
         sandbox.stub(lib.bch, 'getBCHBalance').resolves(libMockData.addrInfo)
-        sandbox.stub(lib.txs, 'getTxConfirmations').resolves(libMockData.confs)
       }
+      sandbox.stub(lib.txs, 'getTxConfirmations').resolves(libMockData.confs)
 
       const result = await lib.detectNewTxs(obj)
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)

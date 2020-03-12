@@ -6,6 +6,7 @@
 
 // default rest API.
 let RESTAPI = 'fullstack.cash'
+// let RESTAPI = 'bitcoin.com'
 
 // Override the RESTAPI setting if envronment variable is set.
 if (process.env.RESTAPI && process.env.RESTAPI !== '') { RESTAPI = process.env.RESTAPI }
