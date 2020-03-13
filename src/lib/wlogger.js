@@ -43,14 +43,14 @@ var wlogger = winston.createLogger({
   ]
 })
 
-// This controls the logs to CONSOLE
-/*
-wlogger.add(
-  new winston.transports.Console({
+// Add simple logging to the console.
+// if (process.env.APP_ENV !== 'test') {
+if (process.env.TEST_ENV !== 'unit') {
+  wlogger.add(new winston.transports.Console({
     format: winston.format.simple(),
-    level: "info"
-  })
-)
-*/
+    // level: 'verbose'
+    level: 'debug'
+  }))
+}
 
 module.exports = wlogger

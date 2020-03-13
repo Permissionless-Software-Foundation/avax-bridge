@@ -21,7 +21,7 @@ const BCH = require('./bch')
 const bch = new BCH()
 
 // Winston logger
-const wlogger = require('../utils/logging')
+const wlogger = require('./wlogger')
 
 // Mainnet by default
 let bchjs = new config.BCHLIB({ restURL: config.MAINNET_REST })
@@ -45,11 +45,11 @@ class SLP {
   // Get the token balance of an address.
   async getTokenBalance () {
     try {
-      wlogger.silly(`Enter slp.getTokenBalance()`)
+      wlogger.silly('Enter slp.getTokenBalance()')
       // console.log(`addr: ${addr}`)
 
       const result = await this.bchjs.Util.balancesForAddress(config.SLP_ADDR)
-      wlogger.debug(`token balance: `, result)
+      wlogger.debug('token balance: ', result)
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
       if (result === 'No balance for this address' || result.length === 0) {
@@ -57,14 +57,14 @@ class SLP {
       }
 
       // Get the token information that matches the token-ID for PSF tokens.
-      let tokenInfo = result.find(
+      const tokenInfo = result.find(
         token => token.tokenId === config.SLP_TOKEN_ID
       )
       // console.log(`tokenInfo: ${JSON.stringify(tokenInfo, null, 2)}`)
 
       return parseFloat(tokenInfo.balance)
     } catch (err) {
-      wlogger.error(`Error in slp.js/getTokenBalance: `, err)
+      wlogger.error('Error in slp.js/getTokenBalance: ', err)
       throw err
     }
   }
@@ -72,7 +72,7 @@ class SLP {
   // Retrieves SLP TX details from rest.bitcoin.com
   async txDetails (txid) {
     try {
-      wlogger.silly(`Entering slp.txDetails().`)
+      wlogger.silly('Entering slp.txDetails().')
 
       const txValid = await this.bchjs.Util.validateTxid(txid)
       // console.log(`txValid: ${JSON.stringify(txValid, null, 2)}`)
@@ -89,7 +89,7 @@ class SLP {
       // This catch will activate on non-token txs.
       // Leave this commented out.
       // wlogger.error(`Error in slp.js/txDetails(): `, err)
-      // wlogger.debug(`Not a token tx`, err)
+      wlogger.debug('Not a token tx', err)
       throw err
     }
   }
@@ -98,7 +98,7 @@ class SLP {
   // transfer. Otherwise returns false.
   async tokenTxInfo (txid) {
     try {
-      wlogger.silly(`Entering slp.tokenTxInfo().`)
+      wlogger.silly('Entering slp.tokenTxInfo().')
 
       const result = await this.txDetails(txid)
       // console.log(`tokenTxInfo: ${JSON.stringify(result, null, 2)}`)
@@ -130,11 +130,11 @@ class SLP {
     try {
       console.log(`path: ${path}`)
       if (path !== 145 && path !== 245) {
-        throw new Error(`path must have a value of 145 or 245`)
+        throw new Error('path must have a value of 145 or 245')
       }
 
       if (isNaN(Number(qty)) || Number(qty) <= 0) {
-        throw new Error(`qty must be a positive number.`)
+        throw new Error('qty must be a positive number.')
       }
 
       // Open the wallet controlling the tokens
@@ -146,7 +146,7 @@ class SLP {
 
       // master HDNode
       let masterHDNode
-      if (config.NETWORK === `mainnet`) {
+      if (config.NETWORK === 'mainnet') {
         masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed)
       } else masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed, 'testnet') // Testnet
 
@@ -171,7 +171,7 @@ class SLP {
       // console.log(`utxosBCH: ${JSON.stringify(utxosBCH, null, 2)}`)
 
       if (utxosBCH.length === 0) {
-        throw new Error(`Wallet does not have a BCH UTXO to pay miner fees.`)
+        throw new Error('Wallet does not have a BCH UTXO to pay miner fees.')
       }
 
       // Choose a BCH UTXO to pay for the transaction.
@@ -245,7 +245,7 @@ class SLP {
 
       // Bail out if no token UTXOs are found.
       if (tokenUtxos.length === 0) {
-        throw new Error(`No token UTXOs are available!`)
+        throw new Error('No token UTXOs are available!')
       }
 
       // Generate the OP_RETURN code.
@@ -263,7 +263,7 @@ class SLP {
 
       // instance of transaction builder
       let transactionBuilder
-      if (config.NETWORK === `mainnet`) {
+      if (config.NETWORK === 'mainnet') {
         transactionBuilder = new this.bchjs.TransactionBuilder()
       } else transactionBuilder = new this.bchjs.TransactionBuilder('testnet')
 
@@ -293,7 +293,7 @@ class SLP {
       // It's the original amount - 1 sat/byte for tx size
       const remainder = originalAmount - txFee - 546 * 2
       if (remainder < 1) {
-        throw new Error(`Selected UTXO does not have enough satoshis`)
+        throw new Error('Selected UTXO does not have enough satoshis')
       }
       // console.log(`remainder: ${remainder}`)
 
@@ -357,7 +357,7 @@ class SLP {
       wlogger.error(`Error in createTokenTx: ${err.message}`, err)
 
       if (err.message) throw new Error(err.message)
-      else throw new Error(`Error in createTokenTx()`)
+      else throw new Error('Error in createTokenTx()')
     }
   }
 
@@ -366,7 +366,7 @@ class SLP {
   async burnTokenTx (burnQty) {
     try {
       if (isNaN(Number(burnQty)) || Number(burnQty) <= 0) {
-        throw new Error(`burn quantity must be a positive number.`)
+        throw new Error('burn quantity must be a positive number.')
       }
 
       // Open the wallet controlling the tokens
@@ -378,7 +378,7 @@ class SLP {
 
       // master HDNode
       let masterHDNode
-      if (config.NETWORK === `mainnet`) {
+      if (config.NETWORK === 'mainnet') {
         masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed)
       } else masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed, 'testnet') // Testnet
 
@@ -403,7 +403,7 @@ class SLP {
       // console.log(`utxosBCH: ${JSON.stringify(utxosBCH, null, 2)}`)
 
       if (utxosBCH.length === 0) {
-        throw new Error(`Wallet does not have a BCH UTXO to pay miner fees.`)
+        throw new Error('Wallet does not have a BCH UTXO to pay miner fees.')
       }
 
       // Choose a BCH UTXO to pay for the transaction.
@@ -430,7 +430,7 @@ class SLP {
 
       // get the cash address
       const cashAddress = this.bchjs.HDNode.toCashAddress(change)
-      const slpAddress = this.bchjs.HDNode.toSLPAddress(change)
+      // const slpAddress = this.bchjs.HDNode.toSLPAddress(change)
       // console.log(`cashAddress: ${JSON.stringify(cashAddress, null, 2)}`)
 
       // Get UTXOs held by this address. Derivation 245
@@ -474,7 +474,7 @@ class SLP {
 
       // Bail out if no token UTXOs are found.
       if (tokenUtxos.length === 0) {
-        throw new Error(`No token UTXOs are available!`)
+        throw new Error('No token UTXOs are available!')
       }
 
       // Generate the OP_RETURN code.
@@ -493,7 +493,7 @@ class SLP {
 
       // instance of transaction builder
       let transactionBuilder
-      if (config.NETWORK === `mainnet`) {
+      if (config.NETWORK === 'mainnet') {
         transactionBuilder = new this.bchjs.TransactionBuilder()
       } else transactionBuilder = new this.bchjs.TransactionBuilder('testnet')
 
@@ -523,7 +523,7 @@ class SLP {
       // It's the original amount - 1 sat/byte for tx size
       const remainder = originalAmount - txFee - 546 * 2
       if (remainder < 1) {
-        throw new Error(`Selected UTXO does not have enough satoshis`)
+        throw new Error('Selected UTXO does not have enough satoshis')
       }
       // console.log(`remainder: ${remainder}`)
 
@@ -579,8 +579,8 @@ class SLP {
       wlogger.error(`Error in burnTokenTx: ${err.message}`, err)
       if (err.message) throw new Error(err.message)
       else {
-        console.log(`Error in slp.js/burnTokenTx: `, err)
-        throw new Error(`Error in burnTokenTx`)
+        console.log('Error in slp.js/burnTokenTx: ', err)
+        throw new Error('Error in burnTokenTx')
       }
     }
   }
@@ -593,7 +593,7 @@ class SLP {
 
       return txidStr
     } catch (err) {
-      wlogger.error(`Error in slp.js/broadcastTokenTx(): `, err)
+      wlogger.error('Error in slp.js/broadcastTokenTx(): ', err)
       throw err
     }
   }

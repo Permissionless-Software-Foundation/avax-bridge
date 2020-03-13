@@ -28,7 +28,7 @@ const txs = new Transactions()
 // const bchLib = require('./send-bch')
 
 // Winston logger
-const wlogger = require('../utils/logging')
+const wlogger = require('./wlogger')
 
 // Used for debugging and iterrogating JS objects.
 const util = require('util')
@@ -42,7 +42,7 @@ const BCH_QTY_ORIGINAL = config.BCH_QTY_ORIGINAL
 // p-retry library
 // const pRetry = require('p-retry')
 
-const seenTxs = [] // Track processed TXIDs
+// const seenTxs = [] // Track processed TXIDs
 let _this
 
 class TokenLiquidity {
@@ -98,7 +98,7 @@ class TokenLiquidity {
 
       return newTxs
     } catch (err) {
-      wlogger.error(`Error in lib/token-liquidity.js/processNewTxs()`)
+      wlogger.error('Error in lib/token-liquidity.js/processNewTxs()')
       throw err
     }
   }
@@ -109,7 +109,7 @@ class TokenLiquidity {
       const { txid, bchBalance, tokenBalance } = inObj
 
       // Data validation
-      if (typeof txid !== 'string') throw new Error(`txid needs to be a string`)
+      if (typeof txid !== 'string') throw new Error('txid needs to be a string')
 
       wlogger.info(`Processing new TXID ${txid}.`)
 
@@ -124,7 +124,7 @@ class TokenLiquidity {
       // after processing the users transaction and then broadcasting the trade.
       if (userAddr === config.BCH_ADDR) {
         wlogger.info(
-          `userAddr === app address. Exiting compareLastTransaction()`
+          'userAddr === app address. Exiting compareLastTransaction()'
         )
 
         // Signal that this was a self-generated transaction.
@@ -153,7 +153,7 @@ class TokenLiquidity {
         }
 
         const retObj = _this.exchangeTokensForBCH(exchangeObj)
-        wlogger.debug(`retObj: `, retObj)
+        wlogger.debug('retObj: ', retObj)
 
         const bchOut = retObj.bchOut
         wlogger.info(
@@ -184,11 +184,11 @@ class TokenLiquidity {
 
         // Ensure bchQty is a number
         bchQty = Number(bchQty)
-        if (isNaN(bchQty)) throw new Error(`bchQty could not be converted to a number.`)
+        if (isNaN(bchQty)) { throw new Error('bchQty could not be converted to a number.') }
 
         if (bchQty < 0.00000547) {
           throw new Error(
-            `Dust recieved. This is probably a token tx that SLPDB doesn't know about.`
+            "Dust recieved. This is probably a token tx that SLPDB doesn't know about."
           )
         }
 
@@ -297,7 +297,7 @@ class TokenLiquidity {
               error.retriesLeft
             } retries left. Waiting 4 minutes before trying again.`
           )
-          wlogger.error(`error caught by pRetryProcessTx(): `, error)
+          wlogger.error('error caught by pRetryProcessTx(): ', error)
           console.log(' ')
 
           await this.tlUtil.sleep(60000 * 4) // Sleep for 4 minutes
@@ -328,7 +328,7 @@ class TokenLiquidity {
         tokenOriginalBalance
       } = obj
 
-      if (!bchBalance) throw new Error(`bchBalance must be defined.`)
+      if (!bchBalance) throw new Error('bchBalance must be defined.')
 
       const bch1 = bchBalance
 
@@ -356,7 +356,7 @@ class TokenLiquidity {
 
       return retObj
     } catch (err) {
-      wlogger.error(`Error in token-liquidity.js/exchangeBCHForTokens().`)
+      wlogger.error('Error in token-liquidity.js/exchangeBCHForTokens().')
       throw err
     }
   }
@@ -368,7 +368,7 @@ class TokenLiquidity {
   // output.
   exchangeTokensForBCH (obj) {
     try {
-      wlogger.silly(`Entering exchangeTokensForBCH.`, obj)
+      wlogger.silly('Entering exchangeTokensForBCH.', obj)
 
       const {
         tokenIn,
@@ -378,7 +378,7 @@ class TokenLiquidity {
         tokenOriginalBalance
       } = obj
 
-      if (!bchBalance) throw new Error(`bchBalance must be defined.`)
+      if (!bchBalance) throw new Error('bchBalance must be defined.')
 
       const bch1 = bchBalance
 
@@ -406,7 +406,7 @@ class TokenLiquidity {
 
       return retObj
     } catch (err) {
-      wlogger.error(`Error in token-liquidity.js/exchangeTokensForBCH().`)
+      wlogger.error('Error in token-liquidity.js/exchangeTokensForBCH().')
       throw err
     }
   }
@@ -428,7 +428,7 @@ class TokenLiquidity {
 
       return price
     } catch (err) {
-      wlogger.error(`Error in token-liquidity.js/getSpotPrice().`)
+      wlogger.error('Error in token-liquidity.js/getSpotPrice().')
       throw err
     }
   }
@@ -449,7 +449,7 @@ class TokenLiquidity {
         tokenBalance
       }
     } catch (err) {
-      wlogger.error(`Error in token-liquidity.js/getBlockchainBalances().`)
+      wlogger.error('Error in token-liquidity.js/getBlockchainBalances().')
       throw err
     }
   }

@@ -16,7 +16,7 @@ const TLUtils = require('./util')
 const tlUtils = new TLUtils()
 
 // Winston logger
-const wlogger = require('../utils/logging')
+const wlogger = require('./wlogger')
 
 // Mainnet by default
 let BITBOX = new config.BCHLIB({ restURL: config.MAINNET_REST })
@@ -73,7 +73,7 @@ class BCH {
 
       return bchBalance
     } catch (err) {
-      wlogger.error(`Error in getBCHBalance: `, err)
+      wlogger.error('Error in getBCHBalance: ', err)
       wlogger.error(`addr: ${addr}`)
       throw err
     }
@@ -82,9 +82,9 @@ class BCH {
   // Returns the utxo with the biggest balance from an array of utxos.
   async findBiggestUtxo (utxos) {
     try {
-      wlogger.silly(`Entering findBiggestUtxo().`)
+      wlogger.silly('Entering findBiggestUtxo().')
 
-      if (!Array.isArray(utxos)) throw new Error(`utxos needs to be an array`)
+      if (!Array.isArray(utxos)) throw new Error('utxos needs to be an array')
 
       let largestAmount = 0
       let largestIndex = 0
@@ -105,7 +105,7 @@ class BCH {
 
       return utxos[largestIndex]
     } catch (err) {
-      wlogger.error(`Error in findBiggestUtxo().`)
+      wlogger.error('Error in findBiggestUtxo().')
       throw err
     }
   }
@@ -114,7 +114,7 @@ class BCH {
   // Returns a floating point number of BCH recieved. 0 if no match found.
   async recievedBch (txid, addr) {
     try {
-      wlogger.silly(`Entering receivedBch().`)
+      wlogger.silly('Entering receivedBch().')
       // console.log(`addr: ${addr}`)
       // console.log(`this.BITBOX.restURL: ${this.BITBOX.restURL}`)
 
@@ -145,7 +145,7 @@ class BCH {
           // Note: Assuming addresses[] only has 1 element.
           // Not sure how there can be multiple addresses if the value is not an array.
           let address = addresses[0] // Legacy address
-          wlogger.debug(`address: `, address)
+          wlogger.debug('address: ', address)
           address = this.BITBOX.Address.toCashAddress(address)
 
           if (address === addr) return this.tlUtils.round8(value / SATS_PER_BCH)
@@ -155,7 +155,7 @@ class BCH {
       // Address not found. Return zero.
       return 0
     } catch (err) {
-      wlogger.error(`Error in recievedBch: `, err)
+      wlogger.error('Error in recievedBch: ', err)
       throw err
     }
   }
@@ -164,7 +164,7 @@ class BCH {
   // is ready to broadcast to the BCH network.
   async createBchTx (obj) {
     try {
-      wlogger.silly(`Starting sendBch()...`)
+      wlogger.silly('Starting sendBch()...')
 
       const RECV_ADDR = obj.recvAddr
       const satoshisToSend = obj.satoshisToSend
@@ -180,7 +180,7 @@ class BCH {
       )
 
       if (balance <= 0.0) {
-        console.log(`Balance of sending address is zero. Exiting.`)
+        console.log('Balance of sending address is zero. Exiting.')
         process.exit(0)
       }
 
@@ -198,7 +198,7 @@ class BCH {
 
       // instance of transaction builder
       let transactionBuilder
-      if (config.NETWORK === `testnet`) {
+      if (config.NETWORK === 'testnet') {
         transactionBuilder = new this.BITBOX.TransactionBuilder('testnet')
       } else {
         transactionBuilder = new this.BITBOX.TransactionBuilder()
@@ -261,7 +261,7 @@ class BCH {
       // console.log(`Transaction raw hex: `);
       // console.log(`${hex}`);
     } catch (err) {
-      wlogger.error(`Error in createBchTx.`)
+      wlogger.error('Error in createBchTx.')
       throw err
     }
   }
@@ -278,7 +278,7 @@ class BCH {
 
       return broadcast
     } catch (err) {
-      wlogger.error(`Error in broadcastBchTx`)
+      wlogger.error('Error in broadcastBchTx')
       throw err
     }
   }
@@ -290,7 +290,7 @@ class BCH {
 
     // master HDNode
     let masterHDNode
-    if (config.NETWORK === `testnet`) {
+    if (config.NETWORK === 'testnet') {
       masterHDNode = BITBOX.HDNode.fromSeed(rootSeed, 'testnet')
     } else {
       masterHDNode = BITBOX.HDNode.fromSeed(rootSeed)
@@ -346,7 +346,7 @@ class BCH {
 
       // master HDNode
       let masterHDNode
-      if (config.NETWORK === `mainnet`) {
+      if (config.NETWORK === 'mainnet') {
         masterHDNode = this.BITBOX.HDNode.fromSeed(rootSeed)
       } else masterHDNode = this.BITBOX.HDNode.fromSeed(rootSeed, 'testnet') // Testnet
 
@@ -365,9 +365,9 @@ class BCH {
       console.log(`cashAddress: ${JSON.stringify(cashAddress, null, 2)}`)
 
       // console.log(utxos)
-      if (!Array.isArray(utxos)) throw new Error(`UTXOs must be an array.`)
+      if (!Array.isArray(utxos)) throw new Error('UTXOs must be an array.')
 
-      if (utxos.length === 0) throw new Error(`No UTXOs found.`)
+      if (utxos.length === 0) throw new Error('No UTXOs found.')
 
       // Add the satoshis quantity of all UTXOs
       let satoshisAmount = 0
@@ -378,7 +378,7 @@ class BCH {
       }
 
       if (satoshisAmount < 1) {
-        throw new Error(`Original amount is zero. No BCH to send.`)
+        throw new Error('Original amount is zero. No BCH to send.')
       }
 
       // Get byte count to calculate fee. paying 1 sat/byte
@@ -423,7 +423,7 @@ class BCH {
       const broadcast = await this.broadcastBchTx(hex)
       return broadcast
     } catch (error) {
-      wlogger.error(`Error in bch.js/consolidateUtxos()`)
+      wlogger.error('Error in bch.js/consolidateUtxos()')
       throw error
     }
   }
@@ -451,7 +451,7 @@ class BCH {
       if (script[0] !== 'OP_RETURN') return retObj
 
       // Decode the command
-      let cmd = Buffer.from(script[2], 'hex').toString('ascii')
+      const cmd = Buffer.from(script[2], 'hex').toString('ascii')
       // cmd = cmd.split(' ')
       // console.log(`cmd: ${JSON.stringify(cmd, null, 2)}`)
 
@@ -468,7 +468,7 @@ class BCH {
 
       return retObj
     } catch (err) {
-      wlogger.error(`Error in bch.js/readOpReturn(): `, err)
+      wlogger.error('Error in bch.js/readOpReturn(): ', err)
       return retObj
     }
   }

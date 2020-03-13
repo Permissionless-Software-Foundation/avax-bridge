@@ -11,7 +11,7 @@ util.inspect.defaultOptions = { depth: 5 }
 const config = require('../../config')
 
 // Winston logger
-const wlogger = require('../utils/logging')
+const wlogger = require('./wlogger')
 
 // Mainnet by default
 let BITBOX = new config.BCHLIB({ restURL: config.MAINNET_REST })
@@ -47,7 +47,7 @@ class Transactions {
 
       return senderAddr
     } catch (err) {
-      wlogger.debug(`Error in transactions.js/getUserAddr().`)
+      wlogger.debug('Error in transactions.js/getUserAddr().')
       throw err
     }
   }
@@ -55,7 +55,7 @@ class Transactions {
   // Returns true if there are no 0 or 1-conf transactions associated with the address.
   async only2Conf (bchAddr) {
     try {
-      wlogger.silly(`Entering only2Conf.`)
+      wlogger.silly('Entering only2Conf.')
 
       // Get an ordered list of transactions associated with this address.
       let txs = await this.getTransactions(bchAddr)
@@ -65,7 +65,7 @@ class Transactions {
 
       return false
     } catch (err) {
-      wlogger.error(`Error in transactions.js/only2Conf(). Returning false`, err)
+      wlogger.error('Error in transactions.js/only2Conf(). Returning false', err)
       return false
     }
   }
@@ -75,7 +75,7 @@ class Transactions {
   async getTxConfirmations (txids) {
     try {
       // Data validation
-      if (!Array.isArray(txids)) throw new Error(`txids needs to be an array`)
+      if (!Array.isArray(txids)) throw new Error('txids needs to be an array')
 
       // Collect the confirmations for each txid.
       const data = []
@@ -95,7 +95,7 @@ class Transactions {
 
       return data
     } catch (err) {
-      wlogger.error(`Error in transactions.js/getTxConfirmations()`)
+      wlogger.error('Error in transactions.js/getTxConfirmations()')
       throw err
     }
   }
