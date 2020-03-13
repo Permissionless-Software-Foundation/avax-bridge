@@ -38,7 +38,7 @@ config.bchBalance = config.BCH_QTY_ORIGINAL
 config.tokenBalance = config.TOKENS_QTY_ORIGINAL
 
 // Winston logger
-const wlogger = require('../src/utils/logging')
+const wlogger = require('../src/lib/wlogger')
 
 // Used for debugging.
 const util = require('util')
@@ -70,13 +70,13 @@ async function startTokenLiquidity () {
 
   // Get all the TXIDs associated with this apps address. The app assumes all
   // these TXs have been processed.
-  let seenTxs = addressInfo.txids
+  const seenTxs = addressInfo.txids
   // console.log(`seenTxs: ${JSON.stringify(seenTxs, null, 2)}`)
 
   // Get SLP token balance
   tokenBalance = await slp.getTokenBalance(config.SLP_ADDR)
   wlogger.info(
-    `SLP token address ${config.SLP_ADDR} has a balance of: ${tokenBalance}`
+    `SLP token address ${config.SLP_ADDR} has a balance of: ${tokenBalance} PSF`
   )
   config.tokenBalance = tokenBalance
 
@@ -84,7 +84,7 @@ async function startTokenLiquidity () {
   let USDperBCH
   try {
     const rawRate = await got(
-      `https://api.coinbase.com/v2/exchange-rates?currency=BCH`
+      'https://api.coinbase.com/v2/exchange-rates?currency=BCH'
     )
     const jsonRate = JSON.parse(rawRate.body)
     // console.log(`jsonRate: ${JSON.stringify(jsonRate, null, 2)}`);
@@ -94,7 +94,7 @@ async function startTokenLiquidity () {
     config.usdPerBCH = USDperBCH
   } catch (err) {
     wlogger.error(
-      `Coinbase exchange rate could not be retrieved!. Assuming hard coded value.`
+      'Coinbase exchange rate could not be retrieved!. Assuming hard coded value.'
     )
     wlogger.error(err)
     USDperBCH = 300
@@ -167,7 +167,13 @@ async function processingLoop (seenTxs) {
       // retry processTx() several times if it errors out.
       console.log(' ')
       console.log(' ')
-      console.log(`Processing new transaction with this data: ${JSON.stringify(obj, null, 2)}`)
+      console.log(
+        `Processing new transaction with this data: ${JSON.stringify(
+          obj,
+          null,
+          2
+        )}`
+      )
 
       clearInterval(timerHandle)
 
@@ -178,6 +184,11 @@ async function processingLoop (seenTxs) {
 
       // If the app received tokens, send them to the 245 path.
       if (result.type === 'token') {
+        // Wait before moving tokens, allows previous transaction to get picked
+        // up by the network. Prevents race-condition.
+        wlogger.debug('Waiting 2 minutes before moving tokens...')
+        await sleep(60000 * 2)
+
         const obj = { tokenQty: result.tokenQty }
         await queue.add(() => slp.moveTokens(obj))
       }
@@ -188,20 +199,22 @@ async function processingLoop (seenTxs) {
       bchBalance = result.bchBalance
       tokenBalance = result.tokenBalance
       console.log(`BCH: ${bchBalance}, SLP: ${tokenBalance}`)
-      console.log(` `)
+      console.log(' ')
 
       // Sleep for 5 minutes to give Blockbook time to process the last transaction.
       // If result.txid === null, it's a self-generated TX, so we don't need to wait.
-      if (result.txid !== null) { await waitForBlockbook(seenTxs) }
+      if (result.txid !== null) {
+        await waitForBlockbook(seenTxs)
+      }
 
       timerHandle = setInterval(async function () {
         await processingLoop(seenTxs)
       }, 60000 * 2)
     }
   } catch (err) {
-    wlogger.error(`Error in token-liquidity.js.`, err)
+    wlogger.error('Error in token-liquidity.js.', err)
     console.log(' ')
-    console.log(`Err: `, err)
+    console.log('Err: ', err)
   }
 }
 
@@ -210,14 +223,12 @@ async function processingLoop (seenTxs) {
 async function waitForBlockbook (seenTxs) {
   const now = new Date()
   wlogger.info(
-    `${
-      now.toLocaleString()
-    }: Waiting 5 minutes before processing next transaction...`
+    `${now.toLocaleString()}: Waiting 5 minutes before processing next transaction...`
   )
 
   // clearInterval(timerHandle)
   await sleep(FIVE_MINUTES)
-  console.log(`...continuing processing.`)
+  console.log('...continuing processing.')
 }
 
 function sleep (ms) {

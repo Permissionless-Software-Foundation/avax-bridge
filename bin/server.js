@@ -20,7 +20,7 @@ const adminLib = require('../src/lib/admin')
 const errorMiddleware = require('../src/middleware')
 
 // Winston logger
-const wlogger = require('../src/utils/logging')
+const wlogger = require('../src/lib/wlogger')
 
 async function startServer () {
   console.log(`Using network: ${config.NETWORK}`)

@@ -12,7 +12,7 @@ const fs = require('fs')
 const config = require('../../config')
 
 // Winston logger
-const wlogger = require('../utils/logging')
+const wlogger = require('./wlogger')
 
 class TLUtils {
   // constructor () {}
@@ -25,25 +25,25 @@ class TLUtils {
   // Save the app state to a JSON file.
   saveState (data) {
     try {
-      wlogger.silly(`entering util.js/saveState().`)
+      wlogger.silly('entering util.js/saveState().')
 
       const filename = `${__dirname}/../../state/state.json`
 
       return new Promise((resolve, reject) => {
         fs.writeFile(filename, JSON.stringify(data, null, 2), function (err) {
           if (err) {
-            wlogger.error(`Error in token-util.js/saveState(): `, err)
+            wlogger.error('Error in token-util.js/saveState(): ', err)
             return reject(err)
           }
 
-          wlogger.silly(`Successfully saved to state.json`)
+          wlogger.silly('Successfully saved to state.json')
 
           // console.log(`${name}.json written successfully.`)
           return resolve()
         })
       })
     } catch (err) {
-      wlogger.debug(`Error in token-util.js/saveState()`)
+      wlogger.debug('Error in token-util.js/saveState()')
       throw err
     }
   }
@@ -57,7 +57,7 @@ class TLUtils {
       const data = require(filename)
       return data
     } catch (err) {
-      wlogger.debug(`Error in util.js/readState()`)
+      wlogger.debug('Error in util.js/readState()')
       throw new Error(`Could not open ${filename}`)
     }
   }
@@ -76,7 +76,7 @@ class TLUtils {
 
       return walletInfo
     } catch (err) {
-      throw new Error(`wallet file not found`)
+      throw new Error('wallet file not found')
     }
   }
 
