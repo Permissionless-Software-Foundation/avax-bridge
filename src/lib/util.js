@@ -102,7 +102,7 @@ class TLUtils {
         // console.log(`jsonRate: ${JSON.stringify(jsonRate, null, 2)}`);
 
         USDperBCH = jsonRate.data.rates.USD
-        wlogger.info(`USD/BCH exchange rate: $${USDperBCH}`)
+        wlogger.debug(`USD/BCH exchange rate: $${USDperBCH}`)
 
         config.usdPerBCH = USDperBCH
 
