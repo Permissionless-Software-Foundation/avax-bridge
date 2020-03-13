@@ -5,7 +5,7 @@
 'use strict'
 
 // const lib = require('../src/lib/token-util.js')
-const got = require('got')
+// const got = require('got')
 
 const SLP = require('../src/lib/slp')
 const slp = new SLP()
@@ -21,8 +21,8 @@ const { default: PQueue } = require('p-queue')
 const queue = new PQueue({ concurrency: 1 })
 
 // App utility functions library.
-// const TLUtils = require('../src/lib/util')
-// const tlUtil = new TLUtils()
+const TLUtils = require('../src/lib/util')
+const tlUtil = new TLUtils()
 
 // const Transactions = require('../src/lib/transactions')
 // const txs = new Transactions()
@@ -52,12 +52,21 @@ util.inspect.defaultOptions = {
 
 const FIVE_MINUTES = 60000 * 5
 const CONSOLIDATE_INTERVAL = 60000 * 100
+const PRICE_UPDATE_INTERVAL = 60000 * 5
 let timerHandle
 
 let bchBalance
 let tokenBalance
 
 async function startTokenLiquidity () {
+  // Read in the state file.
+  try {
+    const state = tlUtil.readState()
+    console.log(`state: ${JSON.stringify(state, null, 2)}`)
+  } catch (err) {
+    wlogger.error('Could not read state.json file.')
+  }
+
   // Get BCH balance.
   const addressInfo = await bch.getBCHBalance(config.BCH_ADDR, false)
   bchBalance = addressInfo.balance
@@ -81,24 +90,7 @@ async function startTokenLiquidity () {
   config.tokenBalance = tokenBalance
 
   // Get the BCH-USD exchange rate.
-  let USDperBCH
-  try {
-    const rawRate = await got(
-      'https://api.coinbase.com/v2/exchange-rates?currency=BCH'
-    )
-    const jsonRate = JSON.parse(rawRate.body)
-    // console.log(`jsonRate: ${JSON.stringify(jsonRate, null, 2)}`);
-    USDperBCH = jsonRate.data.rates.USD
-    wlogger.info(`USD/BCH exchange rate: $${USDperBCH}`)
-
-    config.usdPerBCH = USDperBCH
-  } catch (err) {
-    wlogger.error(
-      'Coinbase exchange rate could not be retrieved!. Assuming hard coded value.'
-    )
-    wlogger.error(err)
-    USDperBCH = 300
-  }
+  const USDperBCH = await tlUtil.getPrice()
 
   // Calculate exchange rate spot price.;
   const marketCap = USDperBCH * bchBalance
@@ -116,6 +108,12 @@ async function startTokenLiquidity () {
   setInterval(async function () {
     await bch.consolidateUtxos()
   }, CONSOLIDATE_INTERVAL)
+
+  // Interval to update BCH spot price.
+  setInterval(async function () {
+    console.log('Updating BCH price.')
+    await tlUtil.getPrice()
+  }, PRICE_UPDATE_INTERVAL)
 }
 
 // This 'processing loop' function is called periodically to identify and process
