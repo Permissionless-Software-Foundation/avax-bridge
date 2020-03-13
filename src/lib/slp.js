@@ -594,6 +594,10 @@ class SLP {
       return txidStr
     } catch (err) {
       wlogger.error('Error in slp.js/broadcastTokenTx(): ', err)
+
+      // Handle messages from the full node.
+      if (err.error) throw new Error(err.error)
+
       throw err
     }
   }

@@ -94,9 +94,16 @@ class BCH {
 
         if (thisUtxo.satoshis > largestAmount) {
           // Verify the UTXO is valid. Skip if not.
-          const isValid = await this.BITBOX.Blockchain.getTxOut(thisUtxo.txid, thisUtxo.vout)
+          const isValid = await this.BITBOX.Blockchain.getTxOut(
+            thisUtxo.txid,
+            thisUtxo.vout
+          )
           // console.log(`isValid: ${JSON.stringify(isValid, null, 2)}`)
-          if (isValid === null) continue
+
+          if (isValid === null) {
+            wlogger.info(`Invalid (stale) UTXO found: ${JSON.stringify(thisUtxo, null, 2)}`)
+            continue
+          }
 
           largestAmount = thisUtxo.satoshis
           largestIndex = i
@@ -105,7 +112,7 @@ class BCH {
 
       return utxos[largestIndex]
     } catch (err) {
-      wlogger.error('Error in findBiggestUtxo().')
+      wlogger.error('Error in bch.js/findBiggestUtxo().')
       throw err
     }
   }
@@ -193,7 +200,9 @@ class BCH {
       // console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
 
       const utxo = await this.findBiggestUtxo(utxos)
-      // console.log(`selected utxo`, utxo)
+      wlogger.debug('selected utxo', utxo)
+
+      // Ensure compatiblity between indexers.
       utxo.value = utxo.amount
 
       // instance of transaction builder
@@ -225,6 +234,11 @@ class BCH {
       // amount to send back to the sending address. It's the original amount - 1 sat/byte for tx size
       const remainder = originalAmount - satoshisToSend - txFee
       wlogger.verbose(`remainder: ${remainder}`)
+
+      // Bail out if remainder is negative.
+      if (remainder < 0) {
+        throw new Error(`UTXO selected is too small. Remainder: ${remainder}`)
+      }
 
       // add output w/ address and amount to send
       transactionBuilder.addOutput(
@@ -261,7 +275,7 @@ class BCH {
       // console.log(`Transaction raw hex: `);
       // console.log(`${hex}`);
     } catch (err) {
-      wlogger.error('Error in createBchTx.')
+      wlogger.error('Error in bch.js/createBchTx().')
       throw err
     }
   }
@@ -279,6 +293,10 @@ class BCH {
       return broadcast
     } catch (err) {
       wlogger.error('Error in broadcastBchTx')
+
+      // Handle messages from the full node.
+      if (err.error) throw new Error(err.error)
+
       throw err
     }
   }
@@ -438,7 +456,10 @@ class BCH {
 
     try {
       // Get the raw transaction data.
-      const txData = await this.BITBOX.RawTransactions.getRawTransaction(txid, true)
+      const txData = await this.BITBOX.RawTransactions.getRawTransaction(
+        txid,
+        true
+      )
       // console.log(`txData: ${JSON.stringify(txData, null, 2)}`)
 
       // Decode the hex into normal text.

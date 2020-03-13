@@ -76,7 +76,7 @@ async function startTokenLiquidity () {
   // Get SLP token balance
   tokenBalance = await slp.getTokenBalance(config.SLP_ADDR)
   wlogger.info(
-    `SLP token address ${config.SLP_ADDR} has a balance of: ${tokenBalance}`
+    `SLP token address ${config.SLP_ADDR} has a balance of: ${tokenBalance} PSF`
   )
   config.tokenBalance = tokenBalance
 
@@ -184,6 +184,11 @@ async function processingLoop (seenTxs) {
 
       // If the app received tokens, send them to the 245 path.
       if (result.type === 'token') {
+        // Wait before moving tokens, allows previous transaction to get picked
+        // up by the network. Prevents race-condition.
+        wlogger.debug('Waiting 2 minutes before moving tokens...')
+        await sleep(60000 * 2)
+
         const obj = { tokenQty: result.tokenQty }
         await queue.add(() => slp.moveTokens(obj))
       }
