@@ -114,6 +114,15 @@ async function startTokenLiquidity () {
     console.log('Updating BCH price.')
     await tlUtil.getPrice()
   }, PRICE_UPDATE_INTERVAL)
+
+  // Periodically write out status information to the log file. This ensures
+  // the log file is created every day and the the /logapi route works.
+  setInterval(function () {
+    const state = tlUtil.readState()
+    wlogger.info(
+      `usdPerBCH: ${state.usdPerBCH}, BCH balance: ${state.bchBalance}`
+    )
+  }, 60000 * 60) // 1 hour
 }
 
 // This 'processing loop' function is called periodically to identify and process
