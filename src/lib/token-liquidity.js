@@ -363,9 +363,6 @@ class TokenLiquidity {
 
   // Calculates the amount of BCH to send to the user, in exchange for the BCH
   // the user sent to the app.
-  // TODO: This function only considers the token balance. It would be nice
-  // to refactor this so that it only uses the BCH balance to calculate the token
-  // output.
   exchangeTokensForBCH (obj) {
     try {
       wlogger.silly('Entering exchangeTokensForBCH.', obj)
@@ -407,6 +404,24 @@ class TokenLiquidity {
       return retObj
     } catch (err) {
       wlogger.error('Error in token-liquidity.js/exchangeTokensForBCH().')
+      throw err
+    }
+  }
+
+  // Returns the 'effective' token balance used when calculating an exchange.
+  // This is based on the BCH balance and should be less than or equal to
+  // the 'actual' token balance.
+  getEffectiveTokenBalance (bchBalance) {
+    try {
+      const tokenOriginalBalance = config.TOKENS_QTY_ORIGINAL
+      const bchOriginalBalance = config.BCH_QTY_ORIGINAL
+
+      const tokenBalance =
+        -1 * tokenOriginalBalance * Math.log(bchBalance / bchOriginalBalance)
+
+      return tokenBalance
+    } catch (err) {
+      wlogger.error('Error in token-liquidity.js/getEffectiveTokenBalance().')
       throw err
     }
   }
