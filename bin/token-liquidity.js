@@ -119,8 +119,13 @@ async function startTokenLiquidity () {
   // the log file is created every day and the the /logapi route works.
   setInterval(function () {
     const state = tlUtil.readState()
+    const effBal = lib.getEffectiveTokenBalance(state.bchBalance)
+
     wlogger.info(
-      `usdPerBCH: ${state.usdPerBCH}, BCH balance: ${state.bchBalance}`
+      `usdPerBCH: ${state.usdPerBCH}, ` +
+      `BCH balance: ${state.bchBalance}, ` +
+      `Actual token balance: ${state.tokenBalance}, ` +
+      `Effective token balance: ${effBal}`
     )
   }, 60000 * 60) // 1 hour
 }
