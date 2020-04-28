@@ -131,7 +131,9 @@ class LogsApi {
 
       const thisYear = now.getFullYear()
 
-      const filename = `koa-${config.env}-${thisYear}-${thisMonth}-${thisDate}.log`
+      const filename = `koa-${
+        config.env
+      }-${thisYear}-${thisMonth}-${thisDate}.log`
       console.log(`Attempted to read log filename: ${filename}`)
 
       const logDir = `${__dirname}/../../../logs/`

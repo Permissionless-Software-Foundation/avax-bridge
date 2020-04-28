@@ -19,7 +19,10 @@ let logStr = '' // Holds current logs.
 if (config.NETWORK === 'testnet') {
   setInterval(function () {
     const logName = getLogName()
-    logStr = shell.exec(`tail --lines=200 ${__dirname}/../../../logs/${logName}`, {silent: true})
+    logStr = shell.exec(
+      `tail --lines=200 ${__dirname}/../../../logs/${logName}`,
+      { silent: true }
+    )
     // console.log(`logs: ${logStr}`)
   }, 10000)
 }
