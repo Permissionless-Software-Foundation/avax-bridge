@@ -73,7 +73,7 @@ class BCH {
 
       return bchBalance
     } catch (err) {
-      wlogger.error('Error in getBCHBalance: ', err)
+      wlogger.error(`Error in bch.js/getBCHBalance(): ${err.message}`, err)
       wlogger.error(`addr: ${addr}`)
       throw err
     }
