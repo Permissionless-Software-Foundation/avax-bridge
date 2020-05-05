@@ -3,33 +3,31 @@
   exchangeBCHForTokens() function so that they can be plotted in a spreadsheet
   and analyzed for errors.
 
-  The output of this program can be compared to the bch-for-tokens sheet in the
-  token-math-examples.ods spreadsheet.
-
-  This is a newer map using the hybrid curve and 250 BCH as the inflection point.
+  The output of this program can be compared to the tokens-for-bch sheet in the
+  token-math-examples-old.ods spreadsheet.
 */
 
 const TokenLiquidity = require('../../src/lib/token-liquidity')
 const lib = new TokenLiquidity()
 
-const BCH_QTY_ORIGINAL = 250.0
-const TOKENS_QTY_ORIGINAL = 50000.0
+const BCH_QTY_ORIGINAL = 25.0
+const TOKENS_QTY_ORIGINAL = 5000.0
 
 // 2-d array. Format: [bchBalance, bchIn]
 const bchBalanceBchIn = [
-  [10, 10],
-  [20, 10],
-  [30, 20],
-  [50, 30],
-  [80, 20],
-  [100, 50],
-  [150, 50],
-  [200, 50],
-  [250, 50],
-  [300, 50],
-  [350, 50],
-  [400, 50],
-  [450, 50]
+  [1, 1],
+  [2, 1],
+  [3, 2],
+  [5, 3],
+  [8, 2],
+  [10, 5],
+  [15, 5],
+  [20, 5],
+  [25, 5],
+  [30, 5],
+  [35, 5],
+  [40, 5],
+  [45, 5]
 ]
 
 function runTest2 () {

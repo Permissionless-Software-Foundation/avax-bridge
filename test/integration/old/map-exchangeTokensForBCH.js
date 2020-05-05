@@ -3,36 +3,37 @@
   exchangeTokensForBCH() function so that they can be plotted in a spreadsheet
   and analyzed for errors.
 
-  The output of this program can be compared to the tokens-for-bch sheet in the
-  token-math-examples.ods spreadsheet.
+  The output of this program can be compared to the bch-for-tokens sheet in the
+  token-math-examples-old.ods spreadsheet.
 
-  This is a newer map using the hybrid curve and 250 BCH as the inflection point.
+  This is an older map using the natural log curve and 25BCH as the inflection
+  point.
 */
 
 const TokenLiquidity = require('../../src/lib/token-liquidity')
 const lib = new TokenLiquidity()
 
-const BCH_QTY_ORIGINAL = 250.0
-const TOKENS_QTY_ORIGINAL = 50000.0
+const BCH_QTY_ORIGINAL = 25.0
+const TOKENS_QTY_ORIGINAL = 5000.0
 
 // 2-d array. Format: [bchBalance, tokensIn]
 const bchBalanceTokensIn = [
-  [1250, 20000],
-  [1150, 20000],
-  [1050, 20000],
-  [950, 20000],
-  [850, 20000],
-  [750, 20000],
-  [650, 20000],
-  [550, 20000],
-  [450, 20000],
-  [350, 20000],
-  [250, 20000],
-  [167.58001150891, 20000],
-  [112.332241029305, 20000],
-  [75.2985529780505, 20000],
-  [50.4741294986639, 20000],
-  [33.8338208091532, 20000]
+  [1364.95375082, 2000],
+  [914.955861091, 2000],
+  [613.313254927, 2000],
+  [411.116169277, 2000],
+  [275.579409516, 2000],
+  [184.726402473, 2000],
+  [123.825810609, 2000],
+  [83.0029230684, 2000],
+  [55.6385232123, 2000],
+  [37.295617441, 2000],
+  [25, 2000],
+  [16.7580011508, 2000],
+  [11.2332241029, 2000],
+  [7.5298552978, 2000],
+  [5.04741294986, 2000],
+  [3.38338208091, 2000]
 ]
 
 // map out the exchangeTokensForBCH() function

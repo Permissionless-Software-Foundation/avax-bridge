@@ -342,14 +342,14 @@ class TokenLiquidity {
       let token2 = 0
 
       // Use natural logarithm if wallet balance is less than 250 BCH.
-      if (bchBalance < 250) {
+      if (bchBalance < bchOriginalBalance) {
         token1 = -1 * tokenOriginalBalance * Math.log(bch1 / bchOriginalBalance)
         token2 = -1 * tokenOriginalBalance * Math.log(bch2 / bchOriginalBalance)
       } else {
         // Use linear equation if balance is greater than 250 BCH.
 
-        token1 = -1 * tokenOriginalBalance * (1 + bch1 / bchOriginalBalance)
-        token2 = -1 * tokenOriginalBalance * (1 + bch2 / bchOriginalBalance)
+        token1 = tokenOriginalBalance * (bch1 / bchOriginalBalance - 1)
+        token2 = tokenOriginalBalance * (bch2 / bchOriginalBalance - 1)
       }
 
       const tokensOut = this.tlUtil.round8(Math.abs(token2 - token1))
@@ -397,7 +397,7 @@ class TokenLiquidity {
       let bch2 = 0
 
       // Use natural logarithm equations if wallet balance is less than 250 BCH
-      if (bchBalance < 250) {
+      if (bchBalance < bchOriginalBalance) {
         // Calculate the 'Effective' token balance prior to recieving the new tokens.
         token1 =
           -1 * tokenOriginalBalance * Math.log(bchBalance / bchOriginalBalance)
@@ -411,11 +411,11 @@ class TokenLiquidity {
         // Use linear equation if wallet balance is greater than (or equal to) 250 BCH.
 
         token1 =
-          -1 * tokenOriginalBalance * (1 + bchBalance / bchOriginalBalance)
+          tokenOriginalBalance * (1 - bchBalance / bchOriginalBalance)
 
         token2 = token1 + tokenIn
 
-        bch2 = bchOriginalBalance * (1 + token2 / tokenOriginalBalance)
+        bch2 = bchOriginalBalance * (1 - token2 / tokenOriginalBalance)
       }
 
       let bchOut = bch2 - bch1 - 0.0000027 // Subtract 270 satoshi tx fee
@@ -424,6 +424,8 @@ class TokenLiquidity {
       wlogger.debug(
         `bch1: ${bch1}, bch2: ${bch2}, token1: ${token1}, token2: ${token2}, bchOut: ${bchOut}`
       )
+
+      wlogger.debug(`${bchOut} BCH sent in exchange for ${tokenIn} tokens`)
 
       const retObj = {
         bchOut,
