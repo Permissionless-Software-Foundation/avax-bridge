@@ -184,7 +184,9 @@ class TokenLiquidity {
 
         // Ensure bchQty is a number
         bchQty = Number(bchQty)
-        if (isNaN(bchQty)) { throw new Error('bchQty could not be converted to a number.') }
+        if (isNaN(bchQty)) {
+          throw new Error('bchQty could not be converted to a number.')
+        }
 
         if (bchQty < 0.00000547) {
           throw new Error(
@@ -335,10 +337,20 @@ class TokenLiquidity {
       // Subtract 270 satoshi tx fee
       const bch2 = bch1 + bchIn - 0.0000027
 
-      const token1 =
-        -1 * tokenOriginalBalance * Math.log(bch1 / bchOriginalBalance)
-      const token2 =
-        -1 * tokenOriginalBalance * Math.log(bch2 / bchOriginalBalance)
+      // Initialize variables.
+      let token1
+      let token2 = 0
+
+      // Use natural logarithm if wallet balance is less than 250 BCH.
+      if (bchBalance < bchOriginalBalance) {
+        token1 = -1 * tokenOriginalBalance * Math.log(bch1 / bchOriginalBalance)
+        token2 = -1 * tokenOriginalBalance * Math.log(bch2 / bchOriginalBalance)
+      } else {
+        // Use linear equation if balance is greater than 250 BCH.
+
+        token1 = tokenOriginalBalance * (bch1 / bchOriginalBalance - 1)
+        token2 = tokenOriginalBalance * (bch2 / bchOriginalBalance - 1)
+      }
 
       const tokensOut = this.tlUtil.round8(Math.abs(token2 - token1))
 
@@ -379,14 +391,32 @@ class TokenLiquidity {
 
       const bch1 = bchBalance
 
-      const token1 =
-        -1 * tokenOriginalBalance * Math.log(bchBalance / bchOriginalBalance)
+      // Initialize variables.
+      let token1 = 0
+      let token2 = 0
+      let bch2 = 0
 
-      const token2 = token1 + tokenIn
+      // Use natural logarithm equations if wallet balance is less than 250 BCH
+      if (bchBalance < bchOriginalBalance) {
+        // Calculate the 'Effective' token balance prior to recieving the new tokens.
+        token1 =
+          -1 * tokenOriginalBalance * Math.log(bchBalance / bchOriginalBalance)
 
-      const bch2 =
-        bchOriginalBalance *
-        Math.pow(Math.E, (-1 * token2) / tokenOriginalBalance)
+        token2 = token1 + tokenIn
+
+        bch2 =
+          bchOriginalBalance *
+          Math.pow(Math.E, (-1 * token2) / tokenOriginalBalance)
+      } else {
+        // Use linear equation if wallet balance is greater than (or equal to) 250 BCH.
+
+        token1 =
+          tokenOriginalBalance * (1 - bchBalance / bchOriginalBalance)
+
+        token2 = token1 + tokenIn
+
+        bch2 = bchOriginalBalance * (1 - token2 / tokenOriginalBalance)
+      }
 
       let bchOut = bch2 - bch1 - 0.0000027 // Subtract 270 satoshi tx fee
       bchOut = Math.abs(tlUtil.round8(bchOut))
@@ -394,6 +424,8 @@ class TokenLiquidity {
       wlogger.debug(
         `bch1: ${bch1}, bch2: ${bch2}, token1: ${token1}, token2: ${token2}, bchOut: ${bchOut}`
       )
+
+      wlogger.debug(`${bchOut} BCH sent in exchange for ${tokenIn} tokens`)
 
       const retObj = {
         bchOut,

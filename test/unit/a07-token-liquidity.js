@@ -64,12 +64,12 @@ describe('#token-liquidity', () => {
       const result = retObj.bchOut
 
       assert.isNumber(result)
-      assert.equal(result, 1.1814112, `Should match spreadsheet`)
+      assert.equal(result, 1.1814112, 'Should match spreadsheet')
     })
 
     it('should calculate values in the spreadsheet', () => {
       const exchangeObj = {
-        tokenIn: 5000,
+        tokenIn: 500,
         // tokenBalance: 15000,
         bchBalance: 3.38338208,
         bchOriginalBalance: 25,
@@ -82,7 +82,7 @@ describe('#token-liquidity', () => {
       const result = retObj.bchOut
 
       assert.isNumber(result)
-      assert.equal(result, 2.13870808, `Should match spreadsheet`)
+      assert.equal(result, 0.32197408, 'Should match spreadsheet')
     })
 
     it('should calculate values in the spreadsheet', () => {
@@ -95,19 +95,19 @@ describe('#token-liquidity', () => {
       }
 
       const retObj = lib.exchangeTokensForBCH(exchangeObj)
-      // console.log(`retObj: ${JSON.stringify(retObj,null,2)}`)
+      // console.log(`retObj: ${JSON.stringify(retObj, null, 2)}`)
 
       const result = retObj.bchOut
 
       assert.isNumber(result)
-      assert.equal(result, 5.29470823, `Should match spreadsheet`)
+      assert.equal(result, 2.5000027, 'Should match spreadsheet')
     })
 
     it('should throw error if bchBalance is not defined', async () => {
       try {
         await lib.exchangeTokensForBCH({})
       } catch (error) {
-        assert.include(error.message, `bchBalance must be defined`)
+        assert.include(error.message, 'bchBalance must be defined')
       }
     })
   })
@@ -129,7 +129,7 @@ describe('#token-liquidity', () => {
       assert.equal(
         Math.floor(result.tokensOut),
         499,
-        `Should match spreadsheet`
+        'Should match spreadsheet'
       )
       assert.isNumber(result.bch2)
       assert.isNumber(result.token2)
@@ -150,7 +150,7 @@ describe('#token-liquidity', () => {
       assert.equal(
         Math.floor(result.tokensOut),
         4999,
-        `Should match spreadsheet`
+        'Should match spreadsheet'
       )
       assert.isNumber(result.bch2)
       assert.isNumber(result.token2)
@@ -160,7 +160,7 @@ describe('#token-liquidity', () => {
       try {
         await lib.exchangeBCHForTokens({})
       } catch (error) {
-        assert.include(error.message, `bchBalance must be defined`)
+        assert.include(error.message, 'bchBalance must be defined')
       }
     })
   })
@@ -192,7 +192,7 @@ describe('#token-liquidity', () => {
       try {
         await lib.pRetryProcessTx()
       } catch (error) {
-        assert.include(error.message, `Error in "pRetryProcessTx" functions`)
+        assert.include(error.message, 'Error in "pRetryProcessTx" functions')
       }
     })
 
