@@ -6,6 +6,7 @@
 
 const collect = require('collect.js')
 const pRetry = require('p-retry')
+const got = require('got')
 
 const config = require('../../config')
 
@@ -497,6 +498,53 @@ class TokenLiquidity {
       }
     } catch (err) {
       wlogger.error('Error in token-liquidity.js/getBlockchainBalances().')
+      throw err
+    }
+  }
+
+  // Gets the current spot price of BCH/USD from Coinbase. Returns the previously
+  // saved price from the state.json file if the price can not be retrieved.
+  // It will save the price to the state file when new priceses can be successfully
+  // retrieved.
+  async getPrice () {
+    try {
+      let USDperBCH
+      try {
+        const rawRate = await got(
+          'https://api.coinbase.com/v2/exchange-rates?currency=BCH'
+        )
+        const jsonRate = JSON.parse(rawRate.body)
+        // console.log(`jsonRate: ${JSON.stringify(jsonRate, null, 2)}`);
+
+        USDperBCH = jsonRate.data.rates.USD
+        wlogger.debug(`USD/BCH exchange rate: $${USDperBCH}`)
+
+        config.usdPerBCH = USDperBCH
+
+        // Update the BCH balance
+        const addressInfo = await bch.getBCHBalance(config.BCH_ADDR, false)
+        const bchBalance = addressInfo.balance
+        config.bchBalance = bchBalance
+
+        // Update the effective SLP balance.
+        const effBal = _this.getEffectiveTokenBalance(bchBalance)
+        config.tokenBalance = effBal
+
+        // Save the state.
+        await this.saveState(config)
+
+        return config.usdPerBCH
+      } catch (err) {
+        wlogger.error(
+          'Coinbase exchange rate could not be retrieved!. Retrieving price from state.'
+        )
+        wlogger.error(err)
+
+        const state = this.readState()
+        return state.usdPerBCH
+      }
+    } catch (err) {
+      wlogger.error('Error in token-liquidity.js/getPrice()')
       throw err
     }
   }
