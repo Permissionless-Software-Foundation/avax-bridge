@@ -17,6 +17,11 @@ const TOKENS_QTY_ORIGINAL = 50000.0
 
 // 2-d array. Format: [bchBalance, bchIn]
 const bchBalanceBchIn = [
+  [1, 1],
+  [2, 1],
+  [3, 1],
+  [4, 1],
+  [5, 1],
   [10, 10],
   [20, 10],
   [30, 20],

@@ -465,8 +465,8 @@ class TokenLiquidity {
       const obj = {
         bchIn: 1.0,
         bchBalance: bchBalance,
-        bchOriginalBalance: 25.0,
-        tokenOriginalBalance: 5000
+        bchOriginalBalance: config.BCH_QTY_ORIGINAL,
+        tokenOriginalBalance: config.TOKENS_QTY_ORIGINAL
       }
 
       const tokensFor1BCH = this.exchangeBCHForTokens(obj)
