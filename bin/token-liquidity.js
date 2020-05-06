@@ -90,7 +90,7 @@ async function startTokenLiquidity () {
   config.tokenBalance = tokenBalance
 
   // Get the BCH-USD exchange rate.
-  const USDperBCH = await tlUtil.getPrice()
+  const USDperBCH = await lib.getPrice()
 
   // Calculate exchange rate spot price.;
   const marketCap = USDperBCH * bchBalance
@@ -112,7 +112,7 @@ async function startTokenLiquidity () {
   // Interval to update BCH spot price.
   setInterval(async function () {
     console.log('Updating BCH price.')
-    await tlUtil.getPrice()
+    await lib.getPrice()
   }, PRICE_UPDATE_INTERVAL)
 
   // Periodically write out status information to the log file. This ensures
