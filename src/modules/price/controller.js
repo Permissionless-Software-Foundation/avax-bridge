@@ -1,4 +1,5 @@
-// const User = require('../../models/users')
+
+const config = require('../../../config')
 
 // const lib = require('../../lib/token-util')
 const TLUtils = require('../../lib/util')
@@ -47,8 +48,8 @@ async function getPrice (ctx) {
   const obj = {
     bchIn: 1.0,
     bchBalance: state.bchBalance,
-    bchOriginalBalance: 25.0,
-    tokenOriginalBalance: 5000
+    bchOriginalBalance: config.BCH_QTY_ORIGINAL,
+    tokenOriginalBalance: config.TOKENS_QTY_ORIGINAL
   }
   const tokensFor1BCH = tokenApp.exchangeBCHForTokens(obj)
   // console.log(`tokensFor1BCH: ${util.inspect(tokensFor1BCH)}`)
