@@ -65,11 +65,14 @@ async function getPrice (ctx) {
   //  bchPrice:
   // }
 
-  // const users = await User.find({}, '-password')
+  // Get the effective token balance:
+  const effBal = tokenApp.getEffectiveTokenBalance(state.bchBalance)
+
   ctx.body = {
     usdPerBCH: state.usdPerBCH,
     bchBalance: state.bchBalance,
-    tokenBalance: state.tokenBalance,
+    // tokenBalance: state.tokenBalance,
+    tokenBalance: effBal,
     usdPerToken: price
   }
 }
