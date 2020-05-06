@@ -15,6 +15,12 @@ const config = require('../../config')
 // Winston logger
 const wlogger = require('./wlogger')
 
+const BCH = require('./bch')
+const bch = new BCH()
+
+const TokenLiquidity = require('./token-liquidity')
+const tokenApp = new TokenLiquidity()
+
 const STATE_FILE_NAME = `${__dirname}/../../state/state.json`
 
 class TLUtils {
@@ -106,6 +112,16 @@ class TLUtils {
 
         config.usdPerBCH = USDperBCH
 
+        // Update the BCH balance
+        const addressInfo = await bch.getBCHBalance(config.BCH_ADDR, false)
+        const bchBalance = addressInfo.balance
+        config.bchBalance = bchBalance
+
+        // Update the effective SLP balance.
+        const effBal = tokenApp.getEffectiveTokenBalance(bchBalance)
+        config.tokenBalance = effBal
+
+        // Save the state.
         await this.saveState(config)
 
         return config.usdPerBCH
