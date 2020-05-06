@@ -531,7 +531,7 @@ class TokenLiquidity {
         config.tokenBalance = effBal
 
         // Save the state.
-        await this.saveState(config)
+        await tlUtil.saveState(config)
 
         return config.usdPerBCH
       } catch (err) {
@@ -540,7 +540,7 @@ class TokenLiquidity {
         )
         wlogger.error(err)
 
-        const state = this.readState()
+        const state = tlUtil.readState()
         return state.usdPerBCH
       }
     } catch (err) {
