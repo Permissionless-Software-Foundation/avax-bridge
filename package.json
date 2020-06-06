@@ -45,6 +45,7 @@
     "glob": "^7.0.0",
     "got": "^9.5.1",
     "jsonwebtoken": "^8.3.0",
+    "jwt-bch-lib": "^1.2.0",
     "kcors": "^2.2.1",
     "koa": "^2.5.0",
     "koa-bodyparser": "^4.2.0",

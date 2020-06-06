@@ -68,5 +68,7 @@ state.json
 
 system-user-*.json
 
+start-token-liquidity.s
+
 !README.md
 docs
