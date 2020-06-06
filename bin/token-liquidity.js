@@ -13,9 +13,14 @@ const slp = new SLP()
 const BCH = require('../src/lib/bch')
 const bch = new BCH()
 
-// Queue Library
-// const Queue = require('./queue')
-// const queue = new Queue()
+// Instantiate the JWT handling library for FullStack.cash.
+const JwtLib = require('jwt-bch-lib')
+const jwtLib = new JwtLib({
+  // Overwrite default values with the values in the config file.
+  server: 'https://auth.fullstack.cash',
+  login: process.env.FULLSTACKLOGIN,
+  password: process.env.FULLSTACKPASS
+})
 
 const { default: PQueue } = require('p-queue')
 const queue = new PQueue({ concurrency: 1 })
@@ -67,6 +72,9 @@ async function startTokenLiquidity () {
     wlogger.error('Could not read state.json file.')
   }
 
+  // Get the JWT token needed to interact with the FullStack.cash API.
+  await getJwt()
+
   // Get BCH balance.
   const addressInfo = await bch.getBCHBalance(config.BCH_ADDR, false)
   bchBalance = addressInfo.balance
@@ -114,6 +122,12 @@ async function startTokenLiquidity () {
     console.log('Updating BCH price.')
     await lib.getPrice()
   }, PRICE_UPDATE_INTERVAL)
+
+  // Renew the JWT token every 24 hours
+  setInterval(async function () {
+    wlogger.info('Updating FullStack.cash JWT token')
+    await getJwt()
+  }, 60000 * 60 * 24)
 
   // Periodically write out status information to the log file. This ensures
   // the log file is created every day and the the /logapi route works.
@@ -241,6 +255,36 @@ async function waitForBlockbook (seenTxs) {
   // clearInterval(timerHandle)
   await sleep(FIVE_MINUTES)
   console.log('...continuing processing.')
+}
+
+// Get's a JWT token from FullStack.cash.
+// This code based on the jwt-bch-demo:
+// https://github.com/Permissionless-Software-Foundation/jwt-bch-demo
+async function getJwt () {
+  try {
+    // Log into the auth server.
+    await jwtLib.register()
+
+    let apiToken = jwtLib.userData.apiToken
+
+    // Ensure the JWT token is valid to use.
+    const isValid = await jwtLib.validateApiToken()
+
+    // Get a new token with the same API level, if the existing token is not
+    // valid (probably expired).
+    if (!isValid.isValid) {
+      apiToken = await jwtLib.getApiToken(jwtLib.userData.apiLevel)
+      wlogger.info('The JWT token was not valid. Retrieved new JWT token.\n')
+    } else {
+      wlogger.info('JWT token is valid.\n')
+    }
+
+    // Set the environment variable.
+    process.env.BCHJSTOKEN = apiToken
+  } catch (err) {
+    wlogger.error('Error in token-liquidity.js/getJwt(): ', err)
+    throw err
+  }
 }
 
 function sleep (ms) {
