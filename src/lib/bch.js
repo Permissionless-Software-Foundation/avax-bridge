@@ -23,16 +23,18 @@ let bchjs = new config.BCHLIB({ restURL: config.MAINNET_REST })
 
 const SATS_PER_BCH = 100000000
 
+let _this
+
 class BCH {
   constructor () {
-    // _this = this
+    _this = this
 
     // Determine if this is a testnet wallet or a mainnet wallet.
     if (config.NETWORK === 'testnet') {
       bchjs = new config.BCHLIB({ restURL: config.TESTNET_REST })
     }
 
-    this.bchjs = bchjs
+    this.bchjs = new config.BCHLIB({ restURL: config.MAINNET_REST })
 
     this.tlUtils = tlUtils
   }
@@ -63,6 +65,8 @@ class BCH {
     } catch (err) {
       wlogger.error(`Error in bch.js/getBCHBalance(): ${err.message}`, err)
       wlogger.error(`addr: ${addr}`)
+      wlogger.error(`_this.bchjs.apiToken: ${_this.bchjs.apiToken}`)
+      wlogger.error(`BCHJSTOKEN: ${process.env.BCHJSTOKEN}`)
       throw err
     }
   }
@@ -89,7 +93,9 @@ class BCH {
           // console.log(`isValid: ${JSON.stringify(isValid, null, 2)}`)
 
           if (isValid === null) {
-            wlogger.info(`Invalid (stale) UTXO found: ${JSON.stringify(thisUtxo, null, 2)}`)
+            wlogger.info(
+              `Invalid (stale) UTXO found: ${JSON.stringify(thisUtxo, null, 2)}`
+            )
             continue
           }
 
@@ -273,9 +279,7 @@ class BCH {
   async broadcastBchTx (hex) {
     try {
       // sendRawTransaction to running BCH node
-      const broadcast = await this.bchjs.RawTransactions.sendRawTransaction(
-        hex
-      )
+      const broadcast = await this.bchjs.RawTransactions.sendRawTransaction(hex)
       wlogger.verbose(`Transaction ID: ${broadcast}`)
 
       return broadcast

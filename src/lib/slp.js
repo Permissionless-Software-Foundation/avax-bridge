@@ -18,13 +18,13 @@ const tlUtils = new TLUtils()
 
 // BCH library
 const BCH = require('./bch')
-const bch = new BCH()
+// const bch = new BCH()
 
 // Winston logger
 const wlogger = require('./wlogger')
 
 // Mainnet by default
-let bchjs = new config.BCHLIB({ restURL: config.MAINNET_REST })
+// let bchjs = new config.BCHLIB({ restURL: config.MAINNET_REST })
 
 let _this
 
@@ -35,8 +35,8 @@ class SLP {
       bchjs = new config.BCHLIB({ restURL: config.TESTNET_REST })
     }
 
-    this.bchjs = bchjs
-    this.bch = bch
+    this.bchjs = new config.BCHLIB({ restURL: config.MAINNET_REST })
+    this.bch = new BCH()
     this.tlUtils = tlUtils
 
     _this = this

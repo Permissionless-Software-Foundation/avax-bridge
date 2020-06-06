@@ -7,12 +7,6 @@
 // const lib = require('../src/lib/token-util.js')
 // const got = require('got')
 
-const SLP = require('../src/lib/slp')
-const slp = new SLP()
-
-const BCH = require('../src/lib/bch')
-const bch = new BCH()
-
 // Instantiate the JWT handling library for FullStack.cash.
 const JwtLib = require('jwt-bch-lib')
 const jwtLib = new JwtLib({
@@ -21,6 +15,12 @@ const jwtLib = new JwtLib({
   login: process.env.FULLSTACKLOGIN,
   password: process.env.FULLSTACKPASS
 })
+
+const SLP = require('../src/lib/slp')
+let slp = new SLP()
+
+const BCH = require('../src/lib/bch')
+let bch = new BCH()
 
 const { default: PQueue } = require('p-queue')
 const queue = new PQueue({ concurrency: 1 })
@@ -74,6 +74,8 @@ async function startTokenLiquidity () {
 
   // Get the JWT token needed to interact with the FullStack.cash API.
   await getJwt()
+  bch = new BCH() // Reinitialize bchjs with the JWT token.
+  slp = new SLP() // Reinitialize bchjs with the JWT token.
 
   // Get BCH balance.
   const addressInfo = await bch.getBCHBalance(config.BCH_ADDR, false)
@@ -127,6 +129,8 @@ async function startTokenLiquidity () {
   setInterval(async function () {
     wlogger.info('Updating FullStack.cash JWT token')
     await getJwt()
+    bch = new BCH() // Reinitialize bchjs with the JWT token.
+    slp = new SLP() // Reinitialize bchjs with the JWT token.
   }, 60000 * 60 * 24)
 
   // Periodically write out status information to the log file. This ensures
