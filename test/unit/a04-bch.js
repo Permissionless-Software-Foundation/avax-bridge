@@ -10,7 +10,6 @@ const nock = require('nock')
 
 const BCH = require('../../src/lib/bch')
 
-// const bitboxMock = require('bitbox-mock')
 const bchMockData = require('./mocks/bch')
 const mockWallet = require('./mocks/testwallet.json')
 
@@ -55,7 +54,7 @@ describe('#bch', () => {
       // If unit test, use the mocking library instead of live calls.
       if (process.env.TEST_ENV === 'unit') {
         sandbox
-          .stub(bch.BITBOX.Blockbook, 'balance')
+          .stub(bch.bchjs.Blockbook, 'balance')
           .resolves(bchMockData.balance)
       }
 
@@ -70,21 +69,21 @@ describe('#bch', () => {
     })
   })
 
-  describe(`findBiggestUtxo()`, () => {
-    it(`should throw an error if utxos is not an array`, async () => {
+  describe('findBiggestUtxo()', () => {
+    it('should throw an error if utxos is not an array', async () => {
       try {
         const utxos = { satoshis: 10 }
         await bch.findBiggestUtxo(utxos)
       } catch (err) {
         assert.include(
           err.message,
-          `utxos needs to be an array`,
+          'utxos needs to be an array',
           'Expected error message.'
         )
       }
     })
 
-    it(`should return the bigger utxo`, async () => {
+    it('should return the bigger utxo', async () => {
       const utxos = [
         {
           txid:
@@ -108,13 +107,13 @@ describe('#bch', () => {
 
       // Stub the getTxOut network call.
       sandbox
-        .stub(bch.BITBOX.Blockchain, 'getTxOut')
+        .stub(bch.bchjs.Blockchain, 'getTxOut')
         .resolves(bchMockData.getTxOutValid)
 
       const result = await bch.findBiggestUtxo(utxos)
       // console.log(`blah result: ${JSON.stringify(result, null, 2)}`)
 
-      assert.equal(result.satoshis, 1000, `bigger utxo value expected`)
+      assert.equal(result.satoshis, 1000, 'bigger utxo value expected')
     })
   })
 
@@ -122,13 +121,12 @@ describe('#bch', () => {
     it('should return 0 if address is not in TX', async () => {
       // If unit test, use the mocking library instead of live calls.
       if (process.env.TEST_ENV === 'unit') {
-        // bch.BITBOX.B = bitboxMock
-        sandbox.stub(bch.BITBOX.Blockbook, 'tx').resolves(bchMockData.txDetails)
+        sandbox.stub(bch.bchjs.Blockbook, 'tx').resolves(bchMockData.txDetails)
       }
 
       const txid =
         'a77762bb47c130e755cc053db51333bbd64596eefd18baffc08a447749863fa9'
-      const addr = `bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pabc`
+      const addr = 'bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pabc'
 
       const value = await bch.recievedBch(txid, addr)
 
@@ -139,13 +137,12 @@ describe('#bch', () => {
     it('should calculate amount of BCH recieved from a TX', async () => {
       // If unit test, use the mocking library instead of live calls.
       if (process.env.TEST_ENV === 'unit') {
-        // bch.BITBOX.B = bitboxMock
-        sandbox.stub(bch.BITBOX.Blockbook, 'tx').resolves(bchMockData.txDetails)
+        sandbox.stub(bch.bchjs.Blockbook, 'tx').resolves(bchMockData.txDetails)
       }
 
       const txid =
         'ed4692f50a4553527dd26cd8674ca06a0ab2d366f3135ca3668310467ead3cbf'
-      const addr = `bchtest:qrvn2n228aa39xupcw9jw0d3fj8axxky656e4j62z2`
+      const addr = 'bchtest:qrvn2n228aa39xupcw9jw0d3fj8axxky656e4j62z2'
 
       const value = await bch.recievedBch(txid, addr)
       // console.log(`value: ${util.inspect(value)}`)
@@ -163,7 +160,7 @@ describe('#bch', () => {
 
         sandbox.stub(bch, 'getBCHBalance').resolves(bchMockData.balance)
 
-        sandbox.stub(bch.BITBOX.Blockbook, 'utxo').resolves(bchMockData.utxos)
+        sandbox.stub(bch.bchjs.Blockbook, 'utxo').resolves(bchMockData.utxos)
 
         sandbox.stub(bch, 'findBiggestUtxo').resolves(bchMockData.utxos[1])
       }
@@ -202,13 +199,13 @@ describe('#bch', () => {
     it('should return isValid=false for invalid txid', async () => {
       // Mock network calls.
       sandbox
-        .stub(bch.BITBOX.RawTransactions, 'getRawTransaction')
+        .stub(bch.bchjs.RawTransactions, 'getRawTransaction')
         .throws({
           error:
             'No such mempool or blockchain transaction. Use gettransaction for wallet transactions.'
         })
 
-      const txid = `4894f89965809733f728e3b3f22d0015c0bf87b6a809db00a82f2841303d9555`
+      const txid = '4894f89965809733f728e3b3f22d0015c0bf87b6a809db00a82f2841303d9555'
 
       const opReturnData = await bch.readOpReturn(txid)
       // console.log(`opReturnData: ${JSON.stringify(opReturnData, null, 2)}`)
@@ -219,10 +216,10 @@ describe('#bch', () => {
     it('should return isValid=false for non-op-return tx', async () => {
       // Mock network calls.
       sandbox
-        .stub(bch.BITBOX.RawTransactions, 'getRawTransaction')
+        .stub(bch.bchjs.RawTransactions, 'getRawTransaction')
         .resolves(bchMockData.noOpReturnTx)
 
-      const txid = `4894f89965809733f728e3b3f22d0015c0bf87b6a809db00a82f2841303d9de3`
+      const txid = '4894f89965809733f728e3b3f22d0015c0bf87b6a809db00a82f2841303d9de3'
 
       const opReturnData = await bch.readOpReturn(txid)
       // console.log(`opReturnData: ${JSON.stringify(opReturnData, null, 2)}`)
@@ -233,10 +230,10 @@ describe('#bch', () => {
     it('should processes a valid burn command', async () => {
       // Mock network calls.
       sandbox
-        .stub(bch.BITBOX.RawTransactions, 'getRawTransaction')
+        .stub(bch.bchjs.RawTransactions, 'getRawTransaction')
         .resolves(bchMockData.burnOpReturnTx)
 
-      const txid = `73e0b24ab94413c8bf003168c533653b91c9409218cf4ed601b77734856770d1`
+      const txid = '73e0b24ab94413c8bf003168c533653b91c9409218cf4ed601b77734856770d1'
 
       const opReturnData = await bch.readOpReturn(txid)
       // console.log(`opReturnData: ${JSON.stringify(opReturnData, null, 2)}`)

@@ -19,21 +19,9 @@ const tlUtils = new TLUtils()
 const wlogger = require('./wlogger')
 
 // Mainnet by default
-let BITBOX = new config.BCHLIB({ restURL: config.MAINNET_REST })
+let bchjs = new config.BCHLIB({ restURL: config.MAINNET_REST })
 
 const SATS_PER_BCH = 100000000
-
-// const BITBOXSDK = require('bitbox-sdk').BITBOX
-// let BITBOX, REST_URL
-// if (config.NETWORK === `testnet`) {
-//   REST_URL = 'https://trest.bitcoin.com/v2/'
-//   BITBOX = new BITBOXSDK({ restURL: REST_URL })
-// } else {
-//   REST_URL = 'https://rest.bitcoin.com/v2/'
-//   BITBOX = new BITBOXSDK({ restURL: REST_URL })
-// }
-
-// let _this
 
 class BCH {
   constructor () {
@@ -41,10 +29,10 @@ class BCH {
 
     // Determine if this is a testnet wallet or a mainnet wallet.
     if (config.NETWORK === 'testnet') {
-      BITBOX = new config.BCHLIB({ restURL: config.TESTNET_REST })
+      bchjs = new config.BCHLIB({ restURL: config.TESTNET_REST })
     }
 
-    this.BITBOX = BITBOX
+    this.bchjs = bchjs
 
     this.tlUtils = tlUtils
   }
@@ -54,12 +42,12 @@ class BCH {
   // The verbose flag determins if the results are written to the console or not.
   async getBCHBalance (addr, verbose) {
     try {
-      // const result = await this.BITBOX.Address.details(addr)
-      const result = await this.BITBOX.Blockbook.balance(addr)
+      // const result = await this.bchjs.Address.details(addr)
+      const result = await this.bchjs.Blockbook.balance(addr)
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
       // Convert balance to BCH
-      result.balance = this.BITBOX.BitcoinCash.toBitcoinCash(
+      result.balance = this.bchjs.BitcoinCash.toBitcoinCash(
         Number(result.balance)
       )
 
@@ -94,7 +82,7 @@ class BCH {
 
         if (thisUtxo.satoshis > largestAmount) {
           // Verify the UTXO is valid. Skip if not.
-          const isValid = await this.BITBOX.Blockchain.getTxOut(
+          const isValid = await this.bchjs.Blockchain.getTxOut(
             thisUtxo.txid,
             thisUtxo.vout
           )
@@ -123,10 +111,10 @@ class BCH {
     try {
       wlogger.silly('Entering receivedBch().')
       // console.log(`addr: ${addr}`)
-      // console.log(`this.BITBOX.restURL: ${this.BITBOX.restURL}`)
+      // console.log(`this.bchjs.restURL: ${this.bchjs.restURL}`)
 
-      // const txDetails = await this.BITBOX.Transaction.details(txid)
-      const txDetails = await this.BITBOX.Blockbook.tx(txid)
+      // const txDetails = await this.bchjs.Transaction.details(txid)
+      const txDetails = await this.bchjs.Blockbook.tx(txid)
       // console.log(`txDetails: ${JSON.stringify(txDetails, null, 2)}`)
 
       const vout = txDetails.vout
@@ -153,7 +141,7 @@ class BCH {
           // Not sure how there can be multiple addresses if the value is not an array.
           let address = addresses[0] // Legacy address
           wlogger.debug('address: ', address)
-          address = this.BITBOX.Address.toCashAddress(address)
+          address = this.bchjs.Address.toCashAddress(address)
 
           if (address === addr) return this.tlUtils.round8(value / SATS_PER_BCH)
         }
@@ -191,12 +179,12 @@ class BCH {
         process.exit(0)
       }
 
-      const SEND_ADDR_LEGACY = BITBOX.Address.toLegacyAddress(config.BCH_ADDR)
-      const RECV_ADDR_LEGACY = BITBOX.Address.toLegacyAddress(RECV_ADDR)
+      const SEND_ADDR_LEGACY = bchjs.Address.toLegacyAddress(config.BCH_ADDR)
+      const RECV_ADDR_LEGACY = bchjs.Address.toLegacyAddress(RECV_ADDR)
       wlogger.debug(`Sender Legacy Address: ${SEND_ADDR_LEGACY}`)
       wlogger.debug(`Receiver Legacy Address: ${RECV_ADDR_LEGACY}`)
 
-      const utxos = await this.BITBOX.Blockbook.utxo(config.BCH_ADDR)
+      const utxos = await this.bchjs.Blockbook.utxo(config.BCH_ADDR)
       // console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
 
       const utxo = await this.findBiggestUtxo(utxos)
@@ -208,9 +196,9 @@ class BCH {
       // instance of transaction builder
       let transactionBuilder
       if (config.NETWORK === 'testnet') {
-        transactionBuilder = new this.BITBOX.TransactionBuilder('testnet')
+        transactionBuilder = new this.bchjs.TransactionBuilder('testnet')
       } else {
-        transactionBuilder = new this.BITBOX.TransactionBuilder()
+        transactionBuilder = new this.bchjs.TransactionBuilder()
       }
 
       // const satoshisToSend = 1000;
@@ -222,7 +210,7 @@ class BCH {
       transactionBuilder.addInput(txid, vout)
 
       // get byte count to calculate fee. paying 1 sat/byte
-      const byteCount = this.BITBOX.BitcoinCash.getByteCount(
+      const byteCount = this.bchjs.BitcoinCash.getByteCount(
         { P2PKH: 1 },
         { P2PKH: 2 }
       )
@@ -242,11 +230,11 @@ class BCH {
 
       // add output w/ address and amount to send
       transactionBuilder.addOutput(
-        this.BITBOX.Address.toLegacyAddress(RECV_ADDR),
+        this.bchjs.Address.toLegacyAddress(RECV_ADDR),
         satoshisToSend
       )
       transactionBuilder.addOutput(
-        this.BITBOX.Address.toLegacyAddress(config.BCH_ADDR),
+        this.bchjs.Address.toLegacyAddress(config.BCH_ADDR),
         remainder
       )
 
@@ -254,7 +242,7 @@ class BCH {
       const change = await this.changeAddrFromMnemonic(walletInfo.mnemonic)
 
       // Generate a keypair from the change address.
-      const keyPair = this.BITBOX.HDNode.toKeyPair(change)
+      const keyPair = this.bchjs.HDNode.toKeyPair(change)
 
       // Sign the transaction with the HD node.
       let redeemScript
@@ -285,7 +273,7 @@ class BCH {
   async broadcastBchTx (hex) {
     try {
       // sendRawTransaction to running BCH node
-      const broadcast = await this.BITBOX.RawTransactions.sendRawTransaction(
+      const broadcast = await this.bchjs.RawTransactions.sendRawTransaction(
         hex
       )
       wlogger.verbose(`Transaction ID: ${broadcast}`)
@@ -304,21 +292,21 @@ class BCH {
   // Generate a change address from a Mnemonic of a private key.
   async changeAddrFromMnemonic (mnemonic) {
     // root seed buffer
-    const rootSeed = await BITBOX.Mnemonic.toSeed(mnemonic)
+    const rootSeed = await bchjs.Mnemonic.toSeed(mnemonic)
 
     // master HDNode
     let masterHDNode
     if (config.NETWORK === 'testnet') {
-      masterHDNode = BITBOX.HDNode.fromSeed(rootSeed, 'testnet')
+      masterHDNode = bchjs.HDNode.fromSeed(rootSeed, 'testnet')
     } else {
-      masterHDNode = BITBOX.HDNode.fromSeed(rootSeed)
+      masterHDNode = bchjs.HDNode.fromSeed(rootSeed)
     }
 
     // HDNode of BIP44 account
-    const account = BITBOX.HDNode.derivePath(masterHDNode, "m/44'/145'/0'")
+    const account = bchjs.HDNode.derivePath(masterHDNode, "m/44'/145'/0'")
 
     // derive the first external change address HDNode which is going to spend utxo
-    const change = BITBOX.HDNode.derivePath(account, '0/0')
+    const change = bchjs.HDNode.derivePath(account, '0/0')
 
     return change
   }
@@ -333,16 +321,16 @@ class BCH {
     // Instatiate bch-js librarys
     let transactionBuilder
     if (config.NETWORK === 'testnet') {
-      transactionBuilder = new this.BITBOX.TransactionBuilder('testnet')
+      transactionBuilder = new this.bchjs.TransactionBuilder('testnet')
     } else {
-      transactionBuilder = new this.BITBOX.TransactionBuilder()
+      transactionBuilder = new this.bchjs.TransactionBuilder()
     }
 
     try {
       const appAddr = config.BCH_ADDR
 
       // get the UTXO associated with the app address.
-      const utxos = await this.BITBOX.Blockbook.utxo(appAddr)
+      const utxos = await this.bchjs.Blockbook.utxo(appAddr)
 
       // If the number of UTXOs are less than the minimum, exit this function.
       if (utxos.length < minUtxos) {
@@ -360,26 +348,26 @@ class BCH {
       const mnemonic = walletInfo.mnemonic
 
       // root seed buffer
-      const rootSeed = await this.BITBOX.Mnemonic.toSeed(mnemonic)
+      const rootSeed = await this.bchjs.Mnemonic.toSeed(mnemonic)
 
       // master HDNode
       let masterHDNode
       if (config.NETWORK === 'mainnet') {
-        masterHDNode = this.BITBOX.HDNode.fromSeed(rootSeed)
-      } else masterHDNode = this.BITBOX.HDNode.fromSeed(rootSeed, 'testnet') // Testnet
+        masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed)
+      } else masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed, 'testnet') // Testnet
 
       // HDNode of BIP44 account
-      const account = this.BITBOX.HDNode.derivePath(
+      const account = this.bchjs.HDNode.derivePath(
         masterHDNode,
         "m/44'/145'/0'"
       )
-      const changePath = this.BITBOX.HDNode.derivePath(account, '0/0')
+      const changePath = this.bchjs.HDNode.derivePath(account, '0/0')
 
       // Generate an EC key pair for signing the transaction.
       // const keyPair = this.bchjs.HDNode.toKeyPair(changePath)
 
       // get the cash address
-      const cashAddress = this.BITBOX.HDNode.toCashAddress(changePath)
+      const cashAddress = this.bchjs.HDNode.toCashAddress(changePath)
       console.log(`cashAddress: ${JSON.stringify(cashAddress, null, 2)}`)
 
       // console.log(utxos)
@@ -400,7 +388,7 @@ class BCH {
       }
 
       // Get byte count to calculate fee. paying 1 sat/byte
-      const byteCount = this.BITBOX.BitcoinCash.getByteCount(
+      const byteCount = this.bchjs.BitcoinCash.getByteCount(
         { P2PKH: utxos.length },
         { P2PKH: 1 }
       )
@@ -411,7 +399,7 @@ class BCH {
 
       // add output  address and amount to send
       transactionBuilder.addOutput(
-        this.BITBOX.Address.toLegacyAddress(cashAddress),
+        this.bchjs.Address.toLegacyAddress(cashAddress),
         sendAmount
       )
 
@@ -420,7 +408,7 @@ class BCH {
       for (let i = 0; i < utxos.length; i++) {
         const utxo = utxos[i]
         const change = await this.changeAddrFromMnemonic(mnemonic)
-        const keyPair = this.BITBOX.HDNode.toKeyPair(change)
+        const keyPair = this.bchjs.HDNode.toKeyPair(change)
 
         transactionBuilder.sign(
           i,
@@ -456,14 +444,14 @@ class BCH {
 
     try {
       // Get the raw transaction data.
-      const txData = await this.BITBOX.RawTransactions.getRawTransaction(
+      const txData = await this.bchjs.RawTransactions.getRawTransaction(
         txid,
         true
       )
       // console.log(`txData: ${JSON.stringify(txData, null, 2)}`)
 
       // Decode the hex into normal text.
-      const script = this.BITBOX.Script.toASM(
+      const script = this.bchjs.Script.toASM(
         Buffer.from(txData.vout[0].scriptPubKey.hex, 'hex')
       ).split(' ')
       // console.log(`script: ${JSON.stringify(script, null, 2)}`)

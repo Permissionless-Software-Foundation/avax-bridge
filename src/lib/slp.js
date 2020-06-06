@@ -48,7 +48,7 @@ class SLP {
       wlogger.silly('Enter slp.getTokenBalance()')
       // console.log(`addr: ${addr}`)
 
-      const result = await this.bchjs.Util.balancesForAddress(config.SLP_ADDR)
+      const result = await this.bchjs.SLP.Utils.balancesForAddress(config.SLP_ADDR)
       wlogger.debug('token balance: ', result)
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
@@ -74,14 +74,14 @@ class SLP {
     try {
       wlogger.silly('Entering slp.txDetails().')
 
-      const txValid = await this.bchjs.Util.validateTxid(txid)
+      const txValid = await this.bchjs.SLP.Utils.validateTxid(txid)
       // console.log(`txValid: ${JSON.stringify(txValid, null, 2)}`)
 
       // Return false if the tx is not a valid SLP transaction.
       if (!txValid[0].valid) return false
 
       // const result = await rp(options)
-      const result = await this.bchjs.Util.txDetails(txid)
+      const result = await this.bchjs.SLP.Utils.txDetails(txid)
       // console.log(`txDetails: ${util.inspect(result)}`)
 
       return result
