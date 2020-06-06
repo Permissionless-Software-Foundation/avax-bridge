@@ -19,7 +19,7 @@ const tlUtils = new TLUtils()
 const wlogger = require('./wlogger')
 
 // Mainnet by default
-let bchjs = new config.BCHLIB({ restURL: config.MAINNET_REST })
+const bchjs = new config.BCHLIB({ restURL: config.MAINNET_REST })
 
 const SATS_PER_BCH = 100000000
 
@@ -31,10 +31,10 @@ class BCH {
 
     // Determine if this is a testnet wallet or a mainnet wallet.
     if (config.NETWORK === 'testnet') {
-      bchjs = new config.BCHLIB({ restURL: config.TESTNET_REST })
+      this.bchjs = new config.BCHLIB({ restURL: config.TESTNET_REST })
+    } else {
+      this.bchjs = new config.BCHLIB({ restURL: config.MAINNET_REST })
     }
-
-    this.bchjs = new config.BCHLIB({ restURL: config.MAINNET_REST })
 
     this.tlUtils = tlUtils
   }
