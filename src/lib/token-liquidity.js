@@ -99,7 +99,7 @@ class TokenLiquidity {
 
       return newTxs
     } catch (err) {
-      wlogger.error('Error in lib/token-liquidity.js/processNewTxs()')
+      wlogger.error('Error in lib/token-liquidity.js/detectNewTxs()')
       throw err
     }
   }
