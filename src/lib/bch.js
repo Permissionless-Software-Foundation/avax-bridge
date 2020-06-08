@@ -65,8 +65,8 @@ class BCH {
     } catch (err) {
       wlogger.error(`Error in bch.js/getBCHBalance(): ${err.message}`, err)
       wlogger.error(`addr: ${addr}`)
-      wlogger.error(`_this.bchjs.apiToken: ${_this.bchjs.apiToken}`)
-      wlogger.error(`BCHJSTOKEN: ${process.env.BCHJSTOKEN}`)
+      wlogger.error(`_this.bchjs.apiToken: ${_this.bchjs.apiToken.slice(0, 6)}`)
+      wlogger.error(`BCHJSTOKEN: ${process.env.BCHJSTOKEN.slice(0, 6)}`)
       throw err
     }
   }
