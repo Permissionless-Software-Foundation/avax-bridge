@@ -137,7 +137,7 @@ async function startTokenLiquidity () {
   // the log file is created every day and the the /logapi route works.
   setInterval(function () {
     checkBalances()
-  }, 60000 * 1) // 1 hour
+  }, 60000 * 60) // 1 hour
 }
 
 // This 'processing loop' function is called periodically to identify and process
