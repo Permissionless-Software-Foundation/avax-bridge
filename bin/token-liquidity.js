@@ -141,9 +141,9 @@ async function startTokenLiquidity () {
 
     wlogger.info(
       `usdPerBCH: ${state.usdPerBCH}, ` +
-      `BCH balance: ${state.bchBalance}, ` +
-      `Actual token balance: ${state.tokenBalance}, ` +
-      `Effective token balance: ${effBal}`
+        `BCH balance: ${state.bchBalance}, ` +
+        `Actual token balance: ${state.tokenBalance}, ` +
+        `Effective token balance: ${effBal}`
     )
   }, 60000 * 60) // 1 hour
 }
@@ -226,8 +226,18 @@ async function processingLoop (seenTxs) {
       // Update the app balances. This temporarily updates the app balances until
       // processing is complete, at which time the app can get its balance from
       // an indexer.
-      bchBalance = result.bchBalance
-      tokenBalance = result.tokenBalance
+      // CT 7/9/2020 - Added if statement to try and get around an issue I saw
+      // in the logs where the values were coming back as undefined.
+      if (result.bchBalance && result.tokenBalance) {
+        bchBalance = result.bchBalance
+        tokenBalance = result.tokenBalance
+      } else {
+        wlogger.error(
+          `bchBalance or tokenBalance returned a non-true value: ${
+            result.bchBalance
+          }, ${result.tokenBalance}`
+        )
+      }
       console.log(`BCH: ${bchBalance}, SLP: ${tokenBalance}`)
       console.log(' ')
 

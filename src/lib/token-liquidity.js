@@ -202,6 +202,10 @@ class TokenLiquidity {
           bchOriginalBalance: BCH_QTY_ORIGINAL,
           tokenOriginalBalance: TOKENS_QTY_ORIGINAL
         }
+
+        // CT 7-9-2020 Debugging issues
+        wlogger.info(`exchangeObj: ${JSON.stringify(exchangeObj, null, 2)}`)
+
         const retObj = _this.exchangeBCHForTokens(exchangeObj)
 
         wlogger.info(
