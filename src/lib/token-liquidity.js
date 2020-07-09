@@ -453,8 +453,10 @@ class TokenLiquidity {
       const tokenOriginalBalance = config.TOKENS_QTY_ORIGINAL
       const bchOriginalBalance = config.BCH_QTY_ORIGINAL
 
-      const tokenBalance =
+      let tokenBalance =
         -1 * tokenOriginalBalance * Math.log(bchBalance / bchOriginalBalance)
+
+      tokenBalance = tlUtil.round8(tokenBalance)
 
       return tokenBalance
     } catch (err) {

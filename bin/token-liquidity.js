@@ -135,18 +135,9 @@ async function startTokenLiquidity () {
 
   // Periodically write out status information to the log file. This ensures
   // the log file is created every day and the the /logapi route works.
-  setInterval(async function () {
-    const state = tlUtil.readState()
-    const effTokenBal = lib.getEffectiveTokenBalance(state.bchBalance)
-    const realTokenBal = await slp.getTokenBalance()
-
-    wlogger.info(
-      `usdPerBCH: ${state.usdPerBCH}, ` +
-        `BCH balance: ${state.bchBalance}, ` +
-        `Actual token balance: ${realTokenBal}, ` +
-        `Effective token balance: ${effTokenBal}`
-    )
-  }, 60000 * 60) // 1 hour
+  setInterval(function () {
+    checkBalances()
+  }, 60000 * 1) // 1 hour
 }
 
 // This 'processing loop' function is called periodically to identify and process
@@ -299,6 +290,24 @@ async function getJwt () {
   } catch (err) {
     wlogger.error('Error in token-liquidity.js/getJwt(): ', err)
     throw err
+  }
+}
+
+// Called by a timer interval to create a timestamp and check balances.
+async function checkBalances () {
+  try {
+    const state = tlUtil.readState()
+    const effTokenBal = lib.getEffectiveTokenBalance(state.bchBalance)
+    const realTokenBal = await slp.getTokenBalance()
+
+    wlogger.info(
+      `usdPerBCH: ${state.usdPerBCH}, ` +
+        `BCH balance: ${state.bchBalance}, ` +
+        `Actual token balance: ${realTokenBal}, ` +
+        `Effective token balance: ${effTokenBal}`
+    )
+  } catch (err) {
+    wlogger.error('Error in checkBalances(): ', err)
   }
 }
 
