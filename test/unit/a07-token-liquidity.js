@@ -103,6 +103,42 @@ describe('#token-liquidity', () => {
       assert.equal(result, 2.5000027, 'Should match spreadsheet')
     })
 
+    it('should work with negative token balances', () => {
+      const exchangeObj = {
+        tokenIn: 500,
+        // tokenBalance: 1000,
+        bchBalance: 50,
+        bchOriginalBalance: 25,
+        tokenOriginalBalance: 5000
+      }
+
+      const retObj = lib.exchangeTokensForBCH(exchangeObj)
+      console.log(`retObj: ${JSON.stringify(retObj, null, 2)}`)
+
+      // const result = retObj.bchOut
+
+      // assert.isNumber(result)
+      // assert.equal(result, 2.5000027, 'Should match spreadsheet')
+    })
+
+    it('should work with negative token balances', () => {
+      const exchangeObj = {
+        tokenIn: 500,
+        // tokenBalance: 1000,
+        bchBalance: 55,
+        bchOriginalBalance: 25,
+        tokenOriginalBalance: 5000
+      }
+
+      const retObj = lib.exchangeTokensForBCH(exchangeObj)
+      console.log(`retObj: ${JSON.stringify(retObj, null, 2)}`)
+
+      // const result = retObj.bchOut
+
+      // assert.isNumber(result)
+      // assert.equal(result, 2.5000027, 'Should match spreadsheet')
+    })
+
     it('should throw error if bchBalance is not defined', async () => {
       try {
         await lib.exchangeTokensForBCH({})
@@ -123,7 +159,7 @@ describe('#token-liquidity', () => {
       }
 
       const result = lib.exchangeBCHForTokens(exchangeObj)
-      // console.log(`result: ${util.inspect(result)}`)
+      console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ['tokensOut', 'bch2', 'token2'])
       assert.equal(
@@ -144,7 +180,7 @@ describe('#token-liquidity', () => {
       }
 
       const result = lib.exchangeBCHForTokens(exchangeObj)
-      // console.log(`result: ${util.inspect(result)}`)
+      console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ['tokensOut', 'bch2', 'token2'])
       assert.equal(
