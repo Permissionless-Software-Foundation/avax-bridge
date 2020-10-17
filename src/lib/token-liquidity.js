@@ -304,8 +304,19 @@ class TokenLiquidity {
               error.retriesLeft
             } retries left. Waiting 4 minutes before trying again.`
           )
+
           wlogger.error('error caught by pRetryProcessTx(): ', error)
           console.log(' ')
+
+          // Abort for dust attacks
+          if (error.message.indexOf('Unsupported address format') > -1) {
+            throw new pRetry.AbortError('Invalid OP_RETURN')
+          }
+
+          // Abort for non-PSF tokens
+          if (error.message.indexOf('Dust recieved.') > -1) {
+            throw new pRetry.AbortError('Dust or non-PSF token')
+          }
 
           await this.tlUtil.sleep(60000 * 4) // Sleep for 4 minutes
         },
@@ -415,8 +426,7 @@ class TokenLiquidity {
       } else {
         // Use linear equation if wallet balance is greater than (or equal to) 250 BCH.
 
-        token1 =
-          tokenOriginalBalance * (1 - bchBalance / bchOriginalBalance)
+        token1 = tokenOriginalBalance * (1 - bchBalance / bchOriginalBalance)
 
         token2 = token1 + tokenIn
 
