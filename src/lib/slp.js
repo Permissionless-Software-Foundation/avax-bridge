@@ -251,12 +251,17 @@ class SLP {
 
       // Generate the OP_RETURN code.
       console.log(`qty: ${qty}`)
-      const slpSendObj = this.bchjs.SLP.TokenType1.generateSendOpReturn(
+      // const slpSendObj = this.bchjs.SLP.TokenType1.generateSendOpReturn(
+      //   tokenUtxos,
+      //   Number(qty)
+      // )
+      // const slpData = this.bchjs.Script.encode(slpSendObj.script)
+      // console.log(`slpOutputs: ${slpSendObj.outputs}`)
+
+      const { script, outputs } = this.bchjs.SLP.TokenType1.generateSendOpReturn(
         tokenUtxos,
         Number(qty)
       )
-      const slpData = this.bchjs.Script.encode(slpSendObj.script)
-      // console.log(`slpOutputs: ${slpSendObj.outputs}`)
 
       // END - Get token UTXOs for SLP transaction
 
@@ -299,7 +304,7 @@ class SLP {
       // console.log(`remainder: ${remainder}`)
 
       // Add OP_RETURN as first output.
-      transactionBuilder.addOutput(slpData, 0)
+      transactionBuilder.addOutput(script, 0)
 
       // Send dust transaction representing tokens being sent.
       transactionBuilder.addOutput(
@@ -308,7 +313,7 @@ class SLP {
       )
 
       // Return any token change back to the sender.
-      if (slpSendObj.outputs > 1) {
+      if (outputs > 1) {
         transactionBuilder.addOutput(
           this.bchjs.SLP.Address.toLegacyAddress(slpAddress),
           546
@@ -448,7 +453,7 @@ class SLP {
 
       // Filter out the token UTXOs that match the user-provided token ID.
       tokenUtxos = tokenUtxos.filter((utxo, index) => {
-        if (utxo && utxo.tokenId === config.SLP_TOKEN_ID) return true
+        if (utxo && utxo.tokenId === config.SLP_TOKEN_ID && utxo.isValid) return true
       })
       // console.log(
       //   `tokenUtxos (filter 1): ${JSON.stringify(tokenUtxos, null, 2)}`
