@@ -216,7 +216,7 @@ class SLP {
 
       // Filter out the token UTXOs that match the user-provided token ID.
       tokenUtxos = tokenUtxos.filter((utxo, index) => {
-        if (utxo && utxo.tokenId === config.SLP_TOKEN_ID) return true
+        if (utxo && utxo.tokenId === config.SLP_TOKEN_ID && utxo.isValid) return true
       })
       // console.log(
       //   `tokenUtxos (filter 1): ${JSON.stringify(tokenUtxos, null, 2)}`
