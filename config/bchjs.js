@@ -24,8 +24,8 @@ const config = {}
 if (RESTAPI === 'fullstack.cash') {
   // config.BCHLIB = BCHJS.BitboxShim()
   config.BCHLIB = BCHJS
-  config.MAINNET_REST = 'https://api.fullstack.cash/v3/'
-  config.TESTNET_REST = 'https://tapi.fullstack.cash/v3/'
+  config.MAINNET_REST = 'https://bchn.fullstack.cash/v3/'
+  config.TESTNET_REST = 'https://testnet3.fullstack.cash/v3/'
   config.RESTAPI = 'fullstack.cash'
 }
 

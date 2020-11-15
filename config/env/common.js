@@ -8,8 +8,8 @@ if (NETWORK === 'mainnet') {
   configOut = {
     NETWORK: 'mainnet',
     port: process.env.PORT || 5000,
-    BCH_ADDR: 'bitcoincash:qzl6k0wvdd5ky99hewghqdgfj2jhcpqnfq8xtct0al',
-    SLP_ADDR: 'simpleledger:qz9l5w0fvp670a8r48apsv0xqek840320c90neac9g',
+    BCH_ADDR: 'bitcoincash:qrnn49rx0p4xh78tts79utf0zv26vyru6vqtl9trd3',
+    SLP_ADDR: 'simpleledger:qzhrpmu7nruyfcemeanqh5leuqcnf6zkjqems7xqf3',
     TOKENS_QTY_ORIGINAL: 50000,
     BCH_QTY_ORIGINAL: 250,
     SLP_TOKEN_ID: '38e97c5d7d3585a2cbf3f9580c82ca33985f9cb0845d4dcce220cb709f9538b0'
