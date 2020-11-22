@@ -97,7 +97,7 @@ describe('#transactions', () => {
           })
         }
 
-        const txid = `cf1b5d374e171876a625599a489a2a6cdda119fb84b6cff2a226c39e189`
+        const txid = 'cf1b5d374e171876a625599a489a2a6cdda119fb84b6cff2a226c39e189'
 
         await txs.getUserAddr(txid)
         // console.log(`result: ${util.inspect(result)}`)
@@ -119,7 +119,7 @@ describe('#transactions', () => {
           .resolves(txMockData.mockTransactions)
       }
 
-      const txid = `af30cc46356378cb5f139fb9da301d3b06a50416eb5030e3d397d6c3c027a26d`
+      const txid = 'af30cc46356378cb5f139fb9da301d3b06a50416eb5030e3d397d6c3c027a26d'
 
       const senderAddr = await txs.getUserAddr(txid)
       // console.log(`senderAddr: ${util.inspect(senderAddr)}`)

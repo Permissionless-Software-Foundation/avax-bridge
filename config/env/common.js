@@ -12,7 +12,8 @@ if (NETWORK === 'mainnet') {
     SLP_ADDR: 'simpleledger:qzhrpmu7nruyfcemeanqh5leuqcnf6zkjqems7xqf3',
     TOKENS_QTY_ORIGINAL: 50000,
     BCH_QTY_ORIGINAL: 250,
-    SLP_TOKEN_ID: '38e97c5d7d3585a2cbf3f9580c82ca33985f9cb0845d4dcce220cb709f9538b0'
+    SLP_TOKEN_ID:
+      '38e97c5d7d3585a2cbf3f9580c82ca33985f9cb0845d4dcce220cb709f9538b0'
   }
 } else {
   configOut = {
@@ -22,9 +23,24 @@ if (NETWORK === 'mainnet') {
     SLP_ADDR: 'slptest:qpt74e74f75w6s7cd8r9p5fumvdhqf995g69udvd5n',
     TOKENS_QTY_ORIGINAL: 50000,
     BCH_QTY_ORIGINAL: 250,
-    SLP_TOKEN_ID: '155784a206873c98acc09e8dabcccf6abf13c4c14d8662190534138a16bb93ce'
+    SLP_TOKEN_ID:
+      '155784a206873c98acc09e8dabcccf6abf13c4c14d8662190534138a16bb93ce'
   }
 }
+
+configOut.port = process.env.PORT || 5001
+configOut.logPass = 'test'
+
+// Email
+configOut.emailServer = process.env.EMAILSERVER
+  ? process.env.EMAILSERVER
+  : 'mail.someserver.com'
+configOut.emailUser = process.env.EMAILUSER
+  ? process.env.EMAILUSER
+  : 'noreply@someserver.com'
+configOut.emailPassword = process.env.EMAILPASS
+  ? process.env.EMAILPASS
+  : 'emailpassword'
 
 configOut.logPass = process.env.LOGPASS ? process.env.LOGPASS : 'test'
 

@@ -11,7 +11,7 @@ The price formula used in this program was inspired by the Bancor whitepaper, bu
 
 [![Build Status](https://travis-ci.org/Permissionless-Software-Foundation/token-liquidity.svg?branch=master)](https://travis-ci.org/Permissionless-Software-Foundation/token-liquidity)
 
-[![Coverage Status](https://coveralls.io/repos/github/Permissionless-Software-Foundation/token-liquidity/badge.svg?branch=unstable)](https://coveralls.io/github/Permissionless-Software-Foundation/token-liquidity?branch=unstable)
+- Configured for Jenkins (continuous integration), Coveralls (code coverage), Green Keeper (automated dependency management), and Semantic Release (automated versioning).
 
 
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
@@ -24,3 +24,5 @@ v2.3.0 uploaded to IPFS:
 
 ## License
 MIT
+
+test

@@ -2,9 +2,9 @@
   A dummy app that never exits.
 */
 
-"use strict"
+'use strict'
 
-setInterval(function() {
+setInterval(function () {
   const now = new Date()
   console.log(`Time now: ${now.toLocaleString()}`)
 }, 60000)
