@@ -7,7 +7,7 @@
     "start": "NETWORK=mainnet node token-liquidity.js",
     "test": "npm run prep-test && NETWORK=testnet APP_ENV=test TEST_ENV=unit nyc --reporter=text mocha --exit --timeout 15000 test/unit",
     "test:integration": "npm run prep-test && NETWORK=testnet APP_ENV=test TEST_ENV=integration nyc --reporter=text mocha --exit --timeout 30000 test/unit",
-    "test:temp": "mocha -g '#createTokenTx' test/unit",
+    "test:temp": "mocha -g '#burnTokenTx' test/unit",
     "lint": "standard --env mocha --fix",
     "docs": "./node_modules/.bin/apidoc -i src/ -o docs",
     "coverage": "export KOA_ENV=test && npm run prep-test && nyc report --reporter=text-lcov | coveralls",

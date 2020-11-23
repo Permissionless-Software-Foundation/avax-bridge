@@ -72,7 +72,7 @@ describe('#bch', () => {
   describe('findBiggestUtxo()', () => {
     it('should throw an error if utxos is not an array', async () => {
       try {
-        const utxos = { satoshis: 10 }
+        const utxos = { value: 10 }
         await bch.findBiggestUtxo(utxos)
       } catch (err) {
         assert.include(
@@ -88,18 +88,25 @@ describe('#bch', () => {
         {
           txid:
             'fe3c23dfefe37efc4227c93d9b4f6eadc94dce3844156b9651a46e9b740d27dd',
+          tx_hash:
+            'fe3c23dfefe37efc4227c93d9b4f6eadc94dce3844156b9651a46e9b740d27dd',
           vout: 1,
+          tx_pos: 1,
           amount: 0.00000546,
           satoshis: 546,
+          value: 546,
           height: 1348643,
           confirmations: 5
         },
         {
           txid:
             '03fa935916161425d4db11c3f4cc7fc6b9cbea01ded88fe4818c41ccf5431e5c',
+          tx_hash: '03fa935916161425d4db11c3f4cc7fc6b9cbea01ded88fe4818c41ccf5431e5c',
           vout: 1,
+          tx_pos: 1,
           amount: 12.04311016,
           satoshis: 1000,
+          value: 1000,
           height: 1348645,
           confirmations: 3
         }

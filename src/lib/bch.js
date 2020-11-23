@@ -84,11 +84,14 @@ class BCH {
       for (let i = 0; i < utxos.length; i++) {
         const thisUtxo = utxos[i]
 
-        if (thisUtxo.satoshis > largestAmount) {
+        // Ensure the value property is a number and not a string.
+        thisUtxo.value = Number(thisUtxo.value)
+
+        if (thisUtxo.value > largestAmount) {
           // Verify the UTXO is valid. Skip if not.
           const isValid = await this.bchjs.Blockchain.getTxOut(
-            thisUtxo.txid,
-            thisUtxo.vout
+            thisUtxo.tx_hash,
+            thisUtxo.tx_pos
           )
           // console.log(`isValid: ${JSON.stringify(isValid, null, 2)}`)
 
@@ -99,7 +102,7 @@ class BCH {
             continue
           }
 
-          largestAmount = thisUtxo.satoshis
+          largestAmount = thisUtxo.value
           largestIndex = i
         }
       }

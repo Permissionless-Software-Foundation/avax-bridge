@@ -238,8 +238,8 @@ class SLP {
         // This is caused by stale data in the indexer. Use getTxOut to ask the
         // full node to validate each UTXO.
         const isValidUtxo = await this.bchjs.Blockchain.getTxOut(
-          thisUtxos.txid,
-          thisUtxos.vout
+          thisUtxos.tx_hash,
+          thisUtxos.tx_pos
         )
         // console.log(`isValidUtxo: ${JSON.stringify(isValidUtxo, null, 2)}`)
 
@@ -280,6 +280,7 @@ class SLP {
 
       // console.log(`config.NETWORK: ${config.NETWORK}`)
       // console.log(`bchUtxo: ${JSON.stringify(bchUtxo, null, 2)}`)
+      // console.log(`tokenUtxos: ${JSON.stringify(tokenUtxos, null, 2)}`)
 
       // instance of transaction builder
       let transactionBuilder
@@ -293,7 +294,7 @@ class SLP {
 
       // add each token UTXO as an input.
       for (let i = 0; i < tokenUtxos.length; i++) {
-        transactionBuilder.addInput(tokenUtxos[i].txid, tokenUtxos[i].vout)
+        transactionBuilder.addInput(tokenUtxos[i].tx_hash, tokenUtxos[i].tx_pos)
       }
 
       // TODO: Create fee calculator like slpjs
@@ -312,7 +313,11 @@ class SLP {
       // amount to send back to the sending address.
       // It's the original amount - 1 sat/byte for tx size
       const remainder = originalAmount - txFee - 546 * 2
-      if (remainder < 1) {
+
+      // console.log(`originalAmount: ${originalAmount}`)
+      // console.log(`remainder: ${remainder}`)
+
+      if (remainder < 546) {
         throw new Error('Selected UTXO does not have enough satoshis')
       }
       // console.log(`remainder: ${remainder}`)
@@ -327,7 +332,7 @@ class SLP {
       )
 
       // Return any token change back to the sender.
-      if (outputs > 1) {
+      if (outputs > 546) {
         transactionBuilder.addOutput(
           this.bchjs.SLP.Address.toLegacyAddress(slpAddress),
           546
@@ -359,7 +364,7 @@ class SLP {
           keyPair,
           redeemScript,
           transactionBuilder.hashTypes.SIGHASH_ALL,
-          thisUtxo.satoshis
+          Number(thisUtxo.value)
         )
       }
 
@@ -419,7 +424,9 @@ class SLP {
       // console.log(`cashAddressBCH: ${JSON.stringify(cashAddressBCH, null, 2)}`)
 
       // Utxos from address derivation 145
-      const utxosBCH = await this.bchjs.Blockbook.utxo(cashAddressBCH)
+      // const utxosBCH = await this.bchjs.Blockbook.utxo(cashAddressBCH)
+      const fulcrumResult = await this.bchjs.Electrumx.utxo(cashAddressBCH)
+      const utxosBCH = fulcrumResult.utxos
       // console.log(`utxosBCH: ${JSON.stringify(utxosBCH, null, 2)}`)
 
       if (utxosBCH.length === 0) {
@@ -454,7 +461,9 @@ class SLP {
       // console.log(`cashAddress: ${JSON.stringify(cashAddress, null, 2)}`)
 
       // Get UTXOs held by this address. Derivation 245
-      const utxos = await this.bchjs.Blockbook.utxo(cashAddress)
+      // const utxos = await this.bchjs.Blockbook.utxo(cashAddress)
+      const fulcrumResult2 = await this.bchjs.Electrumx.utxo(cashAddress)
+      const utxos = fulcrumResult2.utxos
       // console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
 
       if (utxos.length === 0) {
@@ -483,8 +492,8 @@ class SLP {
 
         // Ask the full node to validate the UTXO.
         const isValidUtxo = await this.bchjs.Blockchain.getTxOut(
-          thisUtxos.txid,
-          thisUtxos.vout
+          thisUtxos.tx_hash,
+          thisUtxos.tx_pos
         )
         // console.log(`isValidUtxo: ${JSON.stringify(isValidUtxo, null, 2)}`)
 
@@ -520,12 +529,12 @@ class SLP {
       } else transactionBuilder = new this.bchjs.TransactionBuilder('testnet')
 
       // Add the BCH UTXO as input to pay for the transaction.
-      const originalAmount = bchUtxo.satoshis
-      transactionBuilder.addInput(bchUtxo.txid, bchUtxo.vout)
+      const originalAmount = Number(bchUtxo.value)
+      transactionBuilder.addInput(bchUtxo.tx_hash, bchUtxo.tx_pos)
 
       // add each token UTXO as an input.
       for (let i = 0; i < tokenUtxos.length; i++) {
-        transactionBuilder.addInput(tokenUtxos[i].txid, tokenUtxos[i].vout)
+        transactionBuilder.addInput(tokenUtxos[i].tx_hash, tokenUtxos[i].tx_pos)
       }
 
       // TODO: Create fee calculator like slpjs
@@ -544,7 +553,11 @@ class SLP {
       // amount to send back to the sending address.
       // It's the original amount - 1 sat/byte for tx size
       const remainder = originalAmount - txFee - 546 * 2
-      if (remainder < 1) {
+
+      // console.log(`originalAmount: ${originalAmount}`)
+      // console.log(`remainder: ${remainder}`)
+
+      if (remainder < 546) {
         throw new Error('Selected UTXO does not have enough satoshis')
       }
       // console.log(`remainder: ${remainder}`)
@@ -583,7 +596,7 @@ class SLP {
           keyPair,
           redeemScript,
           transactionBuilder.hashTypes.SIGHASH_ALL,
-          thisUtxo.satoshis
+          Number(thisUtxo.value)
         )
       }
 
