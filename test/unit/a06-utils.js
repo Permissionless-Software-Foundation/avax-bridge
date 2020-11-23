@@ -14,7 +14,7 @@ const TLUtils = require('../../src/lib/util')
 // const txMockData = require('./mocks/transactions')
 const mockWallet = require('./mocks/testwallet.json')
 
-const config = require('../../config')
+// const config = require('../../config')
 
 // Used for debugging.
 const util = require('util')
@@ -63,7 +63,7 @@ describe('#utils', () => {
 
   describe('#openWallet', () => {
     it('should open wallet file or report that wallet file does not exist', async () => {
-      sandbox.stub(tlUtils, `openWallet`).returns(mockWallet)
+      sandbox.stub(tlUtils, 'openWallet').returns(mockWallet)
       const walletInfo = tlUtils.openWallet()
       // console.log(`walletInfo: ${JSON.stringify(walletInfo, null, 2)}`)
 

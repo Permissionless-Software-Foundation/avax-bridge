@@ -296,19 +296,43 @@ const otherTokenTx = {
 const utxos = [
   {
     txid: '4bd6d50b6a197e6789d76fd63f6e00ecb655ca3e918d1a39b5ce9637a0cdbbb2',
+    tx_hash: '4bd6d50b6a197e6789d76fd63f6e00ecb655ca3e918d1a39b5ce9637a0cdbbb2',
     vout: 3,
+    tx_pos: 3,
     value: '9998658',
     height: 1332421,
     confirmations: 5
   },
   {
     txid: '4bd6d50b6a197e6789d76fd63f6e00ecb655ca3e918d1a39b5ce9637a0cdbbb2',
+    tx_hash: '4bd6d50b6a197e6789d76fd63f6e00ecb655ca3e918d1a39b5ce9637a0cdbbb2',
     vout: 2,
+    tx_pos: 2,
     value: '546',
     height: 1332421,
     confirmations: 5
   }
 ]
+
+const fulcrumUtxos = {
+  success: true,
+  utxos: [
+    {
+      tx_hash: '4bd6d50b6a197e6789d76fd63f6e00ecb655ca3e918d1a39b5ce9637a0cdbbb2',
+      tx_pos: 3,
+      value: '9998658',
+      height: 1332421,
+      confirmations: 5
+    },
+    {
+      tx_hash: '4bd6d50b6a197e6789d76fd63f6e00ecb655ca3e918d1a39b5ce9637a0cdbbb2',
+      tx_pos: 2,
+      value: '546',
+      height: 1332421,
+      confirmations: 5
+    }
+  ]
+}
 
 const tokenUtxos = [
   false,
@@ -327,7 +351,8 @@ const tokenUtxos = [
     tokenDocumentUrl: 'developer.bitcoin.com',
     tokenDocumentHash: '',
     decimals: 8,
-    tokenQty: 1220.69457267
+    tokenQty: 1220.69457267,
+    isValid: true
   }
 ]
 
@@ -346,13 +371,20 @@ const validUtxo = {
   coinbase: false
 }
 
+const fulcrumEmtpyUtxos = {
+  success: true,
+  utxos: []
+}
+
 const slpMockData = {
   tokenTx,
   nonTokenTx,
   otherTokenTx,
   utxos,
+  fulcrumUtxos,
   tokenUtxos,
-  validUtxo
+  validUtxo,
+  fulcrumEmtpyUtxos
 }
 
 module.exports = slpMockData

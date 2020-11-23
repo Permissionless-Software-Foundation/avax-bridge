@@ -7,6 +7,7 @@
 const assert = require('chai').assert
 const sinon = require('sinon')
 const nock = require('nock')
+const cloneDeep = require('lodash.clonedeep')
 
 // Mocking-data
 const slpMockData = require('./mocks/slp')
@@ -38,7 +39,7 @@ describe('#slp', () => {
     // Activate nock if it's inactive.
     if (!nock.isActive()) nock.activate()
 
-    slpMockDataCopy = Object.assign({}, slpMockData)
+    slpMockDataCopy = cloneDeep(slpMockData)
   })
 
   afterEach(() => {
@@ -233,7 +234,9 @@ describe('#slp', () => {
       try {
         // Mock out down-stream dependencies for a unit test.
         sandbox.stub(slp.tlUtils, 'openWallet').returns(mockWallet)
-        sandbox.stub(slp.bchjs.Blockbook, 'utxo').resolves([])
+        sandbox
+          .stub(slp.bchjs.Electrumx, 'utxo')
+          .resolves(slpMockDataCopy.fulcrumEmtpyUtxos)
 
         const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
         const qty = 1
@@ -253,7 +256,7 @@ describe('#slp', () => {
       try {
         // Mock out down-stream dependencies for a unit test.
         sandbox.stub(slp.tlUtils, 'openWallet').returns(mockWallet)
-        sandbox.stub(slp.bchjs.Blockbook, 'utxo').resolves(slpMockData.utxos)
+        sandbox.stub(slp.bchjs.Electrumx, 'utxo').resolves(slpMockDataCopy.fulcrumUtxos)
         sandbox
           .stub(slp.bchjs.SLP.Utils, 'tokenUtxoDetails')
           .resolves([false, false])
@@ -273,7 +276,7 @@ describe('#slp', () => {
       try {
         // Mock out down-stream dependencies for a unit test.
         sandbox.stub(slp.tlUtils, 'openWallet').returns(mockWallet)
-        sandbox.stub(slp.bchjs.Blockbook, 'utxo').resolves(slpMockData.utxos)
+        sandbox.stub(slp.bchjs.Electrumx, 'utxo').resolves(slpMockDataCopy.fulcrumUtxos)
         sandbox
           .stub(slp.bchjs.SLP.Utils, 'tokenUtxoDetails')
           .resolves(slpMockData.tokenUtxos)
@@ -294,7 +297,10 @@ describe('#slp', () => {
     it('should generate a transaction hex', async () => {
       // Mock out down-stream dependencies for a unit test.
       sandbox.stub(slp.tlUtils, 'openWallet').returns(mockWallet)
-      sandbox.stub(slp.bchjs.Blockbook, 'utxo').resolves(slpMockData.utxos)
+      // sandbox.stub(slp.bchjs.Blockbook, 'utxo').resolves(slpMockData.utxos)
+      sandbox
+        .stub(slp.bchjs.Electrumx, 'utxo')
+        .resolves(slpMockData.fulcrumUtxos)
       sandbox
         .stub(slp.bchjs.SLP.Utils, 'tokenUtxoDetails')
         .resolves(slpMockData.tokenUtxos)

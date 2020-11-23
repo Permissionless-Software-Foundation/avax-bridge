@@ -62,6 +62,7 @@ sftp-config.json
 coverage
 wallet-main.json
 wallet-test.json
+wallet-bkup.json
 database
 state.json
 **-audit.json

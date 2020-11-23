@@ -23,17 +23,17 @@ const knownTxids = [
 ]
 
 const addrInfo = {
-  'page': 1,
-  'totalPages': 1,
-  'itemsOnPage': 1000,
-  'address': 'bchtest:qz4qnxcxwvmacgye8wlakhz0835x0w3vtvaga95c09',
-  'balance': 11.7000397,
-  'totalReceived': '1219995524',
-  'totalSent': '49991554',
-  'unconfirmedBalance': '0',
-  'unconfirmedTxs': 0,
-  'txs': 15,
-  'txids': [
+  page: 1,
+  totalPages: 1,
+  itemsOnPage: 1000,
+  address: 'bchtest:qz4qnxcxwvmacgye8wlakhz0835x0w3vtvaga95c09',
+  balance: 11.7000397,
+  totalReceived: '1219995524',
+  totalSent: '49991554',
+  unconfirmedBalance: '0',
+  unconfirmedTxs: 0,
+  txs: 15,
+  txids: [
     'd3100cd1f1280933d23b02d62348365e32250c5ecab2e17f11506b8ac1c70035',
     '58d68ffc5a80c5215c43113ea68ea09f30b8b98e72624e8cb93ff12d027f010d',
     '40740f21cc212febf84a1d85efb4209b2c3d34d05dffd51cdebba9db27b7ae6f',
@@ -54,14 +54,15 @@ const addrInfo = {
 
 const confs = [
   {
-    'txid': '9842dc058541d1fd9fa6fa3525a787f03e44d3642263c0a8e4f7a4533502e397',
-    'confirmations': 45937
+    txid: '9842dc058541d1fd9fa6fa3525a787f03e44d3642263c0a8e4f7a4533502e397',
+    confirmations: 45937
   }
 ]
 const processTx = {
   txid: '14df82e3ec54fa0227531309f7189ed695bafad6f5062407d3a528fbeddc4a09',
   bchBalance: 12,
-  tokenBalance: 100 }
+  tokenBalance: 100
+}
 
 module.exports = {
   knownTxids,

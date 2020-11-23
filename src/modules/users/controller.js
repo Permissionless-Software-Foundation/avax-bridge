@@ -1,45 +1,3 @@
-/*
-<<<<<<< HEAD
-async function getUsers (ctx) {
-  const users = await User.find({}, '-password')
-  ctx.body = { users }
-}
-
-async function getUser (ctx, next) {
-  try {
-    const user = await User.findById(ctx.params.id, '-password')
-    if (!user) {
-      ctx.throw(404)
-    }
-=======
-
-<<<<<<< HEAD
-async function updateUser (ctx) {
-  const user = ctx.body.user
-
-  // Save a copy of the original user type.
-  const userType = user.type
-
-  Object.assign(user, ctx.request.body.user)
-
-  // Unless the calling user is an admin, they can not change the user type.
-  if (userType !== 'admin') {
-    user.type = userType
-=======
-
-<<<<<<< HEAD
-async function deleteUser (ctx) {
-  const user = ctx.body.user
-
-  await user.remove()
-
-  ctx.status = 200
-  ctx.body = {
-    success: true
-=======
-
-*/
-
 const User = require('../../models/users')
 
 const wlogger = require('../../lib/wlogger')
@@ -93,13 +51,14 @@ class UserController {
    *     }
    */
   async createUser (ctx) {
-    const user = new _this.User(ctx.request.body.user)
+    // const user = new _this.User(ctx.request.body.user)
     // console.log(`user: ${JSON.stringify(user, null, 2)}`)
 
+    const userObj = ctx.request.body.user
     try {
       // Input Validation.
       // Required property
-      if (!user.email || typeof user.email !== 'string') {
+      if (!userObj.email || typeof userObj.email !== 'string') {
         throw new Error("Property 'email' must be a string!")
       }
 
@@ -110,14 +69,15 @@ class UserController {
       //   throw new Error("Property 'email' must be email format!")
       // }
 
-      if (!user.password || typeof user.password !== 'string') {
+      if (!userObj.password || typeof userObj.password !== 'string') {
         throw new Error("Property 'password' must be a string!")
       }
 
-      if (user.name && typeof user.name !== 'string') {
+      if (userObj.name && typeof userObj.name !== 'string') {
         throw new Error("Property 'name' must be a string!")
       }
 
+      const user = new _this.User(userObj)
       // Enforce default value of 'user'
       user.type = 'user'
 
@@ -203,6 +163,7 @@ class UserController {
    *
    * @apiUse TokenError
    */
+
   async getUser (ctx, next) {
     try {
       const user = await _this.User.findById(ctx.params.id, '-password')
@@ -214,12 +175,18 @@ class UserController {
         user
       }
     } catch (err) {
-      if (err === 404 || err.name === 'CastError') {
+      // Handle different error types.
+      if (
+        err === 404 ||
+        err.name === 'CastError' ||
+        err.message.toString().includes('Not Found')
+      ) {
         ctx.throw(404)
       }
 
       ctx.throw(500)
     }
+
     if (next) {
       return next()
     }
@@ -282,7 +249,8 @@ class UserController {
       if (userObj.email && typeof userObj.email !== 'string') {
         throw new Error("Property 'email' must be a string!")
       }
-      const isEmail = await _this.validateEmail(user.email)
+
+      const isEmail = await _this.validateEmail(userObj.email)
       if (userObj.email && !isEmail) {
         throw new Error("Property 'email' must be email format!")
       }

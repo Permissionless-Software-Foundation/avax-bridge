@@ -4,27 +4,27 @@
 */
 
 // Set NETWORK to either testnet or mainnet
-const NETWORK = `testnet`
+const NETWORK = 'testnet'
 
 // REST API servers.
-const MAINNET_API = `http://api.bchjs.cash/v3/`
-const TESTNET_API = `http://tapi.bchjs.cash/v3/`
+const MAINNET_API = 'http://api.bchjs.cash/v3/'
+const TESTNET_API = 'http://tapi.bchjs.cash/v3/'
 
 // You can generate a WIF (private key) and public address using the
 // 'get-key' command of slp-cli-wallet.
-const WIF = `cNbdqUFZLCU5CJoPnDsQsAeXetYSCZuf5XNwfZt2KYGEwo5HLL6V`
-const ADDR = `bchtest:qpz5hez3qmzrnjzdfu03tf7fp6ca0rlsaqvrxmfpyd`
+const WIF = 'cNbdqUFZLCU5CJoPnDsQsAeXetYSCZuf5XNwfZt2KYGEwo5HLL6V'
+const ADDR = 'bchtest:qpz5hez3qmzrnjzdfu03tf7fp6ca0rlsaqvrxmfpyd'
 const SATS_TO_SEND = 100000
 
 // Customize the message you want to send
-const MESSAGE = `BURN abcdef`
+const MESSAGE = 'BURN abcdef'
 
 const BCHJS = require('@chris.troutner/bch-js')
 let bchjs
-if (NETWORK === `mainnet`) bchjs = new BCHJS({ restURL: MAINNET_API })
+if (NETWORK === 'mainnet') bchjs = new BCHJS({ restURL: MAINNET_API })
 else bchjs = new BCHJS({ restURL: TESTNET_API })
 
-async function writeOpReturn(msg, wif) {
+async function writeOpReturn (msg, wif) {
   try {
     // Create an EC Key Pair from the user-supplied WIF.
     const ecPair = bchjs.ECPair.fromWIF(wif)
@@ -42,9 +42,7 @@ async function writeOpReturn(msg, wif) {
 
     // instance of transaction builder
     let transactionBuilder
-    if (NETWORK === `mainnet`)
-      transactionBuilder = new bchjs.TransactionBuilder()
-    else transactionBuilder = new bchjs.TransactionBuilder("testnet")
+    if (NETWORK === 'mainnet') { transactionBuilder = new bchjs.TransactionBuilder() } else transactionBuilder = new bchjs.TransactionBuilder('testnet')
 
     const originalAmount = utxo.satoshis
     const vout = utxo.vout
@@ -60,14 +58,14 @@ async function writeOpReturn(msg, wif) {
     // It's the original amount - 1 sat/byte for tx size
     const remainder = originalAmount - SATS_TO_SEND - fee
 
-    if(remainder < 546) throw new Error(`Not enough remainder to justify change. Create bigger UTXO.`)
+    if (remainder < 546) throw new Error('Not enough remainder to justify change. Create bigger UTXO.')
 
     // BEGIN - Construction of OP_RETURN transaction.
 
     // Add the OP_RETURN to the transaction.
     const script = [
       bchjs.Script.opcodes.OP_RETURN,
-      Buffer.from("6d02", "hex"), // Makes message comply with the memo.cash protocol.
+      Buffer.from('6d02', 'hex'), // Makes message comply with the memo.cash protocol.
       Buffer.from(`${msg}`)
     ]
 
@@ -99,28 +97,24 @@ async function writeOpReturn(msg, wif) {
 
     // output rawhex
     const hex = tx.toHex()
-    //console.log(`TX hex: ${hex}`);
-    //console.log(` `);
+    // console.log(`TX hex: ${hex}`);
+    // console.log(` `);
 
     // Broadcast transation to the network
     const txidStr = await bchjs.RawTransactions.sendRawTransaction(hex)
     console.log(`Transaction ID: ${txidStr}`)
     // console.log(`https://memo.cash/post/${txidStr}`)
 
-    if(NETWORK === 'mainnet')
-      console.log(`https://explorer.bitcoin.com/bch/tx/${txidStr}`)
-    else
-      console.log(`https://explorer.bitcoin.com/tbch/tx/${txidStr}`)
-  } catch(err) {
-    console.log(`Error in writeOpReturn(): `, err)
+    if (NETWORK === 'mainnet') { console.log(`https://explorer.bitcoin.com/bch/tx/${txidStr}`) } else { console.log(`https://explorer.bitcoin.com/tbch/tx/${txidStr}`) }
+  } catch (err) {
+    console.log('Error in writeOpReturn(): ', err)
   }
 }
 writeOpReturn(MESSAGE, WIF)
 
-
 // Returns the utxo with the biggest balance from an array of utxos.
-async function findBiggestUtxo(utxos) {
-  if (!Array.isArray(utxos)) throw new Error(`utxos needs to be an array`)
+async function findBiggestUtxo (utxos) {
+  if (!Array.isArray(utxos)) throw new Error('utxos needs to be an array')
 
   let largestAmount = 0
   let largestIndex = 0

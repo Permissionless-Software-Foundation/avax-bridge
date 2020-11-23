@@ -22,7 +22,7 @@ util.inspect.defaultOptions = { depth: 1 }
 
 describe('#bch', () => {
   describe('#send-bch', () => {
-    it(`should send bch`, async () => {
+    it('should send bch', async () => {
       const obj = {
         recvAddr: config.BCH_ADDR,
         satoshisToSend: 1000

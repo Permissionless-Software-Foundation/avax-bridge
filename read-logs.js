@@ -1,7 +1,7 @@
-const fs = require('fs')
+// const fs = require('fs')
 const lineReader = require('line-reader')
 
-const FILE_NAME = `./logs/token-liquidity-2020-01-02.log`
+const FILE_NAME = './logs/token-liquidity-2020-01-02.log'
 
 function start () {
   readLogs(FILE_NAME)
@@ -23,7 +23,7 @@ async function readLogs (filename) {
       console.log(`${thisEntry.timestamp}: ${thisEntry.message}`)
     }
   } catch (err) {
-    console.log(`Error in readLogs(): `, err)
+    console.log('Error in readLogs(): ', err)
   }
 }
 
@@ -36,7 +36,7 @@ async function openLogFile (filename) {
 
     return data
   } catch (err) {
-    console.log(`Error in openLogFile()`)
+    console.log('Error in openLogFile()')
     throw err
   }
 }
@@ -60,7 +60,7 @@ function readLines (filename) {
         } catch (err) {}
       })
     } catch (err) {
-      console.log(`Error in readLines()`)
+      console.log('Error in readLines()')
       return reject(err)
     }
   })

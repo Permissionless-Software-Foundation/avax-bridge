@@ -185,8 +185,6 @@ async function processingLoop (seenTxs) {
         tokenBalance
       }
 
-      // TODO: Instead of calling processTx(), call p-retry so that it will
-      // retry processTx() several times if it errors out.
       console.log(' ')
       console.log(' ')
       console.log(

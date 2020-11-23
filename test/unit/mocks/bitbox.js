@@ -129,25 +129,30 @@ class mockTransactionBuilder {
 
     this.transaction = new MockTxBuilder()
   }
+
   addInput () {
     sinon.stub().returns({})
   }
+
   addOutput () {
     sinon.stub().returns({})
   }
+
   sign () {
     sinon.stub().returns({})
   }
+
   build () {
     return new MockTxBuilder()
   }
 }
 
 class MockTxBuilder {
-  constructor () {}
+  // constructor () {}
   toHex () {
     return 'mockTXHex'
   }
+
   build () {
     return this.toHex
   }
@@ -434,7 +439,7 @@ const bitboxMock = {
     utxo: sinon.stub().returns(utxos),
     toLegacyAddress: sinon.stub().returns({}),
     transactions: sinon.stub().returns(mockTransactions),
-    toCashAddress: sinon.stub().returns(`bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pzqf`)
+    toCashAddress: sinon.stub().returns('bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pzqf')
   },
   TransactionBuilder: mockTransactionBuilder,
   Transaction: {
@@ -444,7 +449,7 @@ const bitboxMock = {
     getByteCount: sinon.stub().returns(250)
   },
   RawTransactions: {
-    sendRawTransaction: sinon.stub().returns(`mockTXID`)
+    sendRawTransaction: sinon.stub().returns('mockTXID')
   }
 }
 

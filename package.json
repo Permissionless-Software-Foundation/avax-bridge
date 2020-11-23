@@ -7,10 +7,11 @@
     "start": "NETWORK=mainnet node token-liquidity.js",
     "test": "npm run prep-test && NETWORK=testnet APP_ENV=test TEST_ENV=unit nyc --reporter=text mocha --exit --timeout 15000 test/unit",
     "test:integration": "npm run prep-test && NETWORK=testnet APP_ENV=test TEST_ENV=integration nyc --reporter=text mocha --exit --timeout 30000 test/unit",
+    "test:temp": "mocha -g '#createTokenTx' test/unit",
     "lint": "standard --env mocha --fix",
     "docs": "./node_modules/.bin/apidoc -i src/ -o docs",
-    "coverage": "nyc report --reporter=text-lcov | coveralls",
-    "coverage:report": "nyc --reporter=html mocha --exit",
+    "coverage": "export KOA_ENV=test && npm run prep-test && nyc report --reporter=text-lcov | coveralls",
+    "coverage:report": "export KOA_ENV=test && npm run prep-test && nyc --reporter=html mocha --exit",
     "prep-test": "node util/users/delete-all-test-users.js"
   },
   "keywords": [
@@ -36,7 +37,7 @@
   },
   "repository": "Permissionless-Software-Foundation/token-liquidity",
   "dependencies": {
-    "@psf/bch-js": "3.7.2",
+    "@psf/bch-js": "3.10.3",
     "apidoc": "^0.23.0",
     "axios": "^0.19.2",
     "bcryptjs": "^2.4.3",
@@ -53,11 +54,12 @@
     "koa-generic-session": "^2.0.1",
     "koa-logger": "^3.1.0",
     "koa-mount": "^4.0.0",
-    "koa-passport": "^4.1.1",
+    "koa-passport": "^4.1.3",
     "koa-router": "^9.0.1",
     "koa-static": "^5.0.0",
     "line-reader": "^0.4.0",
-    "mongoose": "^5.5.12",
+    "mongoose": "^5.10.15",
+    "nodemailer": "^6.4.10",
     "p-queue": "^6.2.1",
     "p-retry": "^4.2.0",
     "passport-local": "^1.0.0",
@@ -79,12 +81,13 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^3.1.0",
     "eslint-plugin-standard": "^4.0.0",
-    "nock": "^10.0.6",
-    "sinon": "^7.3.2",
-    "slp-sdk-mock": "^1.0.2",
+    "husky": "^4.2.5",
+    "lodash.clonedeep": "^4.5.0",
     "mocha": "^7.0.1",
+    "nock": "^10.0.6",
     "nyc": "^15.0.0",
     "semantic-release": "^17.0.0",
+    "sinon": "^9.2.1",
     "standard": "^14.3.1"
   },
   "release": {
@@ -94,5 +97,10 @@
         "npmPublish": false
       }
     ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint"
+    }
   }
 }
