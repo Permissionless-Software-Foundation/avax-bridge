@@ -56,7 +56,7 @@ class BCH {
       const fulcrumBalance = await this.bchjs.Electrumx.balance(addr)
       // console.log(`fulcrumBalance: ${JSON.stringify(fulcrumBalance, null, 2)}`)
 
-      const confirmedBalance = fulcrumBalance.balance.confirmed
+      const confirmedBalance = this.bchjs.BitcoinCash.toBitcoinCash(fulcrumBalance.balance.confirmed)
 
       if (verbose) {
         // const resultToDisplay = confirmedBalance
