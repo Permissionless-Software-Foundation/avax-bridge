@@ -279,6 +279,7 @@ class SLP {
       // BEGIN transaction construction.
 
       // console.log(`config.NETWORK: ${config.NETWORK}`)
+      // console.log(`bchUtxo: ${JSON.stringify(bchUtxo, null, 2)}`)
 
       // instance of transaction builder
       let transactionBuilder
@@ -287,7 +288,7 @@ class SLP {
       } else transactionBuilder = new this.bchjs.TransactionBuilder('testnet')
 
       // Add the BCH UTXO as input to pay for the transaction.
-      const originalAmount = bchUtxo.value
+      const originalAmount = Number(bchUtxo.value)
       transactionBuilder.addInput(bchUtxo.tx_hash, bchUtxo.tx_pos)
 
       // add each token UTXO as an input.

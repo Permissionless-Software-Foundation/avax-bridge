@@ -296,14 +296,18 @@ const otherTokenTx = {
 const utxos = [
   {
     txid: '4bd6d50b6a197e6789d76fd63f6e00ecb655ca3e918d1a39b5ce9637a0cdbbb2',
+    tx_hash: '4bd6d50b6a197e6789d76fd63f6e00ecb655ca3e918d1a39b5ce9637a0cdbbb2',
     vout: 3,
+    tx_pos: 3,
     value: '9998658',
     height: 1332421,
     confirmations: 5
   },
   {
     txid: '4bd6d50b6a197e6789d76fd63f6e00ecb655ca3e918d1a39b5ce9637a0cdbbb2',
+    tx_hash: '4bd6d50b6a197e6789d76fd63f6e00ecb655ca3e918d1a39b5ce9637a0cdbbb2',
     vout: 2,
+    tx_pos: 2,
     value: '546',
     height: 1332421,
     confirmations: 5
@@ -314,15 +318,15 @@ const fulcrumUtxos = {
   success: true,
   utxos: [
     {
-      txid: '4bd6d50b6a197e6789d76fd63f6e00ecb655ca3e918d1a39b5ce9637a0cdbbb2',
-      vout: 3,
+      tx_hash: '4bd6d50b6a197e6789d76fd63f6e00ecb655ca3e918d1a39b5ce9637a0cdbbb2',
+      tx_pos: 3,
       value: '9998658',
       height: 1332421,
       confirmations: 5
     },
     {
-      txid: '4bd6d50b6a197e6789d76fd63f6e00ecb655ca3e918d1a39b5ce9637a0cdbbb2',
-      vout: 2,
+      tx_hash: '4bd6d50b6a197e6789d76fd63f6e00ecb655ca3e918d1a39b5ce9637a0cdbbb2',
+      tx_pos: 2,
       value: '546',
       height: 1332421,
       confirmations: 5
