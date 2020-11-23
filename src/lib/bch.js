@@ -21,7 +21,7 @@ const wlogger = require('./wlogger')
 // Mainnet by default
 const bchjs = new config.BCHLIB({ restURL: config.MAINNET_REST })
 
-const SATS_PER_BCH = 100000000
+// const SATS_PER_BCH = 100000000
 
 let _this
 
@@ -54,13 +54,14 @@ class BCH {
       // )
 
       const fulcrumBalance = await this.bchjs.Electrumx.balance(addr)
-      console.log(`fulcrumBalance: ${JSON.stringify(fulcrumBalance, null, 2)}`)
+      // console.log(`fulcrumBalance: ${JSON.stringify(fulcrumBalance, null, 2)}`)
+
       const confirmedBalance = fulcrumBalance.balance.confirmed
 
       if (verbose) {
         // const resultToDisplay = confirmedBalance
         // resultToDisplay.txids = []
-        // console.log(resultToDisplay)
+        console.log(fulcrumBalance)
       }
 
       const bchBalance = confirmedBalance
@@ -127,7 +128,8 @@ class BCH {
       // console.log(`this.bchjs.restURL: ${this.bchjs.restURL}`)
 
       // const txDetails = await this.bchjs.Transaction.details(txid)
-      const txDetails = await this.bchjs.Blockbook.tx(txid)
+      // const txDetails = await this.bchjs.Blockbook.tx(txid)
+      const txDetails = await this.bchjs.RawTransactions.getRawTransaction(txid, true)
       // console.log(`txDetails: ${JSON.stringify(txDetails, null, 2)}`)
 
       const vout = txDetails.vout
@@ -138,17 +140,18 @@ class BCH {
         const thisVout = vout[i]
         // console.log(`thisVout: ${JSON.stringify(thisVout, null, 2)}`);
         const value = Number(thisVout.value)
+        console.log(`value: ${value}`)
 
         // Skip if value is zero.
         if (thisVout.value === 0.0) continue
 
         // Skip if address array is empty.
-        if (thisVout.addresses.length === 0) continue
+        if (thisVout.scriptPubKey.addresses.length === 0) continue
 
         // Skip if vout has no addresses field.
-        if (thisVout.addresses) {
-          const addresses = thisVout.addresses
-          // console.log(`addresses: ${JSON.stringify(addresses, null, 2)}`)
+        if (thisVout.scriptPubKey.addresses) {
+          const addresses = thisVout.scriptPubKey.addresses
+          console.log(`addresses: ${JSON.stringify(addresses, null, 2)}`)
 
           // Note: Assuming addresses[] only has 1 element.
           // Not sure how there can be multiple addresses if the value is not an array.
@@ -156,7 +159,8 @@ class BCH {
           wlogger.debug('address: ', address)
           address = this.bchjs.Address.toCashAddress(address)
 
-          if (address === addr) return this.tlUtils.round8(value / SATS_PER_BCH)
+          // if (address === addr) return this.tlUtils.round8(value / SATS_PER_BCH)
+          if (address === addr) return value
         }
       }
 

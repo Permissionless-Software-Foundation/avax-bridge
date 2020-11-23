@@ -14,11 +14,21 @@ describe('#bch.js', () => {
     it('Should return an array of tx data', async () => {
       const bchAddr = 'bitcoincash:qqlktyx5djtd25nkqxmtm229ks4n0eaknsqtq36tgz'
       const result = await bch.getTransactions(bchAddr)
-      console.log(`result: ${JSON.stringify(result, null, 2)}`)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
       assert.isArray(result)
       assert.property(result[0], 'tx_hash')
       assert.property(result[0], 'height')
+    })
+  })
+
+  describe('#recievedBch', () => {
+    it('should display the amount of sats received', async () => {
+      const addr = 'bitcoincash:qzdq6jzvyzhyuj639l72rmqfzu3vd7eux5nhdzndwm'
+      const txid = 'e2f2467b0cbbb9eae2fd409342e2657ba1ab58d3ac2d256522596adb946cd958'
+
+      const result = await bch.recievedBch(txid, addr)
+      console.log(`result: ${JSON.stringify(result, null, 2)}`)
     })
   })
 })

@@ -44,44 +44,79 @@ const utxos = [
 ]
 
 const txDetails = {
-  txid: 'ed4692f50a4553527dd26cd8674ca06a0ab2d366f3135ca3668310467ead3cbf',
+  txid: 'e2f2467b0cbbb9eae2fd409342e2657ba1ab58d3ac2d256522596adb946cd958',
+  hash: 'e2f2467b0cbbb9eae2fd409342e2657ba1ab58d3ac2d256522596adb946cd958',
   version: 2,
+  size: 408,
+  locktime: 0,
   vin: [
     {
-      txid: '608723cd999f0eeed599763dde5686e0ee853c21f28428e01b088ec86a6deef5',
-      vout: 1,
-      sequence: 4294967295,
-      n: 0,
-      addresses: ['bchtest:qrwmj3nlcrfajhjcfza2ya939vv0stddgc0kknu6my'],
-      value: '10000000',
-      hex:
-        '483045022100f1179e212430284fd164cd8aeac78270d2f4d82a401e9dd306fb1027a79152f8022046b10900ae517f22e6dbd5418b70e04313f7e7b7d7bba38bcb0509a6e734cdaa412103991b899172d3e509d2e58c5077b9fb6deabfb88696d06f318a9a8dbc147678b6'
+      txid: 'dff9dc54b1adab239dc4c16ca8683142c85718989e2163f80cd4c9f4f8c10f4f',
+      vout: 4,
+      scriptSig: {
+        asm:
+          '3045022100e48427d28dec37251a4f928e56f926a5e16018e3b73c256d8f7552e26d38aabf022064f01eb5a3920647058b9bc537f433b69c5bf4a0964c84570b7d84b738ef1e85[ALL|FORKID] 033a24d13b45eaf53bebc7da5b7ee79a39615790b4fb16dab048fdcc5abd3764ef',
+        hex:
+          '483045022100e48427d28dec37251a4f928e56f926a5e16018e3b73c256d8f7552e26d38aabf022064f01eb5a3920647058b9bc537f433b69c5bf4a0964c84570b7d84b738ef1e854121033a24d13b45eaf53bebc7da5b7ee79a39615790b4fb16dab048fdcc5abd3764ef'
+      },
+      sequence: 4294967295
+    },
+    {
+      txid: 'abb659ecf11ec8c2ebe3f2351d8b4c0b9c44c308cace36286c8dc5e7357f1eba',
+      vout: 0,
+      scriptSig: {
+        asm:
+          '304502210096db676c88728e661b59cca27d80b386a6fdb73e3b407c4692d6db394fe1e96202206592712ed870f038887886030cb7ed5e8d4cabc9cf44dd53a09c6d3a39808065[ALL|FORKID] 033a24d13b45eaf53bebc7da5b7ee79a39615790b4fb16dab048fdcc5abd3764ef',
+        hex:
+          '48304502210096db676c88728e661b59cca27d80b386a6fdb73e3b407c4692d6db394fe1e96202206592712ed870f038887886030cb7ed5e8d4cabc9cf44dd53a09c6d3a398080654121033a24d13b45eaf53bebc7da5b7ee79a39615790b4fb16dab048fdcc5abd3764ef'
+      },
+      sequence: 4294967295
     }
   ],
   vout: [
     {
-      value: '1000',
+      value: 0.0001,
       n: 0,
-      hex: '76a914d9354d4a3f7b129b81c38b273db14c8fd31ac4d588ac',
-      addresses: ['bchtest:qrvn2n228aa39xupcw9jw0d3fj8axxky656e4j62z2']
+      scriptPubKey: {
+        asm:
+          'OP_DUP OP_HASH160 9a0d484c20ae4e4b512ffca1ec091722c6fb3c35 OP_EQUALVERIFY OP_CHECKSIG',
+        hex: '76a9149a0d484c20ae4e4b512ffca1ec091722c6fb3c3588ac',
+        reqSigs: 1,
+        type: 'pubkeyhash',
+        addresses: ['bitcoincash:qzdq6jzvyzhyuj639l72rmqfzu3vd7eux5nhdzndwm']
+      }
     },
     {
-      value: '9998752',
+      value: 0.00002,
       n: 1,
-      spent: true,
-      hex: '76a91459435560414151ed898e27df12542b6097146a3988ac',
-      addresses: ['bchtest:qpv5x4tqg9q4rmvf3cna7yj59dsfw9r28yxe6gn2j9']
+      scriptPubKey: {
+        asm:
+          'OP_DUP OP_HASH160 203b64bfbaa9e58333295b621159ddebc591ecb1 OP_EQUALVERIFY OP_CHECKSIG',
+        hex: '76a914203b64bfbaa9e58333295b621159ddebc591ecb188ac',
+        reqSigs: 1,
+        type: 'pubkeyhash',
+        addresses: ['bitcoincash:qqsrke9lh257tqen99dkyy2emh4uty0vky9y0z0lsr']
+      }
+    },
+    {
+      value: 0.00019144,
+      n: 2,
+      scriptPubKey: {
+        asm:
+          'OP_DUP OP_HASH160 3e31055173cf58d56edb075499daf29d7b488f09 OP_EQUALVERIFY OP_CHECKSIG',
+        hex: '76a9143e31055173cf58d56edb075499daf29d7b488f0988ac',
+        reqSigs: 1,
+        type: 'pubkeyhash',
+        addresses: ['bitcoincash:qqlrzp23w08434twmvr4fxw672whkjy0py26r63g3d']
+      }
     }
   ],
-  blockHash: '00000000385cb53a282d23895f655c0ade44ea906e41b6e4de5922644ffc1d4c',
-  blockHeight: 1331145,
-  confirmations: 288,
-  blockTime: 1569628331,
-  value: '9999752',
-  valueIn: '10000000',
-  fees: '248',
   hex:
-    '0200000001f5ee6d6ac88e081be02884f2213c85eee08656de3d7699d5ee0e9f99cd238760010000006b483045022100f1179e212430284fd164cd8aeac78270d2f4d82a401e9dd306fb1027a79152f8022046b10900ae517f22e6dbd5418b70e04313f7e7b7d7bba38bcb0509a6e734cdaa412103991b899172d3e509d2e58c5077b9fb6deabfb88696d06f318a9a8dbc147678b6ffffffff02e8030000000000001976a914d9354d4a3f7b129b81c38b273db14c8fd31ac4d588aca0919800000000001976a91459435560414151ed898e27df12542b6097146a3988ac00000000'
+    '02000000024f0fc1f8f4c9d40cf863219e981857c8423168a86cc1c49d23abadb154dcf9df040000006b483045022100e48427d28dec37251a4f928e56f926a5e16018e3b73c256d8f7552e26d38aabf022064f01eb5a3920647058b9bc537f433b69c5bf4a0964c84570b7d84b738ef1e854121033a24d13b45eaf53bebc7da5b7ee79a39615790b4fb16dab048fdcc5abd3764efffffffffba1e7f35e7c58d6c2836ceca08c3449c0b4c8b1d35f2e3ebc2c81ef1ec59b6ab000000006b48304502210096db676c88728e661b59cca27d80b386a6fdb73e3b407c4692d6db394fe1e96202206592712ed870f038887886030cb7ed5e8d4cabc9cf44dd53a09c6d3a398080654121033a24d13b45eaf53bebc7da5b7ee79a39615790b4fb16dab048fdcc5abd3764efffffffff0310270000000000001976a9149a0d484c20ae4e4b512ffca1ec091722c6fb3c3588acd0070000000000001976a914203b64bfbaa9e58333295b621159ddebc591ecb188acc84a0000000000001976a9143e31055173cf58d56edb075499daf29d7b488f0988ac00000000',
+  blockhash: '000000000000000001e23bd019aff1781d2321b4406560e172e31430b2f73b53',
+  confirmations: 40,
+  time: 1606146411,
+  blocktime: 1606146411
 }
 
 const getTxOutValid = {

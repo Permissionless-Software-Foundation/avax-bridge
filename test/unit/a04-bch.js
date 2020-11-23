@@ -129,11 +129,11 @@ describe('#bch', () => {
     it('should return 0 if address is not in TX', async () => {
       // If unit test, use the mocking library instead of live calls.
       if (process.env.TEST_ENV === 'unit') {
-        sandbox.stub(bch.bchjs.Blockbook, 'tx').resolves(bchMockData.txDetails)
+        sandbox.stub(bch.bchjs.RawTransactions, 'getRawTransaction').resolves(bchMockData.txDetails)
       }
 
       const txid =
-        'a77762bb47c130e755cc053db51333bbd64596eefd18baffc08a447749863fa9'
+        'e2f2467b0cbbb9eae2fd409342e2657ba1ab58d3ac2d256522596adb946cd958'
       const addr = 'bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pabc'
 
       const value = await bch.recievedBch(txid, addr)
@@ -145,18 +145,18 @@ describe('#bch', () => {
     it('should calculate amount of BCH recieved from a TX', async () => {
       // If unit test, use the mocking library instead of live calls.
       if (process.env.TEST_ENV === 'unit') {
-        sandbox.stub(bch.bchjs.Blockbook, 'tx').resolves(bchMockData.txDetails)
+        sandbox.stub(bch.bchjs.RawTransactions, 'getRawTransaction').resolves(bchMockData.txDetails)
       }
 
       const txid =
-        'ed4692f50a4553527dd26cd8674ca06a0ab2d366f3135ca3668310467ead3cbf'
-      const addr = 'bchtest:qrvn2n228aa39xupcw9jw0d3fj8axxky656e4j62z2'
+        'e2f2467b0cbbb9eae2fd409342e2657ba1ab58d3ac2d256522596adb946cd958'
+      const addr = 'bitcoincash:qzdq6jzvyzhyuj639l72rmqfzu3vd7eux5nhdzndwm'
 
       const value = await bch.recievedBch(txid, addr)
       // console.log(`value: ${util.inspect(value)}`)
 
       assert.isNumber(value)
-      assert.equal(value, 0.00001)
+      assert.equal(value, 0.0001)
     })
   })
 
