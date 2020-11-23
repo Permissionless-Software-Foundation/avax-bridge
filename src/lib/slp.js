@@ -49,7 +49,9 @@ class SLP {
       wlogger.silly('Enter slp.getTokenBalance()')
       // console.log(`addr: ${addr}`)
 
-      const result = await this.bchjs.SLP.Utils.balancesForAddress(config.SLP_ADDR)
+      const result = await this.bchjs.SLP.Utils.balancesForAddress(
+        config.SLP_ADDR
+      )
       wlogger.debug('token balance: ', result)
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
@@ -168,7 +170,9 @@ class SLP {
       // console.log(`cashAddressBCH: ${JSON.stringify(cashAddressBCH, null, 2)}`)
 
       // Utxos from address derivation 145
-      const utxosBCH = await this.bchjs.Blockbook.utxo(cashAddressBCH)
+      // const utxosBCH = await this.bchjs.Blockbook.utxo(cashAddressBCH)
+      const fulcrumResult = await this.bchjs.Electrumx.utxo(cashAddressBCH)
+      const utxosBCH = fulcrumResult.utxos
       // console.log(`utxosBCH: ${JSON.stringify(utxosBCH, null, 2)}`)
 
       if (utxosBCH.length === 0) {
@@ -203,7 +207,9 @@ class SLP {
       // console.log(`cashAddress: ${JSON.stringify(cashAddress, null, 2)}`)
 
       // Get UTXOs held by this address. Derivation 245
-      const utxos = await this.bchjs.Blockbook.utxo(cashAddress)
+      // const utxos = await this.bchjs.Blockbook.utxo(cashAddress)
+      const fulcrumResult2 = await this.bchjs.Electrumx.utxo(cashAddress)
+      const utxos = fulcrumResult2.utxos
       // console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
 
       if (utxos.length === 0) {
@@ -216,7 +222,9 @@ class SLP {
 
       // Filter out the token UTXOs that match the user-provided token ID.
       tokenUtxos = tokenUtxos.filter((utxo, index) => {
-        if (utxo && utxo.tokenId === config.SLP_TOKEN_ID && utxo.isValid) return true
+        if (utxo && utxo.tokenId === config.SLP_TOKEN_ID && utxo.isValid) {
+          return true
+        }
       })
       // console.log(
       //   `tokenUtxos (filter 1): ${JSON.stringify(tokenUtxos, null, 2)}`
@@ -250,7 +258,7 @@ class SLP {
       }
 
       // Generate the OP_RETURN code.
-      console.log(`qty: ${qty}`)
+      // console.log(`qty: ${qty}`)
       // const slpSendObj = this.bchjs.SLP.TokenType1.generateSendOpReturn(
       //   tokenUtxos,
       //   Number(qty)
@@ -258,7 +266,10 @@ class SLP {
       // const slpData = this.bchjs.Script.encode(slpSendObj.script)
       // console.log(`slpOutputs: ${slpSendObj.outputs}`)
 
-      const { script, outputs } = this.bchjs.SLP.TokenType1.generateSendOpReturn(
+      const {
+        script,
+        outputs
+      } = this.bchjs.SLP.TokenType1.generateSendOpReturn(
         tokenUtxos,
         Number(qty)
       )
@@ -453,7 +464,9 @@ class SLP {
 
       // Filter out the token UTXOs that match the user-provided token ID.
       tokenUtxos = tokenUtxos.filter((utxo, index) => {
-        if (utxo && utxo.tokenId === config.SLP_TOKEN_ID && utxo.isValid) return true
+        if (utxo && utxo.tokenId === config.SLP_TOKEN_ID && utxo.isValid) {
+          return true
+        }
       })
       // console.log(
       //   `tokenUtxos (filter 1): ${JSON.stringify(tokenUtxos, null, 2)}`
