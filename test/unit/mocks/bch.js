@@ -29,19 +29,49 @@ const fulcrumBalance = {
 const utxos = [
   {
     txid: '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+    tx_hash: '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
     vout: 2,
-    value: '546',
+    tx_pos: 2,
+    value: 546,
     confirmations: 0,
     satoshis: 546
   },
   {
     txid: '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+    tx_hash: '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
     vout: 3,
-    value: '33779',
+    tx_pos: 3,
+    value: 33779,
     confirmations: 0,
     satoshis: 33779
   }
 ]
+
+const fulcrumUtxos = {
+  success: true,
+  utxos: [
+    {
+      txid: '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+      tx_hash:
+        '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+      vout: 2,
+      tx_pos: 2,
+      value: 546,
+      confirmations: 0,
+      satoshis: 546
+    },
+    {
+      txid: '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+      tx_hash:
+        '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+      vout: 3,
+      tx_pos: 3,
+      value: 33779,
+      confirmations: 0,
+      satoshis: 33779
+    }
+  ]
+}
 
 const txDetails = {
   txid: 'e2f2467b0cbbb9eae2fd409342e2657ba1ab58d3ac2d256522596adb946cd958',
@@ -307,6 +337,7 @@ const bchMockData = {
   balance,
   fulcrumBalance,
   utxos,
+  fulcrumUtxos,
   txDetails,
   getTxOutValid,
   burnOpReturnTx,

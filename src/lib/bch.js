@@ -140,7 +140,7 @@ class BCH {
         const thisVout = vout[i]
         // console.log(`thisVout: ${JSON.stringify(thisVout, null, 2)}`);
         const value = Number(thisVout.value)
-        console.log(`value: ${value}`)
+        // console.log(`value: ${value}`)
 
         // Skip if value is zero.
         if (thisVout.value === 0.0) continue
@@ -151,12 +151,12 @@ class BCH {
         // Skip if vout has no addresses field.
         if (thisVout.scriptPubKey.addresses) {
           const addresses = thisVout.scriptPubKey.addresses
-          console.log(`addresses: ${JSON.stringify(addresses, null, 2)}`)
+          // console.log(`addresses: ${JSON.stringify(addresses, null, 2)}`)
 
           // Note: Assuming addresses[] only has 1 element.
           // Not sure how there can be multiple addresses if the value is not an array.
           let address = addresses[0] // Legacy address
-          wlogger.debug('address: ', address)
+          // wlogger.debug('address: ', address)
           address = this.bchjs.Address.toCashAddress(address)
 
           // if (address === addr) return this.tlUtils.round8(value / SATS_PER_BCH)
@@ -186,7 +186,7 @@ class BCH {
       const addrDetails = await this.getBCHBalance(config.BCH_ADDR, false)
       // wlogger.debug(`addrDetails: ${JSON.stringify(addrDetails, null, 2)}`)
 
-      const balance = addrDetails.balance
+      const balance = addrDetails
       wlogger.verbose(
         `Balance of sending address ${config.BCH_ADDR} is ${balance} BCH.`
       )
@@ -201,14 +201,16 @@ class BCH {
       wlogger.debug(`Sender Legacy Address: ${SEND_ADDR_LEGACY}`)
       wlogger.debug(`Receiver Legacy Address: ${RECV_ADDR_LEGACY}`)
 
-      const utxos = await this.bchjs.Blockbook.utxo(config.BCH_ADDR)
+      // const utxos = await this.bchjs.Blockbook.utxo(config.BCH_ADDR)
+      const fulcrumResult = await this.bchjs.Electrumx.utxo(config.BCH_ADDR)
+      const utxos = fulcrumResult.utxos
       // console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
 
       const utxo = await this.findBiggestUtxo(utxos)
-      wlogger.debug('selected utxo', utxo)
+      wlogger.debug('selected utxo: ', utxo)
 
       // Ensure compatiblity between indexers.
-      utxo.value = utxo.amount
+      // utxo.value = utxo.amount
 
       // instance of transaction builder
       let transactionBuilder
@@ -219,9 +221,9 @@ class BCH {
       }
 
       // const satoshisToSend = 1000;
-      const originalAmount = utxo.satoshis
-      const vout = utxo.vout
-      const txid = utxo.txid
+      const originalAmount = utxo.value
+      const vout = utxo.tx_pos
+      const txid = utxo.tx_hash
 
       // add input with txid and index of vout
       transactionBuilder.addInput(txid, vout)

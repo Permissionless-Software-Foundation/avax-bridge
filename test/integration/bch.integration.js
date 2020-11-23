@@ -28,7 +28,23 @@ describe('#bch.js', () => {
       const txid = 'e2f2467b0cbbb9eae2fd409342e2657ba1ab58d3ac2d256522596adb946cd958'
 
       const result = await bch.recievedBch(txid, addr)
-      console.log(`result: ${JSON.stringify(result, null, 2)}`)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.isNumber(result)
+    })
+  })
+
+  describe('#createBchTx', () => {
+    it('should generate tx hex', async () => {
+      const obj = {
+        recvAddr: 'bitcoincash:qzdq6jzvyzhyuj639l72rmqfzu3vd7eux5nhdzndwm',
+        satoshisToSend: 1000
+      }
+
+      const result = await bch.createBchTx(obj)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.isString(result)
     })
   })
 })

@@ -166,9 +166,9 @@ describe('#bch', () => {
       if (process.env.TEST_ENV === 'unit') {
         sandbox.stub(bch.tlUtils, 'openWallet').returns(mockWallet)
 
-        sandbox.stub(bch, 'getBCHBalance').resolves(bchMockData.balance)
+        sandbox.stub(bch, 'getBCHBalance').resolves(100095602)
 
-        sandbox.stub(bch.bchjs.Blockbook, 'utxo').resolves(bchMockData.utxos)
+        sandbox.stub(bch.bchjs.Electrumx, 'utxo').resolves(bchMockData.fulcrumUtxos)
 
         sandbox.stub(bch, 'findBiggestUtxo').resolves(bchMockData.utxos[1])
       }
