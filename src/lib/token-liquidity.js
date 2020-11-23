@@ -328,8 +328,10 @@ class TokenLiquidity {
 
       return result
     } catch (error) {
-      console.log('Error in token-liquidity.js/pRetryProcessTx(): ', error)
-      return error
+      console.log('Error in token-liquidity.js/pRetryProcessTx()')
+      wlogger.error('Error in token-liquidity.js/pRetryProcessTx()', error)
+      // return error
+      throw error
       // console.log(error)
     }
   }

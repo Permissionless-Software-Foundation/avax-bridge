@@ -228,7 +228,8 @@ describe('#token-liquidity', () => {
       try {
         await lib.pRetryProcessTx()
       } catch (error) {
-        assert.include(error.message, 'Error in "pRetryProcessTx" functions')
+        // console.log('Error: ', error)
+        assert.include(error.message, 'obj is undefined')
       }
     })
 
