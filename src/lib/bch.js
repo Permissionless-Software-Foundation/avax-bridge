@@ -493,34 +493,34 @@ class BCH {
   }
 
   // Retrieve the most recent transactions for an address from Electrumx.
-  // async getTransactions (addr) {
-  //   try {
-  //     // Get transaction history for the address.
-  //     const transactions = await this.bchjs.Electrumx.transactions(addr)
-  //     if (!transactions.success) {
-  //       throw new Error(`No transaction history could be found for ${addr}`)
-  //     }
-  //
-  //     // Sort the transactions in descending order (newest first).
-  //     const txsArr = this.sortTxsByHeight(
-  //       transactions.transactions,
-  //       'DESCENDING'
-  //     )
-  //
-  //     return txsArr
-  //   } catch (err) {
-  //     wlogger.error('Error in bch.js/getTransactions(): ', err)
-  //     throw err
-  //   }
-  // }
-  //
-  // // Sort the Transactions by the block height
-  // sortTxsByHeight (txs, sortingOrder = 'ASCENDING') {
-  //   if (sortingOrder === 'ASCENDING') {
-  //     return txs.sort((a, b) => a.height - b.height)
-  //   }
-  //   return txs.sort((a, b) => b.height - a.height)
-  // }
+  async getTransactions (addr) {
+    try {
+      // Get transaction history for the address.
+      const transactions = await this.bchjs.Electrumx.transactions(addr)
+      if (!transactions.success) {
+        throw new Error(`No transaction history could be found for ${addr}`)
+      }
+
+      // Sort the transactions in descending order (newest first).
+      const txsArr = this.sortTxsByHeight(
+        transactions.transactions,
+        'DESCENDING'
+      )
+
+      return txsArr
+    } catch (err) {
+      wlogger.error('Error in bch.js/getTransactions(): ', err)
+      throw err
+    }
+  }
+
+  // Sort the Transactions by the block height
+  sortTxsByHeight (txs, sortingOrder = 'ASCENDING') {
+    if (sortingOrder === 'ASCENDING') {
+      return txs.sort((a, b) => a.height - b.height)
+    }
+    return txs.sort((a, b) => b.height - a.height)
+  }
 }
 
 module.exports = BCH

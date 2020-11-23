@@ -251,4 +251,65 @@ describe('#bch', () => {
       // assert.equal(opReturnData.qty, 10)
     })
   })
+
+  describe('#sortTxsByHeight', () => {
+    it('should sort the transactions', async () => {
+      try {
+        const transactions = bchMockData.transactions
+        const result = await bch.sortTxsByHeight(transactions)
+        assert.isArray(result)
+        assert.equal(result.length, transactions.length)
+      } catch (err) {
+        // console.log(err)
+        assert.equal(true, false, 'Unexpected result!')
+      }
+    })
+
+    it('should sort the transactions in descending order', async () => {
+      try {
+        const transactions = bchMockData.transactions
+        const result = await bch.sortTxsByHeight(transactions, 'DESCENDING')
+        assert.isArray(result)
+        assert.equal(result.length, transactions.length)
+      } catch (err) {
+        // console.log(err)
+        assert.equal(true, false, 'Unexpected result!')
+      }
+    })
+  })
+
+  describe('#getTransactions', () => {
+    it('should get transaction details for an address', async () => {
+      // Mock live network calls.
+      sandbox
+        .stub(bch.bchjs.Electrumx, 'transactions')
+        .resolves(bchMockData.mockTxHistory)
+
+      const bchAddr = 'bitcoincash:qqacnkvctp4pg8f60gklz6gpx4xwx3587sh60ejs2j'
+      const result = await bch.getTransactions(bchAddr)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.isArray(result)
+      assert.property(result[0], 'tx_hash')
+      assert.property(result[0], 'height')
+    })
+
+    it('should handle and throw errors', async () => {
+      try {
+        // Force an error
+        bchMockData.mockTxHistory.success = false
+        sandbox
+          .stub(bch.bchjs.Electrumx, 'transactions')
+          .resolves(bchMockData.mockTxHistory)
+
+        const bchAddr = 'bitcoincash:qqacnkvctp4pg8f60gklz6gpx4xwx3587sh60ejs2j'
+        await bch.getTransactions(bchAddr)
+
+        assert.fail('Unexpected result')
+      } catch (err) {
+        // console.log(err)
+        assert.include(err.message, 'No transaction history could be found')
+      }
+    })
+  })
 })
