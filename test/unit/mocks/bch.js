@@ -18,6 +18,14 @@ const balance = {
   txids: ['9ee0226fe0162f3361fc9c549520157297daf902d986840d19bd3f90e6ae4698']
 }
 
+const fulcrumBalance = {
+  success: true,
+  balance: {
+    confirmed: 160000,
+    unconfirmed: 0
+  }
+}
+
 const utxos = [
   {
     txid: '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
@@ -226,6 +234,7 @@ const noOpReturnTx = {
 
 const bchMockData = {
   balance,
+  fulcrumBalance,
   utxos,
   txDetails,
   getTxOutValid,

@@ -54,8 +54,8 @@ describe('#bch', () => {
       // If unit test, use the mocking library instead of live calls.
       if (process.env.TEST_ENV === 'unit') {
         sandbox
-          .stub(bch.bchjs.Blockbook, 'balance')
-          .resolves(bchMockData.balance)
+          .stub(bch.bchjs.Electrumx, 'balance')
+          .resolves(bchMockData.fulcrumBalance)
       }
 
       const addr = 'bchtest:qq22ys5qz8z4jzkkex7p5jrdd9vh6q06cgrpsx2fu7'
@@ -64,8 +64,9 @@ describe('#bch', () => {
       const bchBalance = await bch.getBCHBalance(addr, verbose)
       // console.log(`bchBalance: ${util.inspect(bchBalance)}`)
 
-      assert.hasAnyKeys(bchBalance, ['balance', 'txids'])
-      assert.isArray(bchBalance.txids)
+      // assert.hasAnyKeys(bchBalance, ['balance', 'txids'])
+      // assert.isArray(bchBalance.txids)
+      assert.isNumber(bchBalance)
     })
   })
 

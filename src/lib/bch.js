@@ -45,21 +45,24 @@ class BCH {
   async getBCHBalance (addr, verbose) {
     try {
       // const result = await this.bchjs.Address.details(addr)
-      const result = await this.bchjs.Blockbook.balance(addr)
+      // const result = await this.bchjs.Blockbook.balance(addr)
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
       // Convert balance to BCH
-      result.balance = this.bchjs.BitcoinCash.toBitcoinCash(
-        Number(result.balance)
-      )
+      // result.balance = this.bchjs.BitcoinCash.toBitcoinCash(
+      //   Number(result.balance)
+      // )
+
+      const fulcrumBalance = await this.bchjs.Electrumx.balance(addr)
+      const confirmedBalance = fulcrumBalance.balance.confirmed
 
       if (verbose) {
-        const resultToDisplay = result
+        const resultToDisplay = confirmedBalance
         resultToDisplay.txids = []
         console.log(resultToDisplay)
       }
 
-      const bchBalance = result
+      const bchBalance = confirmedBalance
 
       return bchBalance
     } catch (err) {
@@ -488,6 +491,36 @@ class BCH {
       return retObj
     }
   }
+
+  // Retrieve the most recent transactions for an address from Electrumx.
+  // async getTransactions (addr) {
+  //   try {
+  //     // Get transaction history for the address.
+  //     const transactions = await this.bchjs.Electrumx.transactions(addr)
+  //     if (!transactions.success) {
+  //       throw new Error(`No transaction history could be found for ${addr}`)
+  //     }
+  //
+  //     // Sort the transactions in descending order (newest first).
+  //     const txsArr = this.sortTxsByHeight(
+  //       transactions.transactions,
+  //       'DESCENDING'
+  //     )
+  //
+  //     return txsArr
+  //   } catch (err) {
+  //     wlogger.error('Error in bch.js/getTransactions(): ', err)
+  //     throw err
+  //   }
+  // }
+  //
+  // // Sort the Transactions by the block height
+  // sortTxsByHeight (txs, sortingOrder = 'ASCENDING') {
+  //   if (sortingOrder === 'ASCENDING') {
+  //     return txs.sort((a, b) => a.height - b.height)
+  //   }
+  //   return txs.sort((a, b) => b.height - a.height)
+  // }
 }
 
 module.exports = BCH
