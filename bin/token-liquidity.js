@@ -118,7 +118,8 @@ async function startTokenLiquidity () {
 
   // Interval to consolidate UTXOs (maintenance)
   setInterval(async function () {
-    await bch.consolidateUtxos()
+    const hex = await bch.consolidateUtxos()
+    await bch.broadcastBchTx(hex)
   }, CONSOLIDATE_INTERVAL)
 
   // Interval to update BCH spot price.

@@ -47,4 +47,11 @@ describe('#bch.js', () => {
       assert.isString(result)
     })
   })
+
+  describe('#consolidateUtxos', () => {
+    it('should generate a tx hex', async () => {
+      const result = await bch.consolidateUtxos()
+      console.log(`result: ${JSON.stringify(result, null, 2)}`)
+    })
+  })
 })

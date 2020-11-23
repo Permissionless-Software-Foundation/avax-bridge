@@ -347,7 +347,9 @@ class BCH {
       const appAddr = config.BCH_ADDR
 
       // get the UTXO associated with the app address.
-      const utxos = await this.bchjs.Blockbook.utxo(appAddr)
+      // const utxos = await this.bchjs.Blockbook.utxo(appAddr)
+      const fulcrumResult = await this.bchjs.Electrumx.utxo(appAddr)
+      const utxos = fulcrumResult.utxos
 
       // If the number of UTXOs are less than the minimum, exit this function.
       if (utxos.length < minUtxos) {
@@ -396,8 +398,8 @@ class BCH {
       let satoshisAmount = 0
       for (let i = 0; i < utxos.length; i++) {
         const utxo = utxos[i]
-        satoshisAmount = satoshisAmount + utxo.satoshis
-        transactionBuilder.addInput(utxo.txid, utxo.vout)
+        satoshisAmount = satoshisAmount + utxo.value
+        transactionBuilder.addInput(utxo.tx_hash, utxo.tx_pos)
       }
 
       if (satoshisAmount < 1) {
@@ -432,7 +434,7 @@ class BCH {
           keyPair,
           redeemScript,
           transactionBuilder.hashTypes.SIGHASH_ALL,
-          utxo.satoshis
+          utxo.value
         )
       }
 
@@ -442,9 +444,11 @@ class BCH {
       // output rawhex
       const hex = tx.toHex()
 
+      return hex
+
       // Broadcast trasaction
-      const broadcast = await this.broadcastBchTx(hex)
-      return broadcast
+      // const broadcast = await this.broadcastBchTx(hex)
+      // return broadcast
     } catch (error) {
       wlogger.error('Error in bch.js/consolidateUtxos()')
       throw error
