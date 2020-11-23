@@ -155,7 +155,7 @@ async function processingLoop (seenTxs) {
     }
 
     const newTxids = await lib.detectNewTxs(obj)
-    console.log(`newTxids: ${JSON.stringify(newTxids, null, 2)}`)
+    // console.log(`newTxids: ${JSON.stringify(newTxids, null, 2)}`)
 
     // If there are no new transactions, exit.
     if (newTxids.length === 0) {
