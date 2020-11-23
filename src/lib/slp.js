@@ -131,7 +131,7 @@ class SLP {
   // path should equal 145 for transfering tokens from 145 to 245 address.
   async createTokenTx (addr, qty, path) {
     try {
-      console.log(`path: ${path}`)
+      // console.log(`path: ${path}`)
       if (path !== 145 && path !== 245) {
         throw new Error('path must have a value of 145 or 245')
       }
@@ -278,6 +278,8 @@ class SLP {
 
       // BEGIN transaction construction.
 
+      // console.log(`config.NETWORK: ${config.NETWORK}`)
+
       // instance of transaction builder
       let transactionBuilder
       if (config.NETWORK === 'mainnet') {
@@ -285,8 +287,8 @@ class SLP {
       } else transactionBuilder = new this.bchjs.TransactionBuilder('testnet')
 
       // Add the BCH UTXO as input to pay for the transaction.
-      const originalAmount = bchUtxo.satoshis
-      transactionBuilder.addInput(bchUtxo.txid, bchUtxo.vout)
+      const originalAmount = bchUtxo.value
+      transactionBuilder.addInput(bchUtxo.tx_hash, bchUtxo.tx_pos)
 
       // add each token UTXO as an input.
       for (let i = 0; i < tokenUtxos.length; i++) {

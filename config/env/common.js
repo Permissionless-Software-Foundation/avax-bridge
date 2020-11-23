@@ -41,7 +41,6 @@ if (NETWORK === 'mainnet') {
   }
 }
 
-configOut.port = process.env.PORT || 5001
 configOut.logPass = 'test'
 
 // Email
