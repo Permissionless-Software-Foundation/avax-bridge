@@ -331,8 +331,8 @@ class SLP {
         546
       )
 
-      // Return any token change back to the sender.
-      if (outputs > 546) {
+      // Return token change back to the token-liquidity app.
+      if (outputs > 1) {
         transactionBuilder.addOutput(
           this.bchjs.SLP.Address.toLegacyAddress(slpAddress),
           546
