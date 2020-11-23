@@ -54,12 +54,13 @@ class BCH {
       // )
 
       const fulcrumBalance = await this.bchjs.Electrumx.balance(addr)
+      console.log(`fulcrumBalance: ${JSON.stringify(fulcrumBalance, null, 2)}`)
       const confirmedBalance = fulcrumBalance.balance.confirmed
 
       if (verbose) {
-        const resultToDisplay = confirmedBalance
-        resultToDisplay.txids = []
-        console.log(resultToDisplay)
+        // const resultToDisplay = confirmedBalance
+        // resultToDisplay.txids = []
+        // console.log(resultToDisplay)
       }
 
       const bchBalance = confirmedBalance
@@ -520,6 +521,16 @@ class BCH {
       return txs.sort((a, b) => a.height - b.height)
     }
     return txs.sort((a, b) => b.height - a.height)
+  }
+
+  // Extracts just the txids from the array passed back from getTransactions().
+  justTxs (txsArr) {
+    try {
+      return txsArr.map(elem => elem.tx_hash)
+    } catch (err) {
+      wlogger.error('Error in bch.js/justTxs(): ', err)
+      throw err
+    }
   }
 }
 

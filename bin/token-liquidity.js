@@ -78,8 +78,8 @@ async function startTokenLiquidity () {
   slp = new SLP() // Reinitialize bchjs with the JWT token.
 
   // Get BCH balance.
-  const addressInfo = await bch.getBCHBalance(config.BCH_ADDR, false)
-  bchBalance = addressInfo.balance
+  const addressBalance = await bch.getBCHBalance(config.BCH_ADDR, false)
+  bchBalance = addressBalance
   config.bchBalance = bchBalance
   wlogger.info(
     `BCH address ${config.BCH_ADDR} has a balance of ${bchBalance} BCH`
@@ -89,7 +89,9 @@ async function startTokenLiquidity () {
 
   // Get all the TXIDs associated with this apps address. The app assumes all
   // these TXs have been processed.
-  const seenTxs = addressInfo.txids
+  // const seenTxs = addressInfo.txids
+  const historicalTxs = await bch.getTransactions(config.BCH_ADDR)
+  const seenTxs = bch.justTxs(historicalTxs)
   // console.log(`seenTxs: ${JSON.stringify(seenTxs, null, 2)}`)
 
   // Get SLP token balance
