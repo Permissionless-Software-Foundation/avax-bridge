@@ -32,26 +32,26 @@ class Transactions {
 
   // DEPRECATED - This function is being deprecated in favor of getUserAddr2()
   // Queries the transaction details and returns the senders BCH address.
-  async getUserAddr (txid) {
-    try {
-      wlogger.debug(`Entering getUserAddr(). txid: ${txid}`)
-
-      // const txDetails = await this.BITBOX.Transaction.details(txid)
-      const txDetails = await this.bchjs.Blockbook.tx(txid)
-      // console.log(`txDetails: ${JSON.stringify(txDetails, null, 2)}`)
-
-      // Assumption: There is only 1 vin element, or the senders address exists in
-      // the first vin element.
-      const vin = txDetails.vin[0]
-      // console.log(`vin: ${JSON.stringify(vin, null, 2)}`)
-      const senderAddr = vin.addresses[0]
-
-      return senderAddr
-    } catch (err) {
-      wlogger.debug('Error in transactions.js/getUserAddr().')
-      throw err
-    }
-  }
+  // async getUserAddr (txid) {
+  //   try {
+  //     wlogger.debug(`Entering getUserAddr(). txid: ${txid}`)
+  //
+  //     // const txDetails = await this.BITBOX.Transaction.details(txid)
+  //     const txDetails = await this.bchjs.Blockbook.tx(txid)
+  //     // console.log(`txDetails: ${JSON.stringify(txDetails, null, 2)}`)
+  //
+  //     // Assumption: There is only 1 vin element, or the senders address exists in
+  //     // the first vin element.
+  //     const vin = txDetails.vin[0]
+  //     // console.log(`vin: ${JSON.stringify(vin, null, 2)}`)
+  //     const senderAddr = vin.addresses[0]
+  //
+  //     return senderAddr
+  //   } catch (err) {
+  //     wlogger.debug('Error in transactions.js/getUserAddr().')
+  //     throw err
+  //   }
+  // }
 
   // Queries the transaction details and returns the senders BCH address.
   // This method uses calls directly to the full node, rather than using
@@ -62,6 +62,7 @@ class Transactions {
       const txDetails = await this.bchjs.RawTransactions.getRawTransaction(txid, true)
       // console.log(`txDetails: ${JSON.stringify(txDetails, null, 2)}`)
 
+      // The first input represents the sender of the BCH or tokens.
       const vin = txDetails.vin[0]
       const inputTxid = vin.txid
       const inputVout = vin.vout
@@ -71,8 +72,10 @@ class Transactions {
       const txDetails2 = await this.bchjs.RawTransactions.getRawTransaction(inputTxid, true)
       // console.log(`txDetails2: ${JSON.stringify(txDetails2, null, 2)}`)
 
+      // The vout from the previous tx that represents the sender.
       const voutSender = txDetails2.vout[inputVout]
 
+      // Extract the senders address.
       const addr = voutSender.scriptPubKey.addresses[0]
 
       return addr

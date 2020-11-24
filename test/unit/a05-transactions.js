@@ -10,11 +10,13 @@
 const assert = require('chai').assert
 const sinon = require('sinon')
 const nock = require('nock')
+const cloneDeep = require('lodash.clonedeep')
 
 const Transactions = require('../../src/lib/transactions')
 
 // const bitboxMock = require('bitbox-mock')
-const txMockData = require('./mocks/transactions')
+const txMockDataLib = require('./mocks/transactions.mock')
+let mockData
 
 // Used for debugging.
 const util = require('util')
@@ -28,12 +30,13 @@ if (!process.env.TEST_ENV) process.env.TEST_ENV = 'unit'
 
 describe('#transactions', () => {
   let sandbox
-  let txs
+  let uut
 
   before(() => {})
 
   beforeEach(() => {
-    txs = new Transactions()
+    uut = new Transactions()
+    mockData = cloneDeep(txMockDataLib)
 
     // mockedWallet = Object.assign({}, testwallet) // Clone the testwallet
     sandbox = sinon.createSandbox()
@@ -55,7 +58,7 @@ describe('#transactions', () => {
       try {
         const txids = 'bad-data'
 
-        await txs.getTxConfirmations(txids)
+        await uut.getTxConfirmations(txids)
 
         assert.equal(true, false, 'Unexpected result')
       } catch (err) {
@@ -66,7 +69,7 @@ describe('#transactions', () => {
     it('should get confirmation information about a tx', async () => {
       // If unit test, use the mocking library instead of live calls.
       if (process.env.TEST_ENV === 'unit') {
-        sandbox.stub(txs.BITBOX.RawTransactions, 'getRawTransaction').resolves([
+        sandbox.stub(uut.bchjs.RawTransactions, 'getRawTransaction').resolves([
           {
             txid:
               '83147001c579d0c3f3150fc733c43af602e44fa157de9bbd74aa0d47062e55f5',
@@ -79,7 +82,7 @@ describe('#transactions', () => {
         '83147001c579d0c3f3150fc733c43af602e44fa157de9bbd74aa0d47062e55f5'
       ]
 
-      const result = await txs.getTxConfirmations(txids)
+      const result = await uut.getTxConfirmations(txids)
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
       assert.isArray(result)
@@ -87,48 +90,81 @@ describe('#transactions', () => {
     })
   })
 
-  describe('getUserAddr', () => {
-    it('should should throw an error for an invalid transaction', async () => {
-      try {
-        // If unit test, use the mocking library instead of live calls.
-        if (process.env.TEST_ENV === 'unit') {
-          sandbox.stub(txs.BITBOX.Blockbook, 'tx').throws({
-            error: 'txid must be of length 64 (not 59)'
-          })
-        }
+  // describe('getUserAddr', () => {
+  //   it('should should throw an error for an invalid transaction', async () => {
+  //     try {
+  //       // If unit test, use the mocking library instead of live calls.
+  //       if (process.env.TEST_ENV === 'unit') {
+  //         sandbox.stub(uut.bchjs.Blockbook, 'tx').throws({
+  //           error: 'txid must be of length 64 (not 59)'
+  //         })
+  //       }
+  //
+  //       const txid =
+  //         'cf1b5d374e171876a625599a489a2a6cdda119fb84b6cff2a226c39e189'
+  //
+  //       await uut.getUserAddr(txid)
+  //       // console.log(`result: ${util.inspect(result)}`)
+  //
+  //       assert(true, false, 'Unexpected result')
+  //     } catch (err) {
+  //       // console.log(`err: `, err)
+  //
+  //       assert.hasAllKeys(err, ['error'])
+  //       assert.isString(err.error)
+  //     }
+  //   })
+  //
+  //   it('should return senders cash address', async () => {
+  //     // If unit test, use the mocking library instead of live calls.
+  //     if (process.env.TEST_ENV === 'unit') {
+  //       sandbox
+  //         .stub(uut.bchjs.Blockbook, 'tx')
+  //         .resolves(mockData.mockTransactions)
+  //     }
+  //
+  //     const txid =
+  //       'af30cc46356378cb5f139fb9da301d3b06a50416eb5030e3d397d6c3c027a26d'
+  //
+  //     const senderAddr = await uut.getUserAddr(txid)
+  //     // console.log(`senderAddr: ${util.inspect(senderAddr)}`)
+  //
+  //     assert.isString(senderAddr)
+  //     assert.equal(
+  //       senderAddr,
+  //       'bchtest:qpyrwjq5c8euxyuwyqqdt40qf00dkfw02q6aqhm2wt'
+  //     )
+  //   })
+  // })
 
-        const txid = 'cf1b5d374e171876a625599a489a2a6cdda119fb84b6cff2a226c39e189'
+  describe('#getUserAddr2', () => {
+    it('should get the sender of a transaction', async () => {
+      sandbox
+        .stub(uut.bchjs.RawTransactions, 'getRawTransaction')
+        .onCall(0)
+        .resolves(mockData.mockTxSender)
+        .onCall(1)
+        .resolves(mockData.mockPreTx)
 
-        await txs.getUserAddr(txid)
-        // console.log(`result: ${util.inspect(result)}`)
+      const txid = '51c0f12f2e7f40daa97c2441e904cd9f218fbe6a96c625c56368596fff1abe7d'
 
-        assert(true, false, 'Unexpected result')
-      } catch (err) {
-        // console.log(`err: `, err)
-
-        assert.hasAllKeys(err, ['error'])
-        assert.isString(err.error)
-      }
+      const result = await uut.getUserAddr2(txid)
+      console.log(`result: ${JSON.stringify(result, null, 2)}`)
     })
 
-    it('should return senders cash address', async () => {
-      // If unit test, use the mocking library instead of live calls.
-      if (process.env.TEST_ENV === 'unit') {
-        sandbox
-          .stub(txs.BITBOX.Blockbook, 'tx')
-          .resolves(txMockData.mockTransactions)
+    it('should catch and throw an error', async () => {
+      try {
+        // Force an error
+        sandbox.stub(uut.bchjs.RawTransactions, 'getRawTransaction').rejects(new Error('test error'))
+
+        const txid = '51c0f12f2e7f40daa97c2441e904cd9f218fbe6a96c625c56368596fff1abe7d'
+
+        await uut.getUserAddr2(txid)
+
+        assert.fail('Unexpected result')
+      } catch (err) {
+        assert.include(err.message, 'test error')
       }
-
-      const txid = 'af30cc46356378cb5f139fb9da301d3b06a50416eb5030e3d397d6c3c027a26d'
-
-      const senderAddr = await txs.getUserAddr(txid)
-      // console.log(`senderAddr: ${util.inspect(senderAddr)}`)
-
-      assert.isString(senderAddr)
-      assert.equal(
-        senderAddr,
-        'bchtest:qpyrwjq5c8euxyuwyqqdt40qf00dkfw02q6aqhm2wt'
-      )
     })
   })
 })
