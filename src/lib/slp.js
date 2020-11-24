@@ -23,15 +23,12 @@ const BCH = require('./bch')
 // Winston logger
 const wlogger = require('./wlogger')
 
-// Mainnet by default
-// let bchjs = new config.BCHLIB({ restURL: config.MAINNET_REST })
-
 let _this
 
 class SLP {
   constructor (config) {
     this.config = config
-    console.log('SLP config: ', this.config)
+    // console.log('SLP config: ', this.config)
 
     // Determine if this is a testnet wallet or a mainnet wallet.
     if (this.config.NETWORK === 'testnet') {
@@ -384,8 +381,9 @@ class SLP {
     } catch (err) {
       wlogger.error(`Error in createTokenTx: ${err.message}`, err)
 
-      if (err.message) throw new Error(err.message)
-      else throw new Error('Error in createTokenTx()')
+      // if (err.message) throw new Error(err.message)
+      // else throw new Error('Error in createTokenTx()')
+      throw err
     }
   }
 
@@ -614,12 +612,15 @@ class SLP {
 
       return hex
     } catch (err) {
+      // console.error(err)
       wlogger.error(`Error in burnTokenTx: ${err.message}`, err)
-      if (err.message) throw new Error(err.message)
-      else {
-        console.log('Error in slp.js/burnTokenTx: ', err)
-        throw new Error('Error in burnTokenTx')
-      }
+      // if (err.message) throw new Error(err.message)
+      // else {
+      //   console.log('Error in slp.js/burnTokenTx: ', err)
+      //   throw new Error('Error in burnTokenTx')
+      // }
+
+      throw err
     }
   }
 
