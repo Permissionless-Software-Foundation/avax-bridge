@@ -81,6 +81,7 @@ class TokenLiquidity {
       // console.log(`addrInfo: ${JSON.stringify(addrInfo, null, 2)}`)
 
       const historicalTxs = await bch.getTransactions(config.BCH_ADDR)
+      // console.log(`historicalTxs: ${JSON.stringify(historicalTxs, null, 2)}`)
       const txids = bch.justTxs(historicalTxs)
       // console.log(`txids: ${JSON.stringify(txids, null, 2)}`)
 
