@@ -4,8 +4,9 @@
 
 'use strict'
 
-// const lib = require('../src/lib/token-util.js')
-// const got = require('got')
+const config = require('../config')
+config.bchBalance = config.BCH_QTY_ORIGINAL
+config.tokenBalance = config.TOKENS_QTY_ORIGINAL
 
 // Instantiate the JWT handling library for FullStack.cash.
 const JwtLib = require('jwt-bch-lib')
@@ -17,7 +18,7 @@ const jwtLib = new JwtLib({
 })
 
 const SLP = require('../src/lib/slp')
-let slp = new SLP()
+let slp = new SLP(config)
 
 const BCH = require('../src/lib/bch')
 let bch = new BCH()
@@ -37,10 +38,6 @@ const lib = new TokenLiquidity()
 
 // Add the queue to the token-liquidity library
 lib.queue = queue
-
-const config = require('../config')
-config.bchBalance = config.BCH_QTY_ORIGINAL
-config.tokenBalance = config.TOKENS_QTY_ORIGINAL
 
 // Winston logger
 const wlogger = require('../src/lib/wlogger')

@@ -29,14 +29,6 @@ if (RESTAPI === 'fullstack.cash') {
   config.RESTAPI = 'fullstack.cash'
 }
 
-// Use BITBOX and the bitcoin.com infrastructure.
-// if (RESTAPI === 'bitcoin.com') {
-//   config.BCHLIB = BITBOX
-//   config.MAINNET_REST = 'https://rest.bitcoin.com/v2/'
-//   config.TESTNET_REST = 'https://trest.bitcoin.com/v2/'
-//   config.RESTAPI = 'bitcoin.com'
-// }
-
 // Use bch-js but use it with the bitcoin.com infrastructure.
 if (RESTAPI === 'rest.bitcoin.com') {
   config.BCHLIB = BCHJS.BitboxShim()

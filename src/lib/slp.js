@@ -11,7 +11,7 @@ util.inspect.defaultOptions = { depth: 5 }
 
 const pRetry = require('p-retry')
 
-const config = require('../../config')
+// const config = require('../../config')
 
 const TLUtils = require('./util')
 const tlUtils = new TLUtils()
@@ -29,9 +29,12 @@ const wlogger = require('./wlogger')
 let _this
 
 class SLP {
-  constructor () {
+  constructor (config) {
+    this.config = config
+    // console.log('SLP config: ', this.config)
+
     // Determine if this is a testnet wallet or a mainnet wallet.
-    if (config.NETWORK === 'testnet') {
+    if (this.config.NETWORK === 'testnet') {
       this.bchjs = new config.BCHLIB({ restURL: config.TESTNET_REST })
     } else {
       this.bchjs = new config.BCHLIB({ restURL: config.MAINNET_REST })
@@ -50,7 +53,7 @@ class SLP {
       // console.log(`addr: ${addr}`)
 
       const result = await this.bchjs.SLP.Utils.balancesForAddress(
-        config.SLP_ADDR
+        this.config.SLP_ADDR
       )
       wlogger.debug('token balance: ', result)
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)
@@ -61,7 +64,7 @@ class SLP {
 
       // Get the token information that matches the token-ID for PSF tokens.
       const tokenInfo = result.find(
-        token => token.tokenId === config.SLP_TOKEN_ID
+        token => token.tokenId === this.config.SLP_TOKEN_ID
       )
       // console.log(`tokenInfo: ${JSON.stringify(tokenInfo, null, 2)}`)
 
@@ -107,7 +110,7 @@ class SLP {
       // console.log(`tokenTxInfo: ${JSON.stringify(result, null, 2)}`)
 
       // Exit if token transfer is not the PSF token.
-      if (result.tokenInfo.tokenIdHex !== config.SLP_TOKEN_ID) {
+      if (result.tokenInfo.tokenIdHex !== this.config.SLP_TOKEN_ID) {
         return false
       }
 
@@ -149,7 +152,7 @@ class SLP {
 
       // master HDNode
       let masterHDNode
-      if (config.NETWORK === 'mainnet') {
+      if (this.config.NETWORK === 'mainnet') {
         masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed)
       } else masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed, 'testnet') // Testnet
 
@@ -222,7 +225,7 @@ class SLP {
 
       // Filter out the token UTXOs that match the user-provided token ID.
       tokenUtxos = tokenUtxos.filter((utxo, index) => {
-        if (utxo && utxo.tokenId === config.SLP_TOKEN_ID && utxo.isValid) {
+        if (utxo && utxo.tokenId === this.config.SLP_TOKEN_ID && utxo.isValid) {
           return true
         }
       })
@@ -284,7 +287,7 @@ class SLP {
 
       // instance of transaction builder
       let transactionBuilder
-      if (config.NETWORK === 'mainnet') {
+      if (this.config.NETWORK === 'mainnet') {
         transactionBuilder = new this.bchjs.TransactionBuilder()
       } else transactionBuilder = new this.bchjs.TransactionBuilder('testnet')
 
@@ -403,7 +406,7 @@ class SLP {
 
       // master HDNode
       let masterHDNode
-      if (config.NETWORK === 'mainnet') {
+      if (this.config.NETWORK === 'mainnet') {
         masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed)
       } else masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed, 'testnet') // Testnet
 
@@ -476,7 +479,7 @@ class SLP {
 
       // Filter out the token UTXOs that match the user-provided token ID.
       tokenUtxos = tokenUtxos.filter((utxo, index) => {
-        if (utxo && utxo.tokenId === config.SLP_TOKEN_ID && utxo.isValid) {
+        if (utxo && utxo.tokenId === this.config.SLP_TOKEN_ID && utxo.isValid) {
           return true
         }
       })
@@ -524,7 +527,7 @@ class SLP {
 
       // instance of transaction builder
       let transactionBuilder
-      if (config.NETWORK === 'mainnet') {
+      if (this.config.NETWORK === 'mainnet') {
         transactionBuilder = new this.bchjs.TransactionBuilder()
       } else transactionBuilder = new this.bchjs.TransactionBuilder('testnet')
 
@@ -567,13 +570,13 @@ class SLP {
 
       // Send dust transaction representing tokens being sent.
       transactionBuilder.addOutput(
-        this.bchjs.SLP.Address.toLegacyAddress(config.SLP_ADDR),
+        this.bchjs.SLP.Address.toLegacyAddress(this.config.SLP_ADDR),
         546
       )
 
       // Last output: send the BCH change back to the wallet.
       transactionBuilder.addOutput(
-        this.bchjs.Address.toLegacyAddress(config.BCH_ADDR),
+        this.bchjs.Address.toLegacyAddress(this.config.BCH_ADDR),
         remainder
       )
 
@@ -654,7 +657,7 @@ class SLP {
           // Send the user's tokens to the apps token address on the 245
           // derivation path.
           const tokenConfig = await _this.createTokenTx(
-            config.SLP_ADDR,
+            this.config.SLP_ADDR,
             obj.tokenQty,
             145
           )

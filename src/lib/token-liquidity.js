@@ -20,7 +20,7 @@ const bch = new BCH()
 
 // SLP Token library
 const SLP = require('./slp')
-const slp = new SLP()
+const slp = new SLP(config)
 
 // Transactions library
 const Transactions = require('./transactions')
