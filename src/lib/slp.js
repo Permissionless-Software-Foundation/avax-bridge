@@ -31,7 +31,7 @@ let _this
 class SLP {
   constructor (config) {
     this.config = config
-    // console.log('SLP config: ', this.config)
+    console.log('SLP config: ', this.config)
 
     // Determine if this is a testnet wallet or a mainnet wallet.
     if (this.config.NETWORK === 'testnet') {

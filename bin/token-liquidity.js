@@ -72,7 +72,7 @@ async function startTokenLiquidity () {
   // Get the JWT token needed to interact with the FullStack.cash API.
   await getJwt()
   bch = new BCH() // Reinitialize bchjs with the JWT token.
-  slp = new SLP() // Reinitialize bchjs with the JWT token.
+  slp = new SLP(config) // Reinitialize bchjs with the JWT token.
 
   // Get BCH balance.
   const addressBalance = await bch.getBCHBalance(config.BCH_ADDR, false)
