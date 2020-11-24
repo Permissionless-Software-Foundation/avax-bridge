@@ -31,6 +31,10 @@ class Transactions {
   }
 
   // Queries the transaction details and returns the senders BCH address.
+  // TODO: Blockbook returns the senders address in the vin[] array. Electrumx
+  // and the Full Node do not. I need to create a utility function that walks
+  // the tx history to get the address of the sender, using just data from
+  // the full node.
   async getUserAddr (txid) {
     try {
       wlogger.debug(`Entering getUserAddr(). txid: ${txid}`)

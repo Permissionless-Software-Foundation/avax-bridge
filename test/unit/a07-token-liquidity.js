@@ -211,7 +211,7 @@ describe('#token-liquidity', () => {
 
       // If unit test, use the mocking library instead of live calls.
       if (process.env.TEST_ENV === 'unit') {
-        sandbox.stub(lib.bch, 'getBCHBalance').resolves(libMockData.addrInfo)
+        sandbox.stub(lib.bch, 'getTransactions').resolves(libMockData.mockGetTxs)
       }
       sandbox.stub(lib.txs, 'getTxConfirmations').resolves(libMockData.confs)
 
@@ -228,7 +228,8 @@ describe('#token-liquidity', () => {
       try {
         await lib.pRetryProcessTx()
       } catch (error) {
-        assert.include(error.message, 'Error in "pRetryProcessTx" functions')
+        // console.log('Error: ', error)
+        assert.include(error.message, 'obj is undefined')
       }
     })
 

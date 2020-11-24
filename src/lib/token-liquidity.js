@@ -77,9 +77,15 @@ class TokenLiquidity {
       const { seenTxs } = obj
 
       // Get the current list of transactions for the apps address.
-      const addrInfo = await this.bch.getBCHBalance(config.BCH_ADDR, false)
+      // const addrInfo = await this.bch.getBCHBalance(config.BCH_ADDR, false)
       // console.log(`addrInfo: ${JSON.stringify(addrInfo, null, 2)}`)
-      const curTxs = collect(addrInfo.txids)
+
+      const historicalTxs = await bch.getTransactions(config.BCH_ADDR)
+      // console.log(`historicalTxs: ${JSON.stringify(historicalTxs, null, 2)}`)
+      const txids = bch.justTxs(historicalTxs)
+      // console.log(`txids: ${JSON.stringify(txids, null, 2)}`)
+
+      const curTxs = collect(txids)
       // console.log(`curTxs: ${JSON.stringify(curTxs, null, 2)}`)
 
       // Diff the transactions against the list of processed txs.
@@ -328,8 +334,10 @@ class TokenLiquidity {
 
       return result
     } catch (error) {
-      console.log('Error in token-liquidity.js/pRetryProcessTx(): ', error)
-      return error
+      console.log('Error in token-liquidity.js/pRetryProcessTx()')
+      wlogger.error('Error in token-liquidity.js/pRetryProcessTx()', error)
+      // return error
+      throw error
       // console.log(error)
     }
   }
@@ -502,7 +510,7 @@ class TokenLiquidity {
     try {
       // Get BCH balance from the blockchain
       const addressInfo = await bch.getBCHBalance(config.BCH_ADDR, false)
-      const bchBalance = addressInfo.balance
+      const bchBalance = addressInfo
 
       wlogger.debug(`Blockchain balance: ${bchBalance} BCH`)
 

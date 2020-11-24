@@ -21,7 +21,7 @@ const wlogger = require('./wlogger')
 // Mainnet by default
 const bchjs = new config.BCHLIB({ restURL: config.MAINNET_REST })
 
-const SATS_PER_BCH = 100000000
+// const SATS_PER_BCH = 100000000
 
 let _this
 
@@ -45,21 +45,26 @@ class BCH {
   async getBCHBalance (addr, verbose) {
     try {
       // const result = await this.bchjs.Address.details(addr)
-      const result = await this.bchjs.Blockbook.balance(addr)
+      // const result = await this.bchjs.Blockbook.balance(addr)
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
       // Convert balance to BCH
-      result.balance = this.bchjs.BitcoinCash.toBitcoinCash(
-        Number(result.balance)
-      )
+      // result.balance = this.bchjs.BitcoinCash.toBitcoinCash(
+      //   Number(result.balance)
+      // )
+
+      const fulcrumBalance = await this.bchjs.Electrumx.balance(addr)
+      // console.log(`fulcrumBalance: ${JSON.stringify(fulcrumBalance, null, 2)}`)
+
+      const confirmedBalance = this.bchjs.BitcoinCash.toBitcoinCash(fulcrumBalance.balance.confirmed)
 
       if (verbose) {
-        const resultToDisplay = result
-        resultToDisplay.txids = []
-        console.log(resultToDisplay)
+        // const resultToDisplay = confirmedBalance
+        // resultToDisplay.txids = []
+        console.log(fulcrumBalance)
       }
 
-      const bchBalance = result
+      const bchBalance = confirmedBalance
 
       return bchBalance
     } catch (err) {
@@ -84,11 +89,14 @@ class BCH {
       for (let i = 0; i < utxos.length; i++) {
         const thisUtxo = utxos[i]
 
-        if (thisUtxo.satoshis > largestAmount) {
+        // Ensure the value property is a number and not a string.
+        thisUtxo.value = Number(thisUtxo.value)
+
+        if (thisUtxo.value > largestAmount) {
           // Verify the UTXO is valid. Skip if not.
           const isValid = await this.bchjs.Blockchain.getTxOut(
-            thisUtxo.txid,
-            thisUtxo.vout
+            thisUtxo.tx_hash,
+            thisUtxo.tx_pos
           )
           // console.log(`isValid: ${JSON.stringify(isValid, null, 2)}`)
 
@@ -99,7 +107,7 @@ class BCH {
             continue
           }
 
-          largestAmount = thisUtxo.satoshis
+          largestAmount = thisUtxo.value
           largestIndex = i
         }
       }
@@ -120,7 +128,8 @@ class BCH {
       // console.log(`this.bchjs.restURL: ${this.bchjs.restURL}`)
 
       // const txDetails = await this.bchjs.Transaction.details(txid)
-      const txDetails = await this.bchjs.Blockbook.tx(txid)
+      // const txDetails = await this.bchjs.Blockbook.tx(txid)
+      const txDetails = await this.bchjs.RawTransactions.getRawTransaction(txid, true)
       // console.log(`txDetails: ${JSON.stringify(txDetails, null, 2)}`)
 
       const vout = txDetails.vout
@@ -131,25 +140,27 @@ class BCH {
         const thisVout = vout[i]
         // console.log(`thisVout: ${JSON.stringify(thisVout, null, 2)}`);
         const value = Number(thisVout.value)
+        // console.log(`value: ${value}`)
 
         // Skip if value is zero.
         if (thisVout.value === 0.0) continue
 
         // Skip if address array is empty.
-        if (thisVout.addresses.length === 0) continue
+        if (thisVout.scriptPubKey.addresses.length === 0) continue
 
         // Skip if vout has no addresses field.
-        if (thisVout.addresses) {
-          const addresses = thisVout.addresses
+        if (thisVout.scriptPubKey.addresses) {
+          const addresses = thisVout.scriptPubKey.addresses
           // console.log(`addresses: ${JSON.stringify(addresses, null, 2)}`)
 
           // Note: Assuming addresses[] only has 1 element.
           // Not sure how there can be multiple addresses if the value is not an array.
           let address = addresses[0] // Legacy address
-          wlogger.debug('address: ', address)
+          // wlogger.debug('address: ', address)
           address = this.bchjs.Address.toCashAddress(address)
 
-          if (address === addr) return this.tlUtils.round8(value / SATS_PER_BCH)
+          // if (address === addr) return this.tlUtils.round8(value / SATS_PER_BCH)
+          if (address === addr) return value
         }
       }
 
@@ -175,7 +186,7 @@ class BCH {
       const addrDetails = await this.getBCHBalance(config.BCH_ADDR, false)
       // wlogger.debug(`addrDetails: ${JSON.stringify(addrDetails, null, 2)}`)
 
-      const balance = addrDetails.balance
+      const balance = addrDetails
       wlogger.verbose(
         `Balance of sending address ${config.BCH_ADDR} is ${balance} BCH.`
       )
@@ -190,14 +201,16 @@ class BCH {
       wlogger.debug(`Sender Legacy Address: ${SEND_ADDR_LEGACY}`)
       wlogger.debug(`Receiver Legacy Address: ${RECV_ADDR_LEGACY}`)
 
-      const utxos = await this.bchjs.Blockbook.utxo(config.BCH_ADDR)
+      // const utxos = await this.bchjs.Blockbook.utxo(config.BCH_ADDR)
+      const fulcrumResult = await this.bchjs.Electrumx.utxo(config.BCH_ADDR)
+      const utxos = fulcrumResult.utxos
       // console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
 
       const utxo = await this.findBiggestUtxo(utxos)
-      wlogger.debug('selected utxo', utxo)
+      wlogger.debug('selected utxo: ', utxo)
 
       // Ensure compatiblity between indexers.
-      utxo.value = utxo.amount
+      // utxo.value = utxo.amount
 
       // instance of transaction builder
       let transactionBuilder
@@ -208,9 +221,9 @@ class BCH {
       }
 
       // const satoshisToSend = 1000;
-      const originalAmount = utxo.satoshis
-      const vout = utxo.vout
-      const txid = utxo.txid
+      const originalAmount = utxo.value
+      const vout = utxo.tx_pos
+      const txid = utxo.tx_hash
 
       // add input with txid and index of vout
       transactionBuilder.addInput(txid, vout)
@@ -334,7 +347,9 @@ class BCH {
       const appAddr = config.BCH_ADDR
 
       // get the UTXO associated with the app address.
-      const utxos = await this.bchjs.Blockbook.utxo(appAddr)
+      // const utxos = await this.bchjs.Blockbook.utxo(appAddr)
+      const fulcrumResult = await this.bchjs.Electrumx.utxo(appAddr)
+      const utxos = fulcrumResult.utxos
 
       // If the number of UTXOs are less than the minimum, exit this function.
       if (utxos.length < minUtxos) {
@@ -383,8 +398,8 @@ class BCH {
       let satoshisAmount = 0
       for (let i = 0; i < utxos.length; i++) {
         const utxo = utxos[i]
-        satoshisAmount = satoshisAmount + utxo.satoshis
-        transactionBuilder.addInput(utxo.txid, utxo.vout)
+        satoshisAmount = satoshisAmount + utxo.value
+        transactionBuilder.addInput(utxo.tx_hash, utxo.tx_pos)
       }
 
       if (satoshisAmount < 1) {
@@ -419,7 +434,7 @@ class BCH {
           keyPair,
           redeemScript,
           transactionBuilder.hashTypes.SIGHASH_ALL,
-          utxo.satoshis
+          utxo.value
         )
       }
 
@@ -429,9 +444,11 @@ class BCH {
       // output rawhex
       const hex = tx.toHex()
 
+      return hex
+
       // Broadcast trasaction
-      const broadcast = await this.broadcastBchTx(hex)
-      return broadcast
+      // const broadcast = await this.broadcastBchTx(hex)
+      // return broadcast
     } catch (error) {
       wlogger.error('Error in bch.js/consolidateUtxos()')
       throw error
@@ -483,6 +500,46 @@ class BCH {
     } catch (err) {
       wlogger.error('Error in bch.js/readOpReturn(): ', err)
       return retObj
+    }
+  }
+
+  // Retrieve the most recent transactions for an address from Electrumx.
+  async getTransactions (addr) {
+    try {
+      // Get transaction history for the address.
+      const transactions = await this.bchjs.Electrumx.transactions(addr)
+      if (!transactions.success) {
+        throw new Error(`No transaction history could be found for ${addr}`)
+      }
+
+      // Sort the transactions in descending order (newest first).
+      const txsArr = this.sortTxsByHeight(
+        transactions.transactions,
+        'DESCENDING'
+      )
+
+      return txsArr
+    } catch (err) {
+      wlogger.error('Error in bch.js/getTransactions(): ', err)
+      throw err
+    }
+  }
+
+  // Sort the Transactions by the block height
+  sortTxsByHeight (txs, sortingOrder = 'ASCENDING') {
+    if (sortingOrder === 'ASCENDING') {
+      return txs.sort((a, b) => a.height - b.height)
+    }
+    return txs.sort((a, b) => b.height - a.height)
+  }
+
+  // Extracts just the txids from the array passed back from getTransactions().
+  justTxs (txsArr) {
+    try {
+      return txsArr.map(elem => elem.tx_hash)
+    } catch (err) {
+      wlogger.error('Error in bch.js/justTxs(): ', err)
+      throw err
     }
   }
 }

@@ -54,8 +54,8 @@ describe('#bch', () => {
       // If unit test, use the mocking library instead of live calls.
       if (process.env.TEST_ENV === 'unit') {
         sandbox
-          .stub(bch.bchjs.Blockbook, 'balance')
-          .resolves(bchMockData.balance)
+          .stub(bch.bchjs.Electrumx, 'balance')
+          .resolves(bchMockData.fulcrumBalance)
       }
 
       const addr = 'bchtest:qq22ys5qz8z4jzkkex7p5jrdd9vh6q06cgrpsx2fu7'
@@ -64,15 +64,16 @@ describe('#bch', () => {
       const bchBalance = await bch.getBCHBalance(addr, verbose)
       // console.log(`bchBalance: ${util.inspect(bchBalance)}`)
 
-      assert.hasAnyKeys(bchBalance, ['balance', 'txids'])
-      assert.isArray(bchBalance.txids)
+      // assert.hasAnyKeys(bchBalance, ['balance', 'txids'])
+      // assert.isArray(bchBalance.txids)
+      assert.isNumber(bchBalance)
     })
   })
 
   describe('findBiggestUtxo()', () => {
     it('should throw an error if utxos is not an array', async () => {
       try {
-        const utxos = { satoshis: 10 }
+        const utxos = { value: 10 }
         await bch.findBiggestUtxo(utxos)
       } catch (err) {
         assert.include(
@@ -88,18 +89,25 @@ describe('#bch', () => {
         {
           txid:
             'fe3c23dfefe37efc4227c93d9b4f6eadc94dce3844156b9651a46e9b740d27dd',
+          tx_hash:
+            'fe3c23dfefe37efc4227c93d9b4f6eadc94dce3844156b9651a46e9b740d27dd',
           vout: 1,
+          tx_pos: 1,
           amount: 0.00000546,
           satoshis: 546,
+          value: 546,
           height: 1348643,
           confirmations: 5
         },
         {
           txid:
             '03fa935916161425d4db11c3f4cc7fc6b9cbea01ded88fe4818c41ccf5431e5c',
+          tx_hash: '03fa935916161425d4db11c3f4cc7fc6b9cbea01ded88fe4818c41ccf5431e5c',
           vout: 1,
+          tx_pos: 1,
           amount: 12.04311016,
           satoshis: 1000,
+          value: 1000,
           height: 1348645,
           confirmations: 3
         }
@@ -121,11 +129,11 @@ describe('#bch', () => {
     it('should return 0 if address is not in TX', async () => {
       // If unit test, use the mocking library instead of live calls.
       if (process.env.TEST_ENV === 'unit') {
-        sandbox.stub(bch.bchjs.Blockbook, 'tx').resolves(bchMockData.txDetails)
+        sandbox.stub(bch.bchjs.RawTransactions, 'getRawTransaction').resolves(bchMockData.txDetails)
       }
 
       const txid =
-        'a77762bb47c130e755cc053db51333bbd64596eefd18baffc08a447749863fa9'
+        'e2f2467b0cbbb9eae2fd409342e2657ba1ab58d3ac2d256522596adb946cd958'
       const addr = 'bchtest:qq8wqgxq0uu4y6k92pw9f7s6hxzfp9umsvtg39pabc'
 
       const value = await bch.recievedBch(txid, addr)
@@ -137,18 +145,18 @@ describe('#bch', () => {
     it('should calculate amount of BCH recieved from a TX', async () => {
       // If unit test, use the mocking library instead of live calls.
       if (process.env.TEST_ENV === 'unit') {
-        sandbox.stub(bch.bchjs.Blockbook, 'tx').resolves(bchMockData.txDetails)
+        sandbox.stub(bch.bchjs.RawTransactions, 'getRawTransaction').resolves(bchMockData.txDetails)
       }
 
       const txid =
-        'ed4692f50a4553527dd26cd8674ca06a0ab2d366f3135ca3668310467ead3cbf'
-      const addr = 'bchtest:qrvn2n228aa39xupcw9jw0d3fj8axxky656e4j62z2'
+        'e2f2467b0cbbb9eae2fd409342e2657ba1ab58d3ac2d256522596adb946cd958'
+      const addr = 'bitcoincash:qzdq6jzvyzhyuj639l72rmqfzu3vd7eux5nhdzndwm'
 
       const value = await bch.recievedBch(txid, addr)
       // console.log(`value: ${util.inspect(value)}`)
 
       assert.isNumber(value)
-      assert.equal(value, 0.00001)
+      assert.equal(value, 0.0001)
     })
   })
 
@@ -158,9 +166,9 @@ describe('#bch', () => {
       if (process.env.TEST_ENV === 'unit') {
         sandbox.stub(bch.tlUtils, 'openWallet').returns(mockWallet)
 
-        sandbox.stub(bch, 'getBCHBalance').resolves(bchMockData.balance)
+        sandbox.stub(bch, 'getBCHBalance').resolves(100095602)
 
-        sandbox.stub(bch.bchjs.Blockbook, 'utxo').resolves(bchMockData.utxos)
+        sandbox.stub(bch.bchjs.Electrumx, 'utxo').resolves(bchMockData.fulcrumUtxos)
 
         sandbox.stub(bch, 'findBiggestUtxo').resolves(bchMockData.utxos[1])
       }
@@ -241,6 +249,67 @@ describe('#bch', () => {
       assert.equal(opReturnData.isValid, true)
       assert.equal(opReturnData.type, 'burn')
       // assert.equal(opReturnData.qty, 10)
+    })
+  })
+
+  describe('#sortTxsByHeight', () => {
+    it('should sort the transactions', async () => {
+      try {
+        const transactions = bchMockData.transactions
+        const result = await bch.sortTxsByHeight(transactions)
+        assert.isArray(result)
+        assert.equal(result.length, transactions.length)
+      } catch (err) {
+        // console.log(err)
+        assert.equal(true, false, 'Unexpected result!')
+      }
+    })
+
+    it('should sort the transactions in descending order', async () => {
+      try {
+        const transactions = bchMockData.transactions
+        const result = await bch.sortTxsByHeight(transactions, 'DESCENDING')
+        assert.isArray(result)
+        assert.equal(result.length, transactions.length)
+      } catch (err) {
+        // console.log(err)
+        assert.equal(true, false, 'Unexpected result!')
+      }
+    })
+  })
+
+  describe('#getTransactions', () => {
+    it('should get transaction details for an address', async () => {
+      // Mock live network calls.
+      sandbox
+        .stub(bch.bchjs.Electrumx, 'transactions')
+        .resolves(bchMockData.mockTxHistory)
+
+      const bchAddr = 'bitcoincash:qqacnkvctp4pg8f60gklz6gpx4xwx3587sh60ejs2j'
+      const result = await bch.getTransactions(bchAddr)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.isArray(result)
+      assert.property(result[0], 'tx_hash')
+      assert.property(result[0], 'height')
+    })
+
+    it('should handle and throw errors', async () => {
+      try {
+        // Force an error
+        bchMockData.mockTxHistory.success = false
+        sandbox
+          .stub(bch.bchjs.Electrumx, 'transactions')
+          .resolves(bchMockData.mockTxHistory)
+
+        const bchAddr = 'bitcoincash:qqacnkvctp4pg8f60gklz6gpx4xwx3587sh60ejs2j'
+        await bch.getTransactions(bchAddr)
+
+        assert.fail('Unexpected result')
+      } catch (err) {
+        // console.log(err)
+        assert.include(err.message, 'No transaction history could be found')
+      }
     })
   })
 })

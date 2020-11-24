@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 
 // Force test environment
-process.env.APP_ENV = 'test'
+process.env.TL_ENV = 'test'
 
 const config = require('../../config')
 

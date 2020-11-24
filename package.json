@@ -5,13 +5,13 @@
   "main": "token-liquidity.js",
   "scripts": {
     "start": "NETWORK=mainnet node token-liquidity.js",
-    "test": "npm run prep-test && NETWORK=testnet APP_ENV=test TEST_ENV=unit nyc --reporter=text mocha --exit --timeout 15000 test/unit",
-    "test:integration": "npm run prep-test && NETWORK=testnet APP_ENV=test TEST_ENV=integration nyc --reporter=text mocha --exit --timeout 30000 test/unit",
-    "test:temp": "mocha -g '#createTokenTx' test/unit",
+    "test": "export TL_ENV=test && npm run prep-test && NETWORK=testnet  TEST_ENV=unit nyc --reporter=text mocha --exit --timeout 15000 test/unit",
+    "test:integration": "export TL_ENV=test && npm run prep-test && NETWORK=testnet TEST_ENV=integration nyc --reporter=text mocha --exit --timeout 30000 test/unit",
+    "test:temp": "mocha -g '#detectNewTxs' test/unit",
     "lint": "standard --env mocha --fix",
     "docs": "./node_modules/.bin/apidoc -i src/ -o docs",
-    "coverage": "export KOA_ENV=test && npm run prep-test && nyc report --reporter=text-lcov | coveralls",
-    "coverage:report": "export KOA_ENV=test && npm run prep-test && nyc --reporter=html mocha --exit",
+    "coverage": "export TL_ENV=test && npm run prep-test && nyc report --reporter=text-lcov | coveralls",
+    "coverage:report": "export TL_ENV=test && npm run prep-test && nyc --reporter=html mocha --timeout 15000 test/unit",
     "prep-test": "node util/users/delete-all-test-users.js"
   },
   "keywords": [
@@ -86,7 +86,7 @@
     "mocha": "^7.0.1",
     "nock": "^10.0.6",
     "nyc": "^15.0.0",
-    "semantic-release": "^17.0.0",
+    "semantic-release": "^17.2.3",
     "sinon": "^9.2.1",
     "standard": "^14.3.1"
   },
