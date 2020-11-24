@@ -14,7 +14,7 @@ const config = require('../../config')
 const wlogger = require('./wlogger')
 
 // Mainnet by default
-let BITBOX = new config.BCHLIB({ restURL: config.MAINNET_REST })
+let bchjs = new config.BCHLIB({ restURL: config.MAINNET_REST })
 
 // let _this
 
@@ -24,34 +24,63 @@ class Transactions {
 
     // Determine if this is a testnet wallet or a mainnet wallet.
     if (config.NETWORK === 'testnet') {
-      BITBOX = new config.BCHLIB({ restURL: config.TESTNET_REST })
+      bchjs = new config.BCHLIB({ restURL: config.TESTNET_REST })
     }
 
-    this.BITBOX = BITBOX
+    this.bchjs = bchjs
   }
 
+  // DEPRECATED - This function is being deprecated in favor of getUserAddr2()
   // Queries the transaction details and returns the senders BCH address.
-  // TODO: Blockbook returns the senders address in the vin[] array. Electrumx
-  // and the Full Node do not. I need to create a utility function that walks
-  // the tx history to get the address of the sender, using just data from
-  // the full node.
-  async getUserAddr (txid) {
-    try {
-      wlogger.debug(`Entering getUserAddr(). txid: ${txid}`)
+  // async getUserAddr (txid) {
+  //   try {
+  //     wlogger.debug(`Entering getUserAddr(). txid: ${txid}`)
+  //
+  //     // const txDetails = await this.BITBOX.Transaction.details(txid)
+  //     const txDetails = await this.bchjs.Blockbook.tx(txid)
+  //     // console.log(`txDetails: ${JSON.stringify(txDetails, null, 2)}`)
+  //
+  //     // Assumption: There is only 1 vin element, or the senders address exists in
+  //     // the first vin element.
+  //     const vin = txDetails.vin[0]
+  //     // console.log(`vin: ${JSON.stringify(vin, null, 2)}`)
+  //     const senderAddr = vin.addresses[0]
+  //
+  //     return senderAddr
+  //   } catch (err) {
+  //     wlogger.debug('Error in transactions.js/getUserAddr().')
+  //     throw err
+  //   }
+  // }
 
-      // const txDetails = await this.BITBOX.Transaction.details(txid)
-      const txDetails = await this.BITBOX.Blockbook.tx(txid)
+  // Queries the transaction details and returns the senders BCH address.
+  // This method uses calls directly to the full node, rather than using
+  // the Blockbook indexer.
+  async getUserAddr2 (txid) {
+    try {
+      // Get the TX details for the transaction under consideration.
+      const txDetails = await this.bchjs.RawTransactions.getRawTransaction(txid, true)
       // console.log(`txDetails: ${JSON.stringify(txDetails, null, 2)}`)
 
-      // Assumption: There is only 1 vin element, or the senders address exists in
-      // the first vin element.
+      // The first input represents the sender of the BCH or tokens.
       const vin = txDetails.vin[0]
-      // console.log(`vin: ${JSON.stringify(vin, null, 2)}`)
-      const senderAddr = vin.addresses[0]
+      const inputTxid = vin.txid
+      const inputVout = vin.vout
 
-      return senderAddr
+      // Get the TX details for the input, in order to retrieve the address of
+      // the sender.
+      const txDetails2 = await this.bchjs.RawTransactions.getRawTransaction(inputTxid, true)
+      // console.log(`txDetails2: ${JSON.stringify(txDetails2, null, 2)}`)
+
+      // The vout from the previous tx that represents the sender.
+      const voutSender = txDetails2.vout[inputVout]
+
+      // Extract the senders address.
+      const addr = voutSender.scriptPubKey.addresses[0]
+
+      return addr
     } catch (err) {
-      wlogger.debug('Error in transactions.js/getUserAddr().')
+      wlogger.error('Error in transaction.js/getUserAddr2(): ', err)
       throw err
     }
   }
@@ -87,7 +116,7 @@ class Transactions {
         const txid = txids[i]
 
         // Get the transaction data from the full node.
-        const txInfo = await this.BITBOX.RawTransactions.getRawTransaction(txid, true)
+        const txInfo = await this.bchjs.RawTransactions.getRawTransaction(txid, true)
         // console.log(`txInfo: ${JSON.stringify(txInfo, null, 2)}`)
 
         // Get the confirmations for the transactions.

@@ -123,7 +123,7 @@ class TokenLiquidity {
       const lastTransaction = txid
 
       // Get the sender's address for this transaction.
-      const userAddr = await txs.getUserAddr(lastTransaction)
+      const userAddr = await txs.getUserAddr2(lastTransaction)
       wlogger.info(`Sender's address: ${userAddr}`)
 
       // Exit if the userAddr is the same as the bchAddr for this app.
