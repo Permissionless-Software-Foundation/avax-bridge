@@ -45,6 +45,7 @@ var wlogger = winston.createLogger({
 
 // Add simple logging to the console.
 // if (process.env.APP_ENV !== 'test') {
+
 if (process.env.TEST_ENV !== 'unit') {
   wlogger.add(new winston.transports.Console({
     format: winston.format.simple(),

@@ -4,8 +4,9 @@
 
 'use strict'
 
-// const lib = require('../src/lib/token-util.js')
-// const got = require('got')
+const config = require('../config')
+config.bchBalance = config.BCH_QTY_ORIGINAL
+config.tokenBalance = config.TOKENS_QTY_ORIGINAL
 
 // Instantiate the JWT handling library for FullStack.cash.
 const JwtLib = require('jwt-bch-lib')
@@ -17,10 +18,10 @@ const jwtLib = new JwtLib({
 })
 
 const SLP = require('../src/lib/slp')
-let slp = new SLP()
+let slp = new SLP(config)
 
 const BCH = require('../src/lib/bch')
-let bch = new BCH()
+let bch = new BCH(config)
 
 const { default: PQueue } = require('p-queue')
 const queue = new PQueue({ concurrency: 1 })
@@ -37,10 +38,6 @@ const lib = new TokenLiquidity()
 
 // Add the queue to the token-liquidity library
 lib.queue = queue
-
-const config = require('../config')
-config.bchBalance = config.BCH_QTY_ORIGINAL
-config.tokenBalance = config.TOKENS_QTY_ORIGINAL
 
 // Winston logger
 const wlogger = require('../src/lib/wlogger')
@@ -74,8 +71,8 @@ async function startTokenLiquidity () {
 
   // Get the JWT token needed to interact with the FullStack.cash API.
   await getJwt()
-  bch = new BCH() // Reinitialize bchjs with the JWT token.
-  slp = new SLP() // Reinitialize bchjs with the JWT token.
+  bch = new BCH(config) // Reinitialize bchjs with the JWT token.
+  slp = new SLP(config) // Reinitialize bchjs with the JWT token.
 
   // Get BCH balance.
   const addressBalance = await bch.getBCHBalance(config.BCH_ADDR, false)

@@ -6,12 +6,12 @@
 'use strict'
 
 // Used for debugging and iterrogating JS objects.
-const util = require('util')
-util.inspect.defaultOptions = { depth: 5 }
+// const util = require('util')
+// util.inspect.defaultOptions = { depth: 5 }
 
 const pRetry = require('p-retry')
 
-const config = require('../../config')
+// const config = require('../../config')
 
 const TLUtils = require('./util')
 const tlUtils = new TLUtils()
@@ -23,21 +23,21 @@ const BCH = require('./bch')
 // Winston logger
 const wlogger = require('./wlogger')
 
-// Mainnet by default
-// let bchjs = new config.BCHLIB({ restURL: config.MAINNET_REST })
-
 let _this
 
 class SLP {
-  constructor () {
+  constructor (config) {
+    this.config = config
+    // console.log('SLP config: ', this.config)
+
     // Determine if this is a testnet wallet or a mainnet wallet.
-    if (config.NETWORK === 'testnet') {
+    if (this.config.NETWORK === 'testnet') {
       this.bchjs = new config.BCHLIB({ restURL: config.TESTNET_REST })
     } else {
       this.bchjs = new config.BCHLIB({ restURL: config.MAINNET_REST })
     }
 
-    this.bch = new BCH()
+    this.bch = new BCH(config)
     this.tlUtils = tlUtils
 
     _this = this
@@ -50,7 +50,7 @@ class SLP {
       // console.log(`addr: ${addr}`)
 
       const result = await this.bchjs.SLP.Utils.balancesForAddress(
-        config.SLP_ADDR
+        this.config.SLP_ADDR
       )
       wlogger.debug('token balance: ', result)
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)
@@ -61,7 +61,7 @@ class SLP {
 
       // Get the token information that matches the token-ID for PSF tokens.
       const tokenInfo = result.find(
-        token => token.tokenId === config.SLP_TOKEN_ID
+        token => token.tokenId === this.config.SLP_TOKEN_ID
       )
       // console.log(`tokenInfo: ${JSON.stringify(tokenInfo, null, 2)}`)
 
@@ -107,7 +107,7 @@ class SLP {
       // console.log(`tokenTxInfo: ${JSON.stringify(result, null, 2)}`)
 
       // Exit if token transfer is not the PSF token.
-      if (result.tokenInfo.tokenIdHex !== config.SLP_TOKEN_ID) {
+      if (result.tokenInfo.tokenIdHex !== this.config.SLP_TOKEN_ID) {
         return false
       }
 
@@ -149,7 +149,7 @@ class SLP {
 
       // master HDNode
       let masterHDNode
-      if (config.NETWORK === 'mainnet') {
+      if (this.config.NETWORK === 'mainnet') {
         masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed)
       } else masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed, 'testnet') // Testnet
 
@@ -222,7 +222,7 @@ class SLP {
 
       // Filter out the token UTXOs that match the user-provided token ID.
       tokenUtxos = tokenUtxos.filter((utxo, index) => {
-        if (utxo && utxo.tokenId === config.SLP_TOKEN_ID && utxo.isValid) {
+        if (utxo && utxo.tokenId === this.config.SLP_TOKEN_ID && utxo.isValid) {
           return true
         }
       })
@@ -284,7 +284,7 @@ class SLP {
 
       // instance of transaction builder
       let transactionBuilder
-      if (config.NETWORK === 'mainnet') {
+      if (this.config.NETWORK === 'mainnet') {
         transactionBuilder = new this.bchjs.TransactionBuilder()
       } else transactionBuilder = new this.bchjs.TransactionBuilder('testnet')
 
@@ -381,8 +381,9 @@ class SLP {
     } catch (err) {
       wlogger.error(`Error in createTokenTx: ${err.message}`, err)
 
-      if (err.message) throw new Error(err.message)
-      else throw new Error('Error in createTokenTx()')
+      // if (err.message) throw new Error(err.message)
+      // else throw new Error('Error in createTokenTx()')
+      throw err
     }
   }
 
@@ -403,7 +404,7 @@ class SLP {
 
       // master HDNode
       let masterHDNode
-      if (config.NETWORK === 'mainnet') {
+      if (this.config.NETWORK === 'mainnet') {
         masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed)
       } else masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed, 'testnet') // Testnet
 
@@ -476,7 +477,7 @@ class SLP {
 
       // Filter out the token UTXOs that match the user-provided token ID.
       tokenUtxos = tokenUtxos.filter((utxo, index) => {
-        if (utxo && utxo.tokenId === config.SLP_TOKEN_ID && utxo.isValid) {
+        if (utxo && utxo.tokenId === this.config.SLP_TOKEN_ID && utxo.isValid) {
           return true
         }
       })
@@ -509,7 +510,7 @@ class SLP {
       }
 
       // Generate the OP_RETURN code.
-      console.log(`burnQty: ${burnQty}`)
+      // console.log(`burnQty: ${burnQty}`)
       const script = this.bchjs.SLP.TokenType1.generateBurnOpReturn(
         tokenUtxos,
         Number(burnQty)
@@ -524,7 +525,7 @@ class SLP {
 
       // instance of transaction builder
       let transactionBuilder
-      if (config.NETWORK === 'mainnet') {
+      if (this.config.NETWORK === 'mainnet') {
         transactionBuilder = new this.bchjs.TransactionBuilder()
       } else transactionBuilder = new this.bchjs.TransactionBuilder('testnet')
 
@@ -567,13 +568,13 @@ class SLP {
 
       // Send dust transaction representing tokens being sent.
       transactionBuilder.addOutput(
-        this.bchjs.SLP.Address.toLegacyAddress(config.SLP_ADDR),
+        this.bchjs.SLP.Address.toLegacyAddress(this.config.SLP_ADDR),
         546
       )
 
       // Last output: send the BCH change back to the wallet.
       transactionBuilder.addOutput(
-        this.bchjs.Address.toLegacyAddress(config.BCH_ADDR),
+        this.bchjs.Address.toLegacyAddress(this.config.BCH_ADDR),
         remainder
       )
 
@@ -611,12 +612,15 @@ class SLP {
 
       return hex
     } catch (err) {
+      // console.error(err)
       wlogger.error(`Error in burnTokenTx: ${err.message}`, err)
-      if (err.message) throw new Error(err.message)
-      else {
-        console.log('Error in slp.js/burnTokenTx: ', err)
-        throw new Error('Error in burnTokenTx')
-      }
+      // if (err.message) throw new Error(err.message)
+      // else {
+      //   console.log('Error in slp.js/burnTokenTx: ', err)
+      //   throw new Error('Error in burnTokenTx')
+      // }
+
+      throw err
     }
   }
 
@@ -651,44 +655,62 @@ class SLP {
 
       const result = await pRetry(
         async () => {
-          // Send the user's tokens to the apps token address on the 245
-          // derivation path.
-          const tokenConfig = await _this.createTokenTx(
-            config.SLP_ADDR,
-            obj.tokenQty,
-            145
-          )
-          const tokenTXID = await _this.broadcastTokenTx(tokenConfig)
-          wlogger.info(
-            `Newly recieved tokens sent to 245 derivation path: ${tokenTXID}`
-          )
-
-          return tokenTXID
+          return await _this.sendTokensFrom145To245(obj)
         },
         {
-          onFailedAttempt: async error => {
-            //   failed attempt.
-            console.log(' ')
-            console.log(
-              `Attempt ${
-                error.attemptNumber
-              } to send tokens to the 245 path failed. There are ${
-                error.retriesLeft
-              } retries left. Waiting 4 minutes before trying again.`
-            )
-            console.log(' ')
-
-            await this.tlUtils.sleep(60000 * 4) // Sleep for 4 minutes
-          },
+          onFailedAttempt: this.handleMoveTokenError,
           retries: 5 // Retry 5 times
         }
       )
 
       return result
     } catch (error) {
-      console.log('Error in slp.js/moveTokens(): ', error)
-      return error
+      wlogger.error('Error in slp.js/moveTokens(): ', error)
+      throw error
       // console.log(error)
+    }
+  }
+
+  async handleMoveTokenError (error) {
+    const errorMsg = `Attempt ${
+      error.attemptNumber
+    } to send tokens to the 245 path failed. There are ${
+      error.retriesLeft
+    } retries left. Waiting 4 minutes before trying again.`
+
+    //   failed attempt.
+    console.log(' ')
+    console.log(errorMsg)
+    console.log(' ')
+    wlogger.error(errorMsg)
+
+    if (process.env.TL_ENV !== 'test') {
+      await this.tlUtils.sleep(60000 * 4)
+    } // Sleep for 4 minutes
+  }
+
+  // This function is used by moveTokens() to transfer the tokens from the 145
+  // public address of the app to the 245 address that holds the token UTXOs.
+  async sendTokensFrom145To245 (obj) {
+    try {
+      // Send the user's tokens to the apps token address on the 245
+      // derivation path.
+      const tokenConfig = await _this.createTokenTx(
+        this.config.SLP_ADDR,
+        obj.tokenQty,
+        145
+      )
+
+      const tokenTXID = await _this.broadcastTokenTx(tokenConfig)
+
+      wlogger.info(
+        `Newly recieved tokens sent to 245 derivation path: ${tokenTXID}`
+      )
+
+      return tokenTXID
+    } catch (err) {
+      wlogger.error('Error in slp.js/sendTokensFrom145To245(): ', err)
+      throw err
     }
   }
 }

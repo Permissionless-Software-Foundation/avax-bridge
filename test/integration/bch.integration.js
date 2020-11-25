@@ -6,8 +6,10 @@ const assert = require('chai').assert
 
 process.env.NETWORK = 'mainnet'
 
+const config = require('../../config')
+
 const BCH = require('../../src/lib/bch')
-const bch = new BCH()
+const bch = new BCH(config)
 
 describe('#bch.js', () => {
   describe('#getTransactions', () => {
@@ -51,7 +53,20 @@ describe('#bch.js', () => {
   describe('#consolidateUtxos', () => {
     it('should generate a tx hex', async () => {
       const result = await bch.consolidateUtxos()
-      console.log(`result: ${JSON.stringify(result, null, 2)}`)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.equal(result, undefined)
+    })
+  })
+
+  describe('#readOpReturn', () => {
+    it('should return isValid=false for non-OP_RETURN tx', async () => {
+      const txid = '07200217e2fd235b96030e3b775678871184084bb27d5d9c15957722c29c8709'
+
+      const result = await bch.readOpReturn(txid)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.equal(result.isValid, false)
     })
   })
 })

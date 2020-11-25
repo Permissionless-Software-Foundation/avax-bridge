@@ -6,8 +6,10 @@ const assert = require('chai').assert
 
 process.env.NETWORK = 'mainnet'
 
+const config = require('../../config')
+
 const SLP = require('../../src/lib/slp')
-const slp = new SLP()
+const slp = new SLP(config)
 
 describe('#slp', () => {
   describe('#createTokenTx', () => {

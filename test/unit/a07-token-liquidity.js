@@ -97,10 +97,9 @@ describe('#token-liquidity', () => {
       const retObj = lib.exchangeTokensForBCH(exchangeObj)
       // console.log(`retObj: ${JSON.stringify(retObj, null, 2)}`)
 
-      const result = retObj.bchOut
-
-      assert.isNumber(result)
-      assert.equal(result, 2.5000027, 'Should match spreadsheet')
+      assert.equal(retObj.bchOut, 2.5000027)
+      assert.equal(retObj.bch2, 53.13852321)
+      assert.equal(retObj.token2, -5627.704642)
     })
 
     it('should work with negative token balances', () => {
@@ -113,12 +112,11 @@ describe('#token-liquidity', () => {
       }
 
       const retObj = lib.exchangeTokensForBCH(exchangeObj)
-      console.log(`retObj: ${JSON.stringify(retObj, null, 2)}`)
+      // console.log(`retObj: ${JSON.stringify(retObj, null, 2)}`)
 
-      // const result = retObj.bchOut
-
-      // assert.isNumber(result)
-      // assert.equal(result, 2.5000027, 'Should match spreadsheet')
+      assert.equal(retObj.bchOut, 2.5000027)
+      assert.equal(retObj.bch2, 47.5)
+      assert.equal(retObj.token2, -4500)
     })
 
     it('should work with negative token balances', () => {
@@ -131,12 +129,11 @@ describe('#token-liquidity', () => {
       }
 
       const retObj = lib.exchangeTokensForBCH(exchangeObj)
-      console.log(`retObj: ${JSON.stringify(retObj, null, 2)}`)
+      // console.log(`retObj: ${JSON.stringify(retObj, null, 2)}`)
 
-      // const result = retObj.bchOut
-
-      // assert.isNumber(result)
-      // assert.equal(result, 2.5000027, 'Should match spreadsheet')
+      assert.equal(retObj.bchOut, 2.5000027)
+      assert.equal(retObj.bch2, 52.5)
+      assert.equal(retObj.token2, -5500.00000001)
     })
 
     it('should throw error if bchBalance is not defined', async () => {
@@ -159,7 +156,7 @@ describe('#token-liquidity', () => {
       }
 
       const result = lib.exchangeBCHForTokens(exchangeObj)
-      console.log(`result: ${util.inspect(result)}`)
+      // console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ['tokensOut', 'bch2', 'token2'])
       assert.equal(
@@ -180,7 +177,7 @@ describe('#token-liquidity', () => {
       }
 
       const result = lib.exchangeBCHForTokens(exchangeObj)
-      console.log(`result: ${util.inspect(result)}`)
+      // console.log(`result: ${util.inspect(result)}`)
 
       assert.hasAllKeys(result, ['tokensOut', 'bch2', 'token2'])
       assert.equal(
@@ -210,9 +207,8 @@ describe('#token-liquidity', () => {
       }
 
       // If unit test, use the mocking library instead of live calls.
-      if (process.env.TEST_ENV === 'unit') {
-        sandbox.stub(lib.bch, 'getTransactions').resolves(libMockData.mockGetTxs)
-      }
+      sandbox.stub(lib.bch, 'getTransactions').resolves(libMockData.mockGetTxs)
+
       sandbox.stub(lib.txs, 'getTxConfirmations').resolves(libMockData.confs)
 
       const result = await lib.detectNewTxs(obj)
@@ -220,6 +216,46 @@ describe('#token-liquidity', () => {
 
       assert.isArray(result)
       assert.hasAllKeys(result[0], ['txid', 'confirmations'])
+    })
+
+    it('should return an empty array if no new txs', async () => {
+      const knownTxids = libMockData.knownTxids
+
+      const obj = {
+        seenTxs: knownTxids
+      }
+
+      // If unit test, use the mocking library instead of live calls.
+      sandbox.stub(lib.bch, 'getTransactions').resolves(libMockData.mockGetTxs)
+
+      sandbox.stub(lib.txs, 'getTxConfirmations').resolves(libMockData.confs)
+
+      const result = await lib.detectNewTxs(obj)
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.isArray(result)
+      assert.equal(result.length, 0)
+    })
+
+    it('should catch and throw errors', async () => {
+      try {
+        // Force an error
+        sandbox
+          .stub(lib.bch, 'getTransactions')
+          .rejects(new Error('test error'))
+
+        const knownTxids = libMockData.knownTxids
+
+        const obj = {
+          seenTxs: knownTxids
+        }
+
+        await lib.detectNewTxs(obj)
+
+        assert.fail('Unexpected result')
+      } catch (err) {
+        assert.include(err.message, 'test error')
+      }
     })
   })
 
@@ -234,15 +270,17 @@ describe('#token-liquidity', () => {
     })
 
     it('Should return object', async () => {
-      console.log('init test')
-      const obj = {
-        txid:
-          '14df82e3ec54fa0227531309f7189ed695bafad6f5062407d3a528fbeddc4a09',
-        bchBalance: 12.01044695,
-        tokenBalance: 1
-      }
-      sandbox.stub(lib, 'processTx').resolves(libMockData.processTx)
       try {
+        // console.log('init test')
+        const obj = {
+          txid:
+            '14df82e3ec54fa0227531309f7189ed695bafad6f5062407d3a528fbeddc4a09',
+          bchBalance: 12.01044695,
+          tokenBalance: 1
+        }
+
+        sandbox.stub(lib, 'processTx').resolves(libMockData.processTx)
+
         const result = await lib.pRetryProcessTx(obj)
         assert.hasAllKeys(result, ['txid', 'bchBalance', 'tokenBalance'])
       } catch (error) {

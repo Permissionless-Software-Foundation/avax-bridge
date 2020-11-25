@@ -214,7 +214,7 @@ const burnOpReturnTx = {
   blocktime: 1577234056
 }
 
-const noOpReturnTx = {
+const slpOpReturnTx = {
   txid: '4894f89965809733f728e3b3f22d0015c0bf87b6a809db00a82f2841303d9de3',
   hash: '4894f89965809733f728e3b3f22d0015c0bf87b6a809db00a82f2841303d9de3',
   version: 2,
@@ -333,6 +333,175 @@ const mockTxHistory = {
   ]
 }
 
+const fulcrum11Utxos = {
+  success: true,
+  utxos: [
+    {
+      txid: '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+      tx_hash:
+        '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+      vout: 2,
+      tx_pos: 2,
+      value: 546,
+      confirmations: 0,
+      satoshis: 546
+    },
+    {
+      txid: '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+      tx_hash:
+        '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+      vout: 3,
+      tx_pos: 3,
+      value: 33779,
+      confirmations: 0,
+      satoshis: 33779
+    },
+    {
+      txid: '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+      tx_hash:
+        '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+      vout: 4,
+      tx_pos: 4,
+      value: 33779,
+      confirmations: 0,
+      satoshis: 33779
+    },
+    {
+      txid: '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+      tx_hash:
+        '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+      vout: 5,
+      tx_pos: 5,
+      value: 33779,
+      confirmations: 0,
+      satoshis: 33779
+    },
+    {
+      txid: '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+      tx_hash:
+        '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+      vout: 6,
+      tx_pos: 6,
+      value: 33779,
+      confirmations: 0,
+      satoshis: 33779
+    },
+    {
+      txid: '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+      tx_hash:
+        '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+      vout: 7,
+      tx_pos: 7,
+      value: 33779,
+      confirmations: 0,
+      satoshis: 33779
+    },
+    {
+      txid: '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+      tx_hash:
+        '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+      vout: 8,
+      tx_pos: 8,
+      value: 33779,
+      confirmations: 0,
+      satoshis: 33779
+    },
+    {
+      txid: '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+      tx_hash:
+        '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+      vout: 9,
+      tx_pos: 9,
+      value: 33779,
+      confirmations: 0,
+      satoshis: 33779
+    },
+    {
+      txid: '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+      tx_hash:
+        '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+      vout: 10,
+      tx_pos: 10,
+      value: 33779,
+      confirmations: 0,
+      satoshis: 33779
+    },
+    {
+      txid: '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+      tx_hash:
+        '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+      vout: 11,
+      tx_pos: 11,
+      value: 33779,
+      confirmations: 0,
+      satoshis: 33779
+    },
+    {
+      txid: '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+      tx_hash:
+        '50f031874a872249ca92a883b2460fabe19367710c05948f8f58f02fa81c0bca',
+      vout: 12,
+      tx_pos: 12,
+      value: 33779,
+      confirmations: 0,
+      satoshis: 33779
+    }
+  ]
+}
+
+const noOpReturnTx = {
+  txid: '07200217e2fd235b96030e3b775678871184084bb27d5d9c15957722c29c8709',
+  hash: '07200217e2fd235b96030e3b775678871184084bb27d5d9c15957722c29c8709',
+  version: 2,
+  size: 226,
+  locktime: 0,
+  vin: [
+    {
+      txid: '953223e46e7dbb0270592bfb82d6612a130b60b7fbc3af9d49af2970361a4f57',
+      vout: 1,
+      scriptSig: {
+        asm:
+          '30450221008834d425d3b061b4e9e394593b530806d8e2d23d9694dae09d4b13e00dce0da3022010ed02fc7328df7a6621e89b1c0b983bc902af584513abc54a490675afe9b541[ALL|FORKID] 02dd03e5a8da4e99d20b7b67088185994bf11eb51978f696994ebba824174a2724',
+        hex:
+          '4830450221008834d425d3b061b4e9e394593b530806d8e2d23d9694dae09d4b13e00dce0da3022010ed02fc7328df7a6621e89b1c0b983bc902af584513abc54a490675afe9b541412102dd03e5a8da4e99d20b7b67088185994bf11eb51978f696994ebba824174a2724'
+      },
+      sequence: 4294967295
+    }
+  ],
+  vout: [
+    {
+      value: 0.0000979,
+      n: 0,
+      scriptPubKey: {
+        asm:
+          'OP_DUP OP_HASH160 596a80bc939483f0f35c354f4ce3cbff54dcdc87 OP_EQUALVERIFY OP_CHECKSIG',
+        hex: '76a914596a80bc939483f0f35c354f4ce3cbff54dcdc8788ac',
+        reqSigs: 1,
+        type: 'pubkeyhash',
+        addresses: ['bitcoincash:qpvk4q9ujw2g8u8nts657n8re0l4fhxusuj9jtsddt']
+      }
+    },
+    {
+      value: 0.19839368,
+      n: 1,
+      scriptPubKey: {
+        asm:
+          'OP_DUP OP_HASH160 297422b97f3ac1fd0e02e1cf3caa906d94d34f21 OP_EQUALVERIFY OP_CHECKSIG',
+        hex: '76a914297422b97f3ac1fd0e02e1cf3caa906d94d34f2188ac',
+        reqSigs: 1,
+        type: 'pubkeyhash',
+        addresses: ['bitcoincash:qq5hgg4e0uavrlgwqtsu7092jpkef560yyedt26jks']
+      }
+    }
+  ],
+  hex:
+    '0200000001574f1a367029af499dafc3fbb7600b132a61d682fb2b597002bb7d6ee4233295010000006b4830450221008834d425d3b061b4e9e394593b530806d8e2d23d9694dae09d4b13e00dce0da3022010ed02fc7328df7a6621e89b1c0b983bc902af584513abc54a490675afe9b541412102dd03e5a8da4e99d20b7b67088185994bf11eb51978f696994ebba824174a2724ffffffff023e260000000000001976a914596a80bc939483f0f35c354f4ce3cbff54dcdc8788ac88b92e01000000001976a914297422b97f3ac1fd0e02e1cf3caa906d94d34f2188ac00000000',
+  blockhash: '000000000000000001aa062711b1f6dea83ea725807dabf1a5ebf3f841353791',
+  confirmations: 53198,
+  time: 1574344540,
+  blocktime: 1574344540
+}
+
 const bchMockData = {
   balance,
   fulcrumBalance,
@@ -341,9 +510,11 @@ const bchMockData = {
   txDetails,
   getTxOutValid,
   burnOpReturnTx,
+  slpOpReturnTx,
   noOpReturnTx,
   transactions,
-  mockTxHistory
+  mockTxHistory,
+  fulcrum11Utxos
 }
 
 module.exports = bchMockData

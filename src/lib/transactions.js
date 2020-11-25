@@ -85,23 +85,24 @@ class Transactions {
     }
   }
 
+  // Deprecated??? Commenting out to see if it breaks anything.
   // Returns true if there are no 0 or 1-conf transactions associated with the address.
-  async only2Conf (bchAddr) {
-    try {
-      wlogger.silly('Entering only2Conf.')
-
-      // Get an ordered list of transactions associated with this address.
-      let txs = await this.getTransactions(bchAddr)
-      txs = this.getTxConfs(txs.txs)
-
-      if (txs[0].confirmations > 1) return true
-
-      return false
-    } catch (err) {
-      wlogger.error('Error in transactions.js/only2Conf(). Returning false', err)
-      return false
-    }
-  }
+  // async only2Conf (bchAddr) {
+  //   try {
+  //     wlogger.silly('Entering only2Conf.')
+  //
+  //     // Get an ordered list of transactions associated with this address.
+  //     let txs = await this.getTransactions(bchAddr)
+  //     txs = this.getTxConfs(txs.txs)
+  //
+  //     if (txs[0].confirmations > 1) return true
+  //
+  //     return false
+  //   } catch (err) {
+  //     wlogger.error('Error in transactions.js/only2Conf(). Returning false', err)
+  //     return false
+  //   }
+  // }
 
   // Expects an array of txids as input. Returns an array of objects.
   // Each object contains the txid and the confirmations for that tx.

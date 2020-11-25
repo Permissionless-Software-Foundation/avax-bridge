@@ -7,4 +7,7 @@ console.log(`Starting ${env} environment`)
 const config = require(`./env/${env}`)
 config.env = env
 
-module.exports = Object.assign({}, bchjs, common, config)
+const macroConfig = Object.assign({}, bchjs, common, config)
+// console.log('macroConig: ', macroConfig)
+
+module.exports = macroConfig

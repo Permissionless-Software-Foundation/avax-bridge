@@ -16,11 +16,11 @@ const tlUtil = new TLUtils()
 
 // BCH library
 const BCH = require('./bch')
-const bch = new BCH()
+const bch = new BCH(config)
 
 // SLP Token library
 const SLP = require('./slp')
-const slp = new SLP()
+const slp = new SLP(config)
 
 // Transactions library
 const Transactions = require('./transactions')
