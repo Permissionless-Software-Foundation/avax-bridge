@@ -16,7 +16,7 @@ const tlUtil = new TLUtils()
 
 // BCH library
 const BCH = require('./bch')
-const bch = new BCH()
+const bch = new BCH(config)
 
 // SLP Token library
 const SLP = require('./slp')

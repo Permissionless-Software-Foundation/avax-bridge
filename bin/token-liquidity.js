@@ -21,7 +21,7 @@ const SLP = require('../src/lib/slp')
 let slp = new SLP(config)
 
 const BCH = require('../src/lib/bch')
-let bch = new BCH()
+let bch = new BCH(config)
 
 const { default: PQueue } = require('p-queue')
 const queue = new PQueue({ concurrency: 1 })
@@ -71,7 +71,7 @@ async function startTokenLiquidity () {
 
   // Get the JWT token needed to interact with the FullStack.cash API.
   await getJwt()
-  bch = new BCH() // Reinitialize bchjs with the JWT token.
+  bch = new BCH(config) // Reinitialize bchjs with the JWT token.
   slp = new SLP(config) // Reinitialize bchjs with the JWT token.
 
   // Get BCH balance.

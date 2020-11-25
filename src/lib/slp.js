@@ -6,8 +6,8 @@
 'use strict'
 
 // Used for debugging and iterrogating JS objects.
-const util = require('util')
-util.inspect.defaultOptions = { depth: 5 }
+// const util = require('util')
+// util.inspect.defaultOptions = { depth: 5 }
 
 const pRetry = require('p-retry')
 
@@ -37,7 +37,7 @@ class SLP {
       this.bchjs = new config.BCHLIB({ restURL: config.MAINNET_REST })
     }
 
-    this.bch = new BCH()
+    this.bch = new BCH(config)
     this.tlUtils = tlUtils
 
     _this = this
@@ -684,7 +684,7 @@ class SLP {
     console.log(' ')
     wlogger.error(errorMsg)
 
-    if (process.env.APP_ENV !== 'test') {
+    if (process.env.TL_ENV !== 'test') {
       await this.tlUtils.sleep(60000 * 4)
     } // Sleep for 4 minutes
   }

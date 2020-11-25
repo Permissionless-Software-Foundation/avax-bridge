@@ -7,7 +7,6 @@
 // Public npm libraries.
 const assert = require('chai').assert
 const sinon = require('sinon')
-const nock = require('nock')
 const cloneDeep = require('lodash.clonedeep')
 
 // Mocking-data
@@ -20,7 +19,7 @@ const SLP = require('../../src/lib/slp')
 
 // Determine if this is a Unit or Integration test
 // If not specified, default to unit test.
-if (!process.env.APP_ENV) process.env.APP_ENV = 'test'
+if (!process.env.TL_ENV) process.env.TL_ENV = 'test'
 
 describe('#slp-lib', () => {
   let sandbox
@@ -36,18 +35,11 @@ describe('#slp-lib', () => {
     // mockedWallet = Object.assign({}, testwallet) // Clone the testwallet
     sandbox = sinon.createSandbox()
 
-    // Activate nock if it's inactive.
-    if (!nock.isActive()) nock.activate()
-
     slpMockDataCopy = cloneDeep(slpMockData)
     tempConfig = cloneDeep(config)
   })
 
   afterEach(() => {
-    // Clean up HTTP mocks.
-    nock.cleanAll() // clear interceptor list.
-    nock.restore()
-
     sandbox.restore()
   })
 

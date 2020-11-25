@@ -7,10 +7,10 @@
 // const rp = require('request-promise')
 
 // Used for debugging and iterrogating JS objects.
-const util = require('util')
-util.inspect.defaultOptions = { depth: 5 }
+// const util = require('util')
+// util.inspect.defaultOptions = { depth: 5 }
 
-const config = require('../../config')
+// const config = require('../../config')
 
 const TLUtils = require('./util')
 const tlUtils = new TLUtils()
@@ -19,40 +19,33 @@ const tlUtils = new TLUtils()
 const wlogger = require('./wlogger')
 
 // Mainnet by default
-const bchjs = new config.BCHLIB({ restURL: config.MAINNET_REST })
+// const bchjs = new this.config.BCHLIB({ restURL: this.config.MAINNET_REST })
 
 // const SATS_PER_BCH = 100000000
 
-let _this
+// let _this
 
 class BCH {
-  constructor () {
-    _this = this
+  constructor (config) {
+    this.config = config
 
     // Determine if this is a testnet wallet or a mainnet wallet.
-    if (config.NETWORK === 'testnet') {
-      this.bchjs = new config.BCHLIB({ restURL: config.TESTNET_REST })
+    if (this.config.NETWORK === 'testnet') {
+      this.bchjs = new this.config.BCHLIB({ restURL: this.config.TESTNET_REST })
     } else {
-      this.bchjs = new config.BCHLIB({ restURL: config.MAINNET_REST })
+      this.bchjs = new this.config.BCHLIB({ restURL: this.config.MAINNET_REST })
     }
 
     this.tlUtils = tlUtils
+
+    // _this = this
   }
 
   // Get the balance in BCH of a BCH address.
   // Returns an object containing balance information.
   // The verbose flag determins if the results are written to the console or not.
-  async getBCHBalance (addr, verbose) {
+  async getBCHBalance (addr, verbose = false) {
     try {
-      // const result = await this.bchjs.Address.details(addr)
-      // const result = await this.bchjs.Blockbook.balance(addr)
-      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
-
-      // Convert balance to BCH
-      // result.balance = this.bchjs.BitcoinCash.toBitcoinCash(
-      //   Number(result.balance)
-      // )
-
       const fulcrumBalance = await this.bchjs.Electrumx.balance(addr)
       // console.log(`fulcrumBalance: ${JSON.stringify(fulcrumBalance, null, 2)}`)
 
@@ -69,9 +62,6 @@ class BCH {
       return bchBalance
     } catch (err) {
       wlogger.error(`Error in bch.js/getBCHBalance(): ${err.message}`, err)
-      wlogger.error(`addr: ${addr}`)
-      wlogger.error(`_this.bchjs.apiToken: ${_this.bchjs.apiToken.slice(0, 6)}`)
-      wlogger.error(`BCHJSTOKEN: ${process.env.BCHJSTOKEN.slice(0, 6)}`)
       throw err
     }
   }
@@ -183,26 +173,31 @@ class BCH {
 
       const walletInfo = this.tlUtils.openWallet()
 
-      const addrDetails = await this.getBCHBalance(config.BCH_ADDR, false)
+      const addrDetails = await this.getBCHBalance(this.config.BCH_ADDR, false)
       // wlogger.debug(`addrDetails: ${JSON.stringify(addrDetails, null, 2)}`)
 
       const balance = addrDetails
       wlogger.verbose(
-        `Balance of sending address ${config.BCH_ADDR} is ${balance} BCH.`
+        `Balance of sending address ${this.config.BCH_ADDR} is ${balance} BCH.`
       )
 
       if (balance <= 0.0) {
         console.log('Balance of sending address is zero. Exiting.')
+
+        // If this is a test, return 0.
+        if (process.env.TL_ENV === 'test') return 0
+
+        // Kill the app if the balance is zero.
         process.exit(0)
       }
 
-      const SEND_ADDR_LEGACY = bchjs.Address.toLegacyAddress(config.BCH_ADDR)
-      const RECV_ADDR_LEGACY = bchjs.Address.toLegacyAddress(RECV_ADDR)
+      const SEND_ADDR_LEGACY = this.bchjs.Address.toLegacyAddress(this.config.BCH_ADDR)
+      const RECV_ADDR_LEGACY = this.bchjs.Address.toLegacyAddress(RECV_ADDR)
       wlogger.debug(`Sender Legacy Address: ${SEND_ADDR_LEGACY}`)
       wlogger.debug(`Receiver Legacy Address: ${RECV_ADDR_LEGACY}`)
 
-      // const utxos = await this.bchjs.Blockbook.utxo(config.BCH_ADDR)
-      const fulcrumResult = await this.bchjs.Electrumx.utxo(config.BCH_ADDR)
+      // const utxos = await this.bchjs.Blockbook.utxo(this.config.BCH_ADDR)
+      const fulcrumResult = await this.bchjs.Electrumx.utxo(this.config.BCH_ADDR)
       const utxos = fulcrumResult.utxos
       // console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
 
@@ -214,7 +209,7 @@ class BCH {
 
       // instance of transaction builder
       let transactionBuilder
-      if (config.NETWORK === 'testnet') {
+      if (this.config.NETWORK === 'testnet') {
         transactionBuilder = new this.bchjs.TransactionBuilder('testnet')
       } else {
         transactionBuilder = new this.bchjs.TransactionBuilder()
@@ -242,8 +237,8 @@ class BCH {
       const remainder = originalAmount - satoshisToSend - txFee
       wlogger.verbose(`remainder: ${remainder}`)
 
-      // Bail out if remainder is negative.
-      if (remainder < 0) {
+      // Bail out if remainder is less than dust
+      if (remainder < 546) {
         throw new Error(`UTXO selected is too small. Remainder: ${remainder}`)
       }
 
@@ -253,7 +248,7 @@ class BCH {
         satoshisToSend
       )
       transactionBuilder.addOutput(
-        this.bchjs.Address.toLegacyAddress(config.BCH_ADDR),
+        this.bchjs.Address.toLegacyAddress(this.config.BCH_ADDR),
         remainder
       )
 
@@ -309,21 +304,21 @@ class BCH {
   // Generate a change address from a Mnemonic of a private key.
   async changeAddrFromMnemonic (mnemonic) {
     // root seed buffer
-    const rootSeed = await bchjs.Mnemonic.toSeed(mnemonic)
+    const rootSeed = await this.bchjs.Mnemonic.toSeed(mnemonic)
 
     // master HDNode
     let masterHDNode
-    if (config.NETWORK === 'testnet') {
-      masterHDNode = bchjs.HDNode.fromSeed(rootSeed, 'testnet')
+    if (this.config.NETWORK === 'testnet') {
+      masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed, 'testnet')
     } else {
-      masterHDNode = bchjs.HDNode.fromSeed(rootSeed)
+      masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed)
     }
 
     // HDNode of BIP44 account
-    const account = bchjs.HDNode.derivePath(masterHDNode, "m/44'/145'/0'")
+    const account = this.bchjs.HDNode.derivePath(masterHDNode, "m/44'/145'/0'")
 
     // derive the first external change address HDNode which is going to spend utxo
-    const change = bchjs.HDNode.derivePath(account, '0/0')
+    const change = this.bchjs.HDNode.derivePath(account, '0/0')
 
     return change
   }
@@ -337,14 +332,14 @@ class BCH {
 
     // Instatiate bch-js librarys
     let transactionBuilder
-    if (config.NETWORK === 'testnet') {
+    if (this.config.NETWORK === 'testnet') {
       transactionBuilder = new this.bchjs.TransactionBuilder('testnet')
     } else {
       transactionBuilder = new this.bchjs.TransactionBuilder()
     }
 
     try {
-      const appAddr = config.BCH_ADDR
+      const appAddr = this.config.BCH_ADDR
 
       // get the UTXO associated with the app address.
       // const utxos = await this.bchjs.Blockbook.utxo(appAddr)
@@ -371,7 +366,7 @@ class BCH {
 
       // master HDNode
       let masterHDNode
-      if (config.NETWORK === 'mainnet') {
+      if (this.config.NETWORK === 'mainnet') {
         masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed)
       } else masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed, 'testnet') // Testnet
 
