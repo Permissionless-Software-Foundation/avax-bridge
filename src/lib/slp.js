@@ -510,7 +510,7 @@ class SLP {
       }
 
       // Generate the OP_RETURN code.
-      console.log(`burnQty: ${burnQty}`)
+      // console.log(`burnQty: ${burnQty}`)
       const script = this.bchjs.SLP.TokenType1.generateBurnOpReturn(
         tokenUtxos,
         Number(burnQty)
@@ -655,44 +655,62 @@ class SLP {
 
       const result = await pRetry(
         async () => {
-          // Send the user's tokens to the apps token address on the 245
-          // derivation path.
-          const tokenConfig = await _this.createTokenTx(
-            this.config.SLP_ADDR,
-            obj.tokenQty,
-            145
-          )
-          const tokenTXID = await _this.broadcastTokenTx(tokenConfig)
-          wlogger.info(
-            `Newly recieved tokens sent to 245 derivation path: ${tokenTXID}`
-          )
-
-          return tokenTXID
+          return await _this.sendTokensFrom145To245(obj)
         },
         {
-          onFailedAttempt: async error => {
-            //   failed attempt.
-            console.log(' ')
-            console.log(
-              `Attempt ${
-                error.attemptNumber
-              } to send tokens to the 245 path failed. There are ${
-                error.retriesLeft
-              } retries left. Waiting 4 minutes before trying again.`
-            )
-            console.log(' ')
-
-            await this.tlUtils.sleep(60000 * 4) // Sleep for 4 minutes
-          },
+          onFailedAttempt: this.handleMoveTokenError,
           retries: 5 // Retry 5 times
         }
       )
 
       return result
     } catch (error) {
-      console.log('Error in slp.js/moveTokens(): ', error)
-      return error
+      wlogger.error('Error in slp.js/moveTokens(): ', error)
+      throw error
       // console.log(error)
+    }
+  }
+
+  async handleMoveTokenError (error) {
+    const errorMsg = `Attempt ${
+      error.attemptNumber
+    } to send tokens to the 245 path failed. There are ${
+      error.retriesLeft
+    } retries left. Waiting 4 minutes before trying again.`
+
+    //   failed attempt.
+    console.log(' ')
+    console.log(errorMsg)
+    console.log(' ')
+    wlogger.error(errorMsg)
+
+    if (process.env.APP_ENV !== 'test') {
+      await this.tlUtils.sleep(60000 * 4)
+    } // Sleep for 4 minutes
+  }
+
+  // This function is used by moveTokens() to transfer the tokens from the 145
+  // public address of the app to the 245 address that holds the token UTXOs.
+  async sendTokensFrom145To245 (obj) {
+    try {
+      // Send the user's tokens to the apps token address on the 245
+      // derivation path.
+      const tokenConfig = await _this.createTokenTx(
+        this.config.SLP_ADDR,
+        obj.tokenQty,
+        145
+      )
+
+      const tokenTXID = await _this.broadcastTokenTx(tokenConfig)
+
+      wlogger.info(
+        `Newly recieved tokens sent to 245 derivation path: ${tokenTXID}`
+      )
+
+      return tokenTXID
+    } catch (err) {
+      wlogger.error('Error in slp.js/sendTokensFrom145To245(): ', err)
+      throw err
     }
   }
 }

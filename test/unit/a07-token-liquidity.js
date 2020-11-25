@@ -211,7 +211,9 @@ describe('#token-liquidity', () => {
 
       // If unit test, use the mocking library instead of live calls.
       if (process.env.TEST_ENV === 'unit') {
-        sandbox.stub(lib.bch, 'getTransactions').resolves(libMockData.mockGetTxs)
+        sandbox
+          .stub(lib.bch, 'getTransactions')
+          .resolves(libMockData.mockGetTxs)
       }
       sandbox.stub(lib.txs, 'getTxConfirmations').resolves(libMockData.confs)
 
@@ -234,15 +236,17 @@ describe('#token-liquidity', () => {
     })
 
     it('Should return object', async () => {
-      console.log('init test')
-      const obj = {
-        txid:
-          '14df82e3ec54fa0227531309f7189ed695bafad6f5062407d3a528fbeddc4a09',
-        bchBalance: 12.01044695,
-        tokenBalance: 1
-      }
-      sandbox.stub(lib, 'processTx').resolves(libMockData.processTx)
       try {
+        // console.log('init test')
+        const obj = {
+          txid:
+            '14df82e3ec54fa0227531309f7189ed695bafad6f5062407d3a528fbeddc4a09',
+          bchBalance: 12.01044695,
+          tokenBalance: 1
+        }
+
+        sandbox.stub(lib, 'processTx').resolves(libMockData.processTx)
+
         const result = await lib.pRetryProcessTx(obj)
         assert.hasAllKeys(result, ['txid', 'bchBalance', 'tokenBalance'])
       } catch (error) {
