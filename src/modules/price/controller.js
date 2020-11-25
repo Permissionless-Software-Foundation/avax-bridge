@@ -42,7 +42,7 @@ async function getPrice (ctx) {
   // Read the current state
   const filename = `${__dirname}/../../../state/state.json`
   const state = tlUtils.readState(filename)
-  // console.log(`state: ${JSON.stringify(state, null, 2)}`)
+  console.log(`state: ${JSON.stringify(state, null, 2)}`)
 
   // Calculate the current exchange rate of tokens for 1 BCH.
   const obj = {

@@ -34,6 +34,7 @@ class TLUtils {
   saveState (data) {
     try {
       wlogger.silly('entering util.js/saveState().')
+      // console.log(`saveState() data: ${JSON.stringify(data, null, 2)}`)
 
       const filename = STATE_FILE_NAME
 

@@ -547,7 +547,7 @@ class TokenLiquidity {
 
         // Update the BCH balance
         const addressInfo = await bch.getBCHBalance(config.BCH_ADDR, false)
-        const bchBalance = addressInfo.balance
+        const bchBalance = addressInfo
         config.bchBalance = bchBalance
 
         // Update the effective SLP balance.
