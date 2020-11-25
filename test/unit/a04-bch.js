@@ -570,6 +570,8 @@ describe('#bch-lib', () => {
     })
 
     it('should return hex string for consolidating on testnet', async () => {
+      sandbox.stub(uut.tlUtils, 'openWallet').returns(mockWallet)
+
       sandbox
         .stub(uut.bchjs.Electrumx, 'utxo')
         .resolves(bchMockData.fulcrum11Utxos)
@@ -588,6 +590,8 @@ describe('#bch-lib', () => {
         'bitcoincash:qzdq6jzvyzhyuj639l72rmqfzu3vd7eux5nhdzndwm'
 
       uut = new BCH(tempConfig)
+
+      sandbox.stub(uut.tlUtils, 'openWallet').returns(mockWallet)
 
       sandbox
         .stub(uut.bchjs.Electrumx, 'utxo')
