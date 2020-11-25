@@ -54,5 +54,4 @@ if (process.env.TEST_ENV !== 'unit') {
   }))
 }
 */
-
 module.exports = wlogger

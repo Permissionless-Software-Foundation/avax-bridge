@@ -449,11 +449,11 @@ describe('#bch-lib', () => {
       assert.equal(opReturnData.isValid, false)
     })
 
-    it('should return isValid=false for non-op-return tx', async () => {
+    it('should return isValid=false for SLP tx', async () => {
       // Mock network calls.
       sandbox
         .stub(uut.bchjs.RawTransactions, 'getRawTransaction')
-        .resolves(bchMockData.noOpReturnTx)
+        .resolves(bchMockData.slpOpReturnTx)
 
       const txid =
         '4894f89965809733f728e3b3f22d0015c0bf87b6a809db00a82f2841303d9de3'
@@ -464,7 +464,7 @@ describe('#bch-lib', () => {
       assert.equal(opReturnData.isValid, false)
     })
 
-    it('should processes a valid burn command', async () => {
+    it('should processes a valid BURN command', async () => {
       // Mock network calls.
       sandbox
         .stub(uut.bchjs.RawTransactions, 'getRawTransaction')
@@ -479,6 +479,21 @@ describe('#bch-lib', () => {
       assert.equal(opReturnData.isValid, true)
       assert.equal(opReturnData.type, 'burn')
       // assert.equal(opReturnData.qty, 10)
+    })
+
+    it('should return isValid=false for tx without OP_RETURN', async () => {
+      // Mock network calls.
+      sandbox
+        .stub(uut.bchjs.RawTransactions, 'getRawTransaction')
+        .resolves(bchMockData.noOpReturnTx)
+
+      const txid =
+        '07200217e2fd235b96030e3b775678871184084bb27d5d9c15957722c29c8709'
+
+      const opReturnData = await uut.readOpReturn(txid)
+      // console.log(`opReturnData: ${JSON.stringify(opReturnData, null, 2)}`)
+
+      assert.equal(opReturnData.isValid, false)
     })
   })
 
@@ -539,6 +554,63 @@ describe('#bch-lib', () => {
       } catch (err) {
         // console.log(err)
         assert.include(err.message, 'No transaction history could be found')
+      }
+    })
+  })
+
+  describe('#consolidateUtxos', () => {
+    it('should throw return undefined when there is not enough UTXOs to consolidate.', async () => {
+      sandbox
+        .stub(uut.bchjs.Electrumx, 'utxo')
+        .resolves(bchMockData.fulcrumUtxos)
+
+      const result = await uut.consolidateUtxos()
+
+      assert.equal(result, undefined)
+    })
+
+    it('should return hex string for consolidating on testnet', async () => {
+      sandbox
+        .stub(uut.bchjs.Electrumx, 'utxo')
+        .resolves(bchMockData.fulcrum11Utxos)
+
+      const result = await uut.consolidateUtxos()
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.isString(result)
+    })
+
+    it('should return hex string for consolidating on mainnet', async () => {
+      tempConfig.NETWORK = 'mainnet'
+      tempConfig.SLP_ADDR =
+        'simpleledger:qq0qr5aqv6whvjrhfygk7s38qmuglf5sm5ufqqaqm5'
+      tempConfig.BCH_ADDR =
+        'bitcoincash:qzdq6jzvyzhyuj639l72rmqfzu3vd7eux5nhdzndwm'
+
+      uut = new BCH(tempConfig)
+
+      sandbox
+        .stub(uut.bchjs.Electrumx, 'utxo')
+        .resolves(bchMockData.fulcrum11Utxos)
+
+      const result = await uut.consolidateUtxos()
+      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
+
+      assert.isString(result)
+    })
+
+    it('should catch and throw errors', async () => {
+      try {
+        // Force an error
+        sandbox
+          .stub(uut.bchjs.Electrumx, 'utxo')
+          .rejects(new Error('test error'))
+
+        await uut.consolidateUtxos()
+
+        assert.fail('Unexpected result')
+      } catch (err) {
+        assert.include(err.message, 'test error')
       }
     })
   })

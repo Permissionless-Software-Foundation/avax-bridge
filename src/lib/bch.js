@@ -4,14 +4,6 @@
 
 'use strict'
 
-// const rp = require('request-promise')
-
-// Used for debugging and iterrogating JS objects.
-// const util = require('util')
-// util.inspect.defaultOptions = { depth: 5 }
-
-// const config = require('../../config')
-
 const TLUtils = require('./util')
 const tlUtils = new TLUtils()
 
@@ -49,7 +41,9 @@ class BCH {
       const fulcrumBalance = await this.bchjs.Electrumx.balance(addr)
       // console.log(`fulcrumBalance: ${JSON.stringify(fulcrumBalance, null, 2)}`)
 
-      const confirmedBalance = this.bchjs.BitcoinCash.toBitcoinCash(fulcrumBalance.balance.confirmed)
+      const confirmedBalance = this.bchjs.BitcoinCash.toBitcoinCash(
+        fulcrumBalance.balance.confirmed
+      )
 
       if (verbose) {
         // const resultToDisplay = confirmedBalance
@@ -119,7 +113,10 @@ class BCH {
 
       // const txDetails = await this.bchjs.Transaction.details(txid)
       // const txDetails = await this.bchjs.Blockbook.tx(txid)
-      const txDetails = await this.bchjs.RawTransactions.getRawTransaction(txid, true)
+      const txDetails = await this.bchjs.RawTransactions.getRawTransaction(
+        txid,
+        true
+      )
       // console.log(`txDetails: ${JSON.stringify(txDetails, null, 2)}`)
 
       const vout = txDetails.vout
@@ -191,13 +188,17 @@ class BCH {
         process.exit(0)
       }
 
-      const SEND_ADDR_LEGACY = this.bchjs.Address.toLegacyAddress(this.config.BCH_ADDR)
+      const SEND_ADDR_LEGACY = this.bchjs.Address.toLegacyAddress(
+        this.config.BCH_ADDR
+      )
       const RECV_ADDR_LEGACY = this.bchjs.Address.toLegacyAddress(RECV_ADDR)
       wlogger.debug(`Sender Legacy Address: ${SEND_ADDR_LEGACY}`)
       wlogger.debug(`Receiver Legacy Address: ${RECV_ADDR_LEGACY}`)
 
       // const utxos = await this.bchjs.Blockbook.utxo(this.config.BCH_ADDR)
-      const fulcrumResult = await this.bchjs.Electrumx.utxo(this.config.BCH_ADDR)
+      const fulcrumResult = await this.bchjs.Electrumx.utxo(
+        this.config.BCH_ADDR
+      )
       const utxos = fulcrumResult.utxos
       // console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
 
@@ -384,11 +385,6 @@ class BCH {
       const cashAddress = this.bchjs.HDNode.toCashAddress(changePath)
       console.log(`cashAddress: ${JSON.stringify(cashAddress, null, 2)}`)
 
-      // console.log(utxos)
-      if (!Array.isArray(utxos)) throw new Error('UTXOs must be an array.')
-
-      if (utxos.length === 0) throw new Error('No UTXOs found.')
-
       // Add the satoshis quantity of all UTXOs
       let satoshisAmount = 0
       for (let i = 0; i < utxos.length; i++) {
@@ -397,9 +393,9 @@ class BCH {
         transactionBuilder.addInput(utxo.tx_hash, utxo.tx_pos)
       }
 
-      if (satoshisAmount < 1) {
-        throw new Error('Original amount is zero. No BCH to send.')
-      }
+      // if (satoshisAmount < 546) {
+      //   throw new Error('Original amount is zero. No BCH to send.')
+      // }
 
       // Get byte count to calculate fee. paying 1 sat/byte
       const byteCount = this.bchjs.BitcoinCash.getByteCount(
@@ -451,6 +447,7 @@ class BCH {
   }
 
   // Checks BCH transactions to see if they have an OP_RETURN. Returns an object.
+  // This method primarily targets BURN messages.
   // If no OP_RETURN is present, the isValid property will be false.
   // If OP_RETURN is present, it will attempt to be decoded.
   async readOpReturn (txid) {
@@ -530,12 +527,7 @@ class BCH {
 
   // Extracts just the txids from the array passed back from getTransactions().
   justTxs (txsArr) {
-    try {
-      return txsArr.map(elem => elem.tx_hash)
-    } catch (err) {
-      wlogger.error('Error in bch.js/justTxs(): ', err)
-      throw err
-    }
+    return txsArr.map(elem => elem.tx_hash)
   }
 }
 
