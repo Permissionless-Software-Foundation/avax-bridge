@@ -116,6 +116,7 @@ async function startTokenLiquidity () {
   // Interval to consolidate UTXOs (maintenance)
   setInterval(async function () {
     const hex = await bch.consolidateUtxos()
+    wlogger.info('consolidateUtxos hex: ', hex)
     await bch.broadcastBchTx(hex)
   }, CONSOLIDATE_INTERVAL)
 
