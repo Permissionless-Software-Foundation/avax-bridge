@@ -559,14 +559,14 @@ describe('#bch-lib', () => {
   })
 
   describe('#consolidateUtxos', () => {
-    it('should throw return undefined when there is not enough UTXOs to consolidate.', async () => {
+    it('should throw return false when there is not enough UTXOs to consolidate.', async () => {
       sandbox
         .stub(uut.bchjs.Electrumx, 'utxo')
         .resolves(bchMockData.fulcrumUtxos)
 
       const result = await uut.consolidateUtxos()
 
-      assert.equal(result, undefined)
+      assert.equal(result, false)
     })
 
     it('should return hex string for consolidating on testnet', async () => {
