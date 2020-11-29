@@ -55,6 +55,7 @@ class TokenLiquidity {
     this.bch = bch
     this.txs = txs
     this.tlUtil = tlUtil
+    this.got = got
   }
 
   async getObjProcessTx () {
@@ -534,29 +535,32 @@ class TokenLiquidity {
     try {
       let USDperBCH
       try {
-        const rawRate = await got(
+        const rawRate = await _this.got(
           'https://api.coinbase.com/v2/exchange-rates?currency=BCH'
         )
+
         const jsonRate = JSON.parse(rawRate.body)
         // console.log(`jsonRate: ${JSON.stringify(jsonRate, null, 2)}`);
 
         USDperBCH = jsonRate.data.rates.USD
+
         wlogger.debug(`USD/BCH exchange rate: $${USDperBCH}`)
 
         config.usdPerBCH = USDperBCH
 
         // Update the BCH balance
-        const addressInfo = await bch.getBCHBalance(config.BCH_ADDR, false)
+        const addressInfo = await _this.bch.getBCHBalance(config.BCH_ADDR, false)
+
         const bchBalance = addressInfo
         config.bchBalance = bchBalance
 
         // Update the effective SLP balance.
         const effBal = _this.getEffectiveTokenBalance(bchBalance)
+
         config.tokenBalance = effBal
 
         // Save the state.
-        await tlUtil.saveState(config)
-
+        await _this.tlUtil.saveState(config)
         return config.usdPerBCH
       } catch (err) {
         wlogger.error(
@@ -564,7 +568,7 @@ class TokenLiquidity {
         )
         wlogger.error(err)
 
-        const state = tlUtil.readState()
+        const state = _this.tlUtil.readState()
         return state.usdPerBCH
       }
     } catch (err) {

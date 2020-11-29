@@ -351,5 +351,50 @@ describe('#token-liquidity', () => {
       })
       */
     })
+    describe('#getPrice()', () => {
+      it('should get the current price from coinbase api', async () => {
+        try {
+          sandbox
+            .stub(lib, 'got')
+            .resolves(libMockData.exchangeRatesResponse)
+
+          sandbox
+            .stub(lib.bch, 'getBCHBalance')
+            .resolves(12.44768481)
+
+          const result = await lib.getPrice()
+          assert.isString(result)
+        } catch (error) {
+          assert.fail('Unexpected result')
+        }
+      })
+      it('should get the current price from the local state if an error is thrown', async () => {
+        try {
+          sandbox
+            .stub(lib, 'got')
+            .throws(new Error('test error'))
+
+          const result = await lib.getPrice()
+          assert.isString(result)
+        } catch (error) {
+          assert.fail('Unexpected result')
+        }
+      })
+      it('should handle error ', async () => {
+        try {
+          sandbox
+            .stub(lib, 'got')
+            .throws(new Error('Coinbase exchange rate could not be retrieved!'))
+          sandbox
+            .stub(lib.tlUtil, 'readState')
+            .throws(new Error('Cant get the current price from the local state'))
+
+          await lib.getPrice()
+          assert.fail('Unexpected result')
+        } catch (error) {
+          assert.include(error.message, 'Cant get the current price from the local state')
+        }
+      })
+    })
   }
 })
