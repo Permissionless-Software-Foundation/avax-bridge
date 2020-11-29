@@ -350,7 +350,7 @@ class BCH {
       // If the number of UTXOs are less than the minimum, exit this function.
       if (utxos.length < minUtxos) {
         console.log('Not enough UTXOs to consolidate')
-        return
+        return false
       }
 
       // UTXOs number more than 10. So kick-off consolidation.
