@@ -76,11 +76,20 @@ const processTx = {
   bchBalance: 12,
   tokenBalance: 100
 }
-
+const exchangeRatesResponse = {
+  body: JSON.stringify({
+    data: {
+      rates: {
+        USD: '278.74'
+      }
+    }
+  })
+}
 module.exports = {
   knownTxids,
   addrInfo,
   confs,
   processTx,
-  mockGetTxs
+  mockGetTxs,
+  exchangeRatesResponse
 }
