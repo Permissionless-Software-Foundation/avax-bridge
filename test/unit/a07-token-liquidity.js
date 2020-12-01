@@ -396,5 +396,52 @@ describe('#token-liquidity', () => {
         }
       })
     })
+    describe('#getBlockchainBalances()', () => {
+      it('should get the current blockchain balances', async () => {
+        try {
+          sandbox
+            .stub(lib.bch, 'getBCHBalance')
+            .resolves(12.44768481)
+          sandbox
+            .stub(lib.slp, 'getTokenBalance')
+            .resolves(12.44768481)
+
+          const result = await lib.getBlockchainBalances()
+          assert.property(result, 'bchBalance')
+          assert.property(result, 'tokenBalance')
+          assert.isNumber(result.bchBalance)
+          assert.isNumber(result.tokenBalance)
+        } catch (error) {
+          assert.fail('Unexpected result')
+        }
+      })
+      it('should handle error if an error is thrown getting bch balance', async () => {
+        try {
+          sandbox
+            .stub(lib.bch, 'getBCHBalance')
+            .throws(new Error('test error'))
+
+          await lib.getBlockchainBalances()
+          assert.fail('Unexpected result')
+        } catch (error) {
+          assert.include(error.message, 'test error')
+        }
+      })
+      it('should handle error if an error is thrown getting slp balance', async () => {
+        try {
+          sandbox
+            .stub(lib.bch, 'getBCHBalance')
+            .resolves(12.44768481)
+          sandbox
+            .stub(lib.slp, 'getTokenBalance')
+            .throws(new Error('test error'))
+
+          await lib.getBlockchainBalances()
+          assert.fail('Unexpected result')
+        } catch (error) {
+          assert.include(error.message, 'test error')
+        }
+      })
+    })
   }
 })

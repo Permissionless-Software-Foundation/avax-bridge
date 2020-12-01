@@ -40,4 +40,15 @@ describe('#token-liquidity.js', () => {
       assert.isString(currentPrice)
     })
   })
+  describe('#getBlockchainBalances', () => {
+    it('should get the current blockchain balances', async () => {
+      const balance = await tlLib.getBlockchainBalances()
+      console.log(`balances: ${JSON.stringify(balance, null, 2)}`)
+
+      assert.property(balance, 'bchBalance')
+      assert.property(balance, 'tokenBalance')
+      assert.isNumber(balance.bchBalance)
+      assert.isNumber(balance.tokenBalance)
+    })
+  })
 })
