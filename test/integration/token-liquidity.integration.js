@@ -61,4 +61,13 @@ describe('#token-liquidity.js', () => {
       assert.isNumber(price)
     })
   })
+  describe('#getEffectiveTokenBalance', () => {
+    it('should Returns the "spot price"', async () => {
+      const bchBalance = 1
+      const effectiveBalance = await tlLib.getEffectiveTokenBalance(bchBalance)
+      console.log(`effectiveBalance: ${JSON.stringify(effectiveBalance, null, 2)}`)
+
+      assert.isNumber(effectiveBalance)
+    })
+  })
 })
