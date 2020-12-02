@@ -488,6 +488,12 @@ class TokenLiquidity {
   // 1 BCH was sent to the liquidity app.
   getSpotPrice (bchBalance, usdPerBCH) {
     try {
+      if (typeof bchBalance === 'undefined') {
+        throw new Error('bchBalance is required')
+      }
+      if (typeof usdPerBCH === 'undefined') {
+        throw new Error('usdPerBCH is required')
+      }
       const obj = {
         bchIn: 1.0,
         bchBalance: bchBalance,
@@ -495,9 +501,9 @@ class TokenLiquidity {
         tokenOriginalBalance: config.TOKENS_QTY_ORIGINAL
       }
 
-      const tokensFor1BCH = this.exchangeBCHForTokens(obj)
+      const tokensFor1BCH = _this.exchangeBCHForTokens(obj)
 
-      const price = tlUtil.round8(usdPerBCH / tokensFor1BCH.tokensOut)
+      const price = _this.tlUtil.round8(usdPerBCH / tokensFor1BCH.tokensOut)
 
       return price
     } catch (err) {

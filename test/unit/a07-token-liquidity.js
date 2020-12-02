@@ -443,5 +443,54 @@ describe('#token-liquidity', () => {
         }
       })
     })
+    describe('#getSpotPrice()', () => {
+      it('should get the spot price', async () => {
+        try {
+          const bchBalance = 12.44768481
+          const usdPerBCH = 1
+
+          const result = await lib.getSpotPrice(bchBalance, usdPerBCH)
+
+          assert.isNumber(result)
+        } catch (error) {
+          assert.fail('Unexpected result')
+        }
+      })
+      it('should throw error if bchBalance is not provided', async () => {
+        try {
+          await lib.getSpotPrice()
+
+          assert.fail('Unexpected result')
+        } catch (error) {
+          assert.include(error.message, 'bchBalance is required')
+        }
+      })
+      it('should throw error if usdPerBCH is not provided', async () => {
+        try {
+          const bchBalance = 12.44768481
+
+          await lib.getSpotPrice(bchBalance)
+
+          assert.fail('Unexpected result')
+        } catch (error) {
+          assert.include(error.message, 'usdPerBCH is required')
+        }
+      })
+      it('should handle error', async () => {
+        try {
+          const bchBalance = 12.44768481
+          const usdPerBCH = 1
+          sandbox
+            .stub(lib.tlUtil, 'round8')
+            .throws(new Error('test error'))
+
+          await lib.getSpotPrice(bchBalance, usdPerBCH)
+
+          assert.fail('Unexpected result')
+        } catch (error) {
+          assert.include(error.message, 'test error')
+        }
+      })
+    })
   }
 })

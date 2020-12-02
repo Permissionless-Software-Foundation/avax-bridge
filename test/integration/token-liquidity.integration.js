@@ -51,4 +51,14 @@ describe('#token-liquidity.js', () => {
       assert.isNumber(balance.tokenBalance)
     })
   })
+  describe('#getSpotPrice', () => {
+    it('should Returns the "spot price"', async () => {
+      const bchBalance = 1
+      const usdPerBCH = 0
+      const price = await tlLib.getSpotPrice(bchBalance, usdPerBCH)
+      console.log(`price: ${JSON.stringify(price, null, 2)}`)
+
+      assert.isNumber(price)
+    })
+  })
 })
