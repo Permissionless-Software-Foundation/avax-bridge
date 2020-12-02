@@ -469,13 +469,17 @@ class TokenLiquidity {
   // the 'actual' token balance.
   getEffectiveTokenBalance (bchBalance) {
     try {
+      if (typeof bchBalance === 'undefined') {
+        throw new Error('bchBalance is required')
+      }
+
       const tokenOriginalBalance = config.TOKENS_QTY_ORIGINAL
       const bchOriginalBalance = config.BCH_QTY_ORIGINAL
 
       let tokenBalance =
         -1 * tokenOriginalBalance * Math.log(bchBalance / bchOriginalBalance)
 
-      tokenBalance = tlUtil.round8(tokenBalance)
+      tokenBalance = _this.tlUtil.round8(tokenBalance)
 
       return tokenBalance
     } catch (err) {

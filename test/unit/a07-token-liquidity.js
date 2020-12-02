@@ -492,5 +492,42 @@ describe('#token-liquidity', () => {
         }
       })
     })
+    describe('#getEffectiveTokenBalance()', () => {
+      it('should get token balance', async () => {
+        try {
+          const bchBalance = 12.44768481
+
+          const result = await lib.getEffectiveTokenBalance(bchBalance)
+
+          assert.isNumber(result)
+        } catch (error) {
+          assert.fail('Unexpected result')
+        }
+      })
+      it('should throw error if bchBalance is not provided', async () => {
+        try {
+          await lib.getEffectiveTokenBalance()
+
+          assert.fail('Unexpected result')
+        } catch (error) {
+          assert.include(error.message, 'bchBalance is required')
+        }
+      })
+
+      it('should handle error', async () => {
+        try {
+          const bchBalance = 12.44768481
+          sandbox
+            .stub(lib.tlUtil, 'round8')
+            .throws(new Error('test error'))
+
+          await lib.getEffectiveTokenBalance(bchBalance)
+
+          assert.fail('Unexpected result')
+        } catch (error) {
+          assert.include(error.message, 'test error')
+        }
+      })
+    })
   }
 })
