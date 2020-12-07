@@ -6,7 +6,7 @@
   "scripts": {
     "start": "NETWORK=mainnet node token-liquidity.js",
     "test": "export TL_ENV=test && npm run prep-test && NETWORK=testnet  TEST_ENV=unit nyc --reporter=text mocha --exit --timeout 15000 test/unit",
-    "test:integration": "export TL_ENV=test && npm run prep-test && NETWORK=testnet TEST_ENV=integration nyc --reporter=text mocha --exit --timeout 30000 test/unit",
+    "test:integration": "export TL_ENV=test && npm run prep-test && NETWORK=mainnet TEST_ENV=integration nyc --reporter=text mocha --exit --timeout 30000 test/unit",
     "test:temp": "mocha -g '#token-liquidity' test/unit",
     "lint": "standard --env mocha --fix",
     "docs": "./node_modules/.bin/apidoc -i src/ -o docs",
@@ -37,7 +37,7 @@
   },
   "repository": "Permissionless-Software-Foundation/token-liquidity",
   "dependencies": {
-    "@psf/bch-js": "3.10.3",
+    "@psf/bch-js": "4.1.2",
     "apidoc": "^0.23.0",
     "axios": "^0.19.2",
     "bcryptjs": "^2.4.3",
@@ -66,7 +66,6 @@
     "request": "^2.85.0",
     "request-promise": "^4.2.2",
     "shelljs": "^0.8.3",
-    "slp-sdk": "^4.11.0",
     "winston": "^3.2.1",
     "winston-daily-rotate-file": "^4.0.0"
   },
@@ -86,7 +85,7 @@
     "mocha": "^7.0.1",
     "nock": "^10.0.6",
     "nyc": "^15.0.0",
-    "semantic-release": "^17.2.3",
+    "semantic-release": "^17.3.0",
     "sinon": "^9.2.1",
     "standard": "^14.3.1"
   },
