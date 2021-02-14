@@ -7,6 +7,6 @@
 module.exports = {
   session: 'secret-boilerplate-token',
   token: 'secret-jwt-token',
-  database: 'mongodb://localhost:27017/psf-token-server-test',
+  database: 'mongodb://localhost:27017/psf-avax-bridge-test',
   env: 'test'
 }

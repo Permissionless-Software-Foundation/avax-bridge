@@ -9,31 +9,28 @@ if (NETWORK === 'mainnet') {
   configOut = {
     NETWORK: 'mainnet',
     port: process.env.PORT || 5000,
-    BCH_ADDR: 'bitcoincash:qrnn49rx0p4xh78tts79utf0zv26vyru6vqtl9trd3',
-    SLP_ADDR: 'simpleledger:qzhrpmu7nruyfcemeanqh5leuqcnf6zkjqems7xqf3',
+
+    // 145 derivation address.
+    BCH_ADDR: 'bitcoincash:qq5f0qz09xfnu536eegkr879sxusrl2pvyzm9nhyeh',
+
+    // 245 derivation address
+    SLP_ADDR: 'simpleledger:qzd3jfcpy0kftnwqcrxkwsw360zl00c87ynv8ytppe',
+
     TOKENS_QTY_ORIGINAL: 50000,
     BCH_QTY_ORIGINAL: 250,
     SLP_TOKEN_ID:
-      '38e97c5d7d3585a2cbf3f9580c82ca33985f9cb0845d4dcce220cb709f9538b0'
+      '69d9575df68d90b435186afc6c6ea3f7e898cb487adbd947dc7a5bb4e3789cbd'
   }
-
-  // BCHN Mainnet test wallet
-  // configOut = {
-  //   NETWORK: 'mainnet',
-  //   port: process.env.PORT || 5000,
-  //   BCH_ADDR: 'bitcoincash:qzdq6jzvyzhyuj639l72rmqfzu3vd7eux5nhdzndwm',
-  //   SLP_ADDR: 'simpleledger:qq0qr5aqv6whvjrhfygk7s38qmuglf5sm5ufqqaqm5',
-  //   TOKENS_QTY_ORIGINAL: 50000,
-  //   BCH_QTY_ORIGINAL: 250,
-  //   SLP_TOKEN_ID:
-  //     'd0ef4de95b78222bfee2326ab11382f4439aa0855936e2fe6ac129a8d778baa0'
-  // }
 } else {
   configOut = {
     NETWORK: 'testnet',
     port: process.env.PORT || 5100,
-    BCH_ADDR: 'bchtest:qpz5hez3qmzrnjzdfu03tf7fp6ca0rlsaqvrxmfpyd',
-    SLP_ADDR: 'slptest:qpt74e74f75w6s7cd8r9p5fumvdhqf995g69udvd5n',
+
+    // 145 derivation path
+    BCH_ADDR: 'bchtest:qpl7x6u3pmwhf7ekjgqpjgy9fawgy9k5du0z8a8szj',
+
+    // 245 derivation path
+    SLP_ADDR: 'slptest:qptg4zdvrtxhxw4dyhvrqsjkae0tp58efg5layz4n5',
     TOKENS_QTY_ORIGINAL: 50000,
     BCH_QTY_ORIGINAL: 250,
     SLP_TOKEN_ID:

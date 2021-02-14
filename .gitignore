@@ -70,6 +70,7 @@ state.json
 system-user-*.json
 
 start-token-liquidity.sh
+start-avax-bridge.sh
 
 !README.md
 docs

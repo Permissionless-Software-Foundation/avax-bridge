@@ -4,7 +4,7 @@
   "description": "Transfers tokens between the AVAX and BCH blockchains",
   "main": "avax-bridge.js",
   "scripts": {
-    "start": "NETWORK=mainnet node token-liquidity.js",
+    "start": "NETWORK=mainnet node avax-bridge.js",
     "test": "export AB_ENV=test && npm run prep-test && NETWORK=testnet  TEST_ENV=unit nyc --reporter=text mocha --exit --timeout 15000 test/unit",
     "test:integration": "export AB_ENV=test && npm run prep-test && NETWORK=mainnet TEST_ENV=integration nyc --reporter=text mocha --exit --timeout 30000 test/unit",
     "test:temp": "mocha -g '#token-liquidity' test/unit",

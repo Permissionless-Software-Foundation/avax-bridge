@@ -287,6 +287,7 @@ class TokenLiquidity {
       return retObj
     } catch (err) {
       wlogger.error(`Error in token-liquidity.js/processTx(${inObj.txid})`)
+      console.log('Error in token-liquidity.js/processTx(): ', err)
       throw err
     }
   }
