@@ -14,21 +14,6 @@
     "coverage:report": "export TL_ENV=test && npm run prep-test && nyc --reporter=html mocha --timeout 15000 --exit test/unit",
     "prep-test": "node util/users/delete-all-test-users.js"
   },
-  "keywords": [
-    "koa-api-boilerplate",
-    "api",
-    "koa",
-    "koa2",
-    "boilerplate",
-    "es6",
-    "mongoose",
-    "passportjs",
-    "apidoc",
-    "bitcoin-cash",
-    "bitcoin",
-    "BCH",
-    "wormhole"
-  ],
   "author": "Chris Troutner <chris.troutner@gmail.com>",
   "license": "MIT",
   "apidoc": {

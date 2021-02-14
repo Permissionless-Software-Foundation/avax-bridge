@@ -1,7 +1,5 @@
 # token-liquidity
-This is an application for providing token liquidity, inspired by the pricing algorithm in the [Bancor Whitepaper](docs/bancor-protocol-whitepaper.pdf). While Bancor uses ERC20 tokens, this application focuses on the
-[Simple Leger Protocol](https://simpleledger.cash/) for creating tokens on the
-BCH network.
+This is an application for providing token liquidity, inspired by the pricing algorithm in the [Bancor Whitepaper](docs/bancor-formulas/bancor-protocol-whitepaper.pdf). While Bancor uses ERC20 tokens, this application focuses on the [Simple Leger Protocol](https://simpleledger.cash/) for creating tokens on the BCH network.
 
 The idea is simple: This program has its own BCH public address. If you send BCH to the address, the program will send you tokens. If you send tokens to that address, the program will send you BCH. The app functions as an automated market-maker, providing perfect liquidity for the token. The exchange rate is determined by the price formula.
 
@@ -9,12 +7,12 @@ The price formula used in this program was inspired by the Bancor whitepaper, bu
 
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com)
 
-[![Build Status](https://travis-ci.org/Permissionless-Software-Foundation/token-liquidity.svg?branch=master)](https://travis-ci.org/Permissionless-Software-Foundation/token-liquidity)
+[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
+
 
 - Configured for Jenkins (continuous integration), Coveralls (code coverage), Green Keeper (automated dependency management), and Semantic Release (automated versioning).
 
 
-[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 
 ## IPFS
 v2.3.0 uploaded to IPFS:
@@ -23,4 +21,4 @@ v2.3.0 uploaded to IPFS:
 - Pin it: `ipfs pin add -r QmUz4b2KwNLNvHZRTYcgrPCuKAhMB73XWN8vY8LLVVEYV1`
 
 ## License
-MIT
+[MIT](./LICENSE.md)
