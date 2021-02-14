@@ -28,7 +28,7 @@ The loop calls `detectNewTxs()` which returns an array of any new TXIDs associat
 
 If no new transactions are found, the loop retrieves its balances from an indexer, updates its state, and then exits.
 
-If a new transaction is found, it is added to the `seenTxs` object, and then the TX is added to a processing queue. The processing queue will try to process the transaction several times until it succeeds. (*TODO*)
+If a new transaction is found, it is added to the `seenTxs` object, and then the TX is added to a processing queue. The processing queue will try to process the transaction several times until it succeeds. 
 
 The `token-liquidity.js/processTx()` function processes the transaction. At a high level, the purpose of this function is to send tokens if it recieves BCH, or to send BCH if it recieves tokens. The exchange rate is determined by a mathematical function.
 
