@@ -60,7 +60,7 @@ let timerHandle
 let bchBalance
 let tokenBalance
 
-async function startTokenLiquidity () {
+async function startAvaxBridge () {
   // Read in the state file.
   try {
     const state = tlUtil.readState()
@@ -177,7 +177,7 @@ async function processingLoop (seenTxs) {
     }
 
     // Add the new txids to the seenTxs array.
-    newTxids.map(x => seenTxs.push(x.txid))
+    newTxids.map((x) => seenTxs.push(x.txid))
 
     outStr += `...${newTxids.length} new transactions found!`
     console.log(`${outStr}`)
@@ -228,9 +228,7 @@ async function processingLoop (seenTxs) {
         tokenBalance = result.tokenBalance
       } else {
         wlogger.error(
-          `bchBalance or tokenBalance returned a non-true value: ${
-            result.bchBalance
-          }, ${result.tokenBalance}`
+          `bchBalance or tokenBalance returned a non-true value: ${result.bchBalance}, ${result.tokenBalance}`
         )
       }
       console.log(`BCH: ${bchBalance}, SLP: ${tokenBalance}`)
@@ -315,9 +313,9 @@ async function checkBalances () {
 }
 
 function sleep (ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 module.exports = {
-  startTokenLiquidity
+  startAvaxBridge
 }

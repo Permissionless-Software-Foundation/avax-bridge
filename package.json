@@ -1,26 +1,26 @@
 {
-  "name": "token-liquidity",
-  "version": "3.0.0",
-  "description": "BCH SLP Token Liquidity Web App for the Permissionless Software Foundation",
-  "main": "token-liquidity.js",
+  "name": "avax-bridge",
+  "version": "1.0.0",
+  "description": "Transfers tokens between the AVAX and BCH blockchains",
+  "main": "avax-bridge.js",
   "scripts": {
     "start": "NETWORK=mainnet node token-liquidity.js",
-    "test": "export TL_ENV=test && npm run prep-test && NETWORK=testnet  TEST_ENV=unit nyc --reporter=text mocha --exit --timeout 15000 test/unit",
-    "test:integration": "export TL_ENV=test && npm run prep-test && NETWORK=mainnet TEST_ENV=integration nyc --reporter=text mocha --exit --timeout 30000 test/unit",
+    "test": "export AB_ENV=test && npm run prep-test && NETWORK=testnet  TEST_ENV=unit nyc --reporter=text mocha --exit --timeout 15000 test/unit",
+    "test:integration": "export AB_ENV=test && npm run prep-test && NETWORK=mainnet TEST_ENV=integration nyc --reporter=text mocha --exit --timeout 30000 test/unit",
     "test:temp": "mocha -g '#token-liquidity' test/unit",
     "lint": "standard --env mocha --fix",
     "docs": "./node_modules/.bin/apidoc -i src/ -o docs",
-    "coverage": "export TL_ENV=test && npm run prep-test && nyc report --reporter=text-lcov | coveralls",
-    "coverage:report": "export TL_ENV=test && npm run prep-test && nyc --reporter=html mocha --timeout 15000 --exit test/unit",
+    "coverage": "export AB_ENV=test && npm run prep-test && nyc report --reporter=text-lcov | coveralls",
+    "coverage:report": "export AB_ENV=test && npm run prep-test && nyc --reporter=html mocha --timeout 15000 --exit test/unit",
     "prep-test": "node util/users/delete-all-test-users.js"
   },
   "author": "Chris Troutner <chris.troutner@gmail.com>",
   "license": "MIT",
   "apidoc": {
-    "title": "token-liquidity",
+    "title": "startAvaxBridge",
     "url": "localhost:5000"
   },
-  "repository": "Permissionless-Software-Foundation/token-liquidity",
+  "repository": "Permissionless-Software-Foundation/avax-bridge",
   "dependencies": {
     "@psf/bch-js": "4.14.2",
     "axios": "^0.21.1",

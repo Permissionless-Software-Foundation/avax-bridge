@@ -1,9 +1,9 @@
 const server = require('./bin/server.js')
-const { startTokenLiquidity } = require('./bin/token-liquidity')
+const { startAvaxBridge } = require('./bin/avax-bridge')
 
 async function startServer () {
   await server.startServer()
-  await startTokenLiquidity()
+  await startAvaxBridge()
 }
 
 startServer()
