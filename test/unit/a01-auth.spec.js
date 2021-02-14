@@ -1,9 +1,6 @@
 const app = require('../../bin/server')
-
-const config = require('../../config')
-
 const utils = require('./utils')
-
+const config = require('../../config')
 const assert = require('chai').assert
 const axios = require('axios')
 

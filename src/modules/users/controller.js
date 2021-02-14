@@ -1,6 +1,6 @@
 const User = require('../../models/users')
 
-const wlogger = require('../../lib/wlogger')
+// const wlogger = require('../../lib/wlogger')
 
 let _this
 
@@ -93,7 +93,8 @@ class UserController {
         token
       }
     } catch (err) {
-      wlogger.error(`Error in users/controller.js/createUser(): ${err.message}`)
+      // console.log(`err.message: ${err.message}`)
+      console.log('err in POST /user: ', err)
       ctx.throw(422, err.message)
     }
   }

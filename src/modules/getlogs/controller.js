@@ -20,7 +20,7 @@ if (config.NETWORK === 'testnet') {
   setInterval(function () {
     const logName = getLogName()
     logStr = shell.exec(
-      `tail --lines=200 ${__dirname}/../../../logs/${logName}`,
+      `tail --lines=200 ${__dirname.toString()}/../../../logs/${logName}`,
       { silent: true }
     )
     // console.log(`logs: ${logStr}`)

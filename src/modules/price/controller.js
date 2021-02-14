@@ -40,7 +40,7 @@ util.inspect.defaultOptions = { depth: 1 }
  */
 async function getPrice (ctx) {
   // Read the current state
-  const filename = `${__dirname}/../../../state/state.json`
+  const filename = `${__dirname.toString()}/../../../state/state.json`
   const state = tlUtils.readState(filename)
   // console.log(`state: ${JSON.stringify(state, null, 2)}`)
 
