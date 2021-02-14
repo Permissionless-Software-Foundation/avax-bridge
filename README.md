@@ -12,7 +12,7 @@ The price formula used in this program was inspired by the Bancor whitepaper, bu
 
 - Configured for Jenkins (continuous integration), Coveralls (code coverage), Green Keeper (automated dependency management), and Semantic Release (automated versioning).
 
-
+- [Developer Documentation](./docs)
 
 ## IPFS
 v2.3.0 uploaded to IPFS:
