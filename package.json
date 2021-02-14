@@ -1,0 +1,89 @@
+{
+  "name": "token-liquidity",
+  "version": "3.0.0",
+  "description": "BCH SLP Token Liquidity Web App for the Permissionless Software Foundation",
+  "main": "token-liquidity.js",
+  "scripts": {
+    "start": "NETWORK=mainnet node token-liquidity.js",
+    "test": "export TL_ENV=test && npm run prep-test && NETWORK=testnet  TEST_ENV=unit nyc --reporter=text mocha --exit --timeout 15000 test/unit",
+    "test:integration": "export TL_ENV=test && npm run prep-test && NETWORK=mainnet TEST_ENV=integration nyc --reporter=text mocha --exit --timeout 30000 test/unit",
+    "test:temp": "mocha -g '#token-liquidity' test/unit",
+    "lint": "standard --env mocha --fix",
+    "docs": "./node_modules/.bin/apidoc -i src/ -o docs",
+    "coverage": "export TL_ENV=test && npm run prep-test && nyc report --reporter=text-lcov | coveralls",
+    "coverage:report": "export TL_ENV=test && npm run prep-test && nyc --reporter=html mocha --timeout 15000 --exit test/unit",
+    "prep-test": "node util/users/delete-all-test-users.js"
+  },
+  "author": "Chris Troutner <chris.troutner@gmail.com>",
+  "license": "MIT",
+  "apidoc": {
+    "title": "token-liquidity",
+    "url": "localhost:5000"
+  },
+  "repository": "Permissionless-Software-Foundation/token-liquidity",
+  "dependencies": {
+    "@psf/bch-js": "4.14.2",
+    "axios": "^0.21.1",
+    "bcryptjs": "^2.4.3",
+    "collect.js": "^4.16.6",
+    "glob": "^7.1.6",
+    "got": "^9.5.1",
+    "jsonwebtoken": "^8.5.1",
+    "jwt-bch-lib": "^1.2.0",
+    "kcors": "^2.2.2",
+    "koa": "^2.13.1",
+    "koa-bodyparser": "^4.3.0",
+    "koa-convert": "^2.0.0",
+    "koa-generic-session": "^2.1.1",
+    "koa-logger": "^3.2.1",
+    "koa-mount": "^4.0.0",
+    "koa-passport": "^4.1.3",
+    "koa-router": "^10.0.0",
+    "koa-static": "^5.0.0",
+    "line-reader": "^0.4.0",
+    "mongoose": "^5.11.15",
+    "nodemailer": "^6.4.17",
+    "p-queue": "^6.2.1",
+    "p-retry": "^4.2.0",
+    "passport-local": "^1.0.0",
+    "request": "^2.85.0",
+    "request-promise": "^4.2.2",
+    "shelljs": "^0.8.3",
+    "winston": "^3.3.3",
+    "winston-daily-rotate-file": "^4.5.0"
+  },
+  "devDependencies": {
+    "ajv": "^5.5.2",
+    "apidoc": "^0.26.0",
+    "bitbox-mock": "^1.0.3",
+    "chai": "^4.3.0",
+    "coveralls": "^3.1.0",
+    "eslint": "7.19.0",
+    "eslint-config-prettier": "^7.2.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "husky": "^4.3.8",
+    "lodash.clonedeep": "^4.5.0",
+    "mocha": "^8.2.1",
+    "nock": "^10.0.6",
+    "nyc": "^15.1.0",
+    "semantic-release": "^17.3.7",
+    "sinon": "^9.2.4",
+    "standard": "^16.0.3"
+  },
+  "release": {
+    "publish": [
+      {
+        "path": "@semantic-release/npm",
+        "npmPublish": false
+      }
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint"
+    }
+  }
+}
