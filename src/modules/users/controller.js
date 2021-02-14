@@ -94,7 +94,7 @@ class UserController {
       }
     } catch (err) {
       // console.log(`err.message: ${err.message}`)
-      // console.log('err: ', err)
+      console.log('err in POST /user: ', err)
       ctx.throw(422, err.message)
     }
   }
