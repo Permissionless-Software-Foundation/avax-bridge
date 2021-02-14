@@ -22,10 +22,9 @@
   },
   "repository": "Permissionless-Software-Foundation/token-liquidity",
   "dependencies": {
-    "@psf/bch-js": "4.1.2",
+    "@psf/bch-js": "4.14.2",
     "axios": "^0.21.1",
     "bcryptjs": "^2.4.3",
-    "bitbox-sdk": "^8.8.0",
     "collect.js": "^4.16.6",
     "glob": "^7.1.6",
     "got": "^9.5.1",
