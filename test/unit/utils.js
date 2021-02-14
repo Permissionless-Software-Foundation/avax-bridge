@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 const config = require('../../config')
-const axios = require('axios')
+const axios = require('axios').default
 
 const LOCALHOST = `http://localhost:${config.port}`
 
@@ -79,7 +79,7 @@ async function loginTestUser () {
 
 async function loginAdminUser () {
   try {
-    const FILENAME = `../config/system-user-${config.env}.json`
+    const FILENAME = `../../config/system-user-${config.env}.json`
     const adminUserData = require(FILENAME)
     console.log(`adminUserData: ${JSON.stringify(adminUserData, null, 2)}`)
 

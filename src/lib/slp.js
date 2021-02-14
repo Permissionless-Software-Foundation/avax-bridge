@@ -61,7 +61,7 @@ class SLP {
 
       // Get the token information that matches the token-ID for PSF tokens.
       const tokenInfo = result.find(
-        token => token.tokenId === this.config.SLP_TOKEN_ID
+        (token) => token.tokenId === this.config.SLP_TOKEN_ID
       )
       // console.log(`tokenInfo: ${JSON.stringify(tokenInfo, null, 2)}`)
 
@@ -225,6 +225,8 @@ class SLP {
         if (utxo && utxo.tokenId === this.config.SLP_TOKEN_ID && utxo.isValid) {
           return true
         }
+
+        return false
       })
       // console.log(
       //   `tokenUtxos (filter 1): ${JSON.stringify(tokenUtxos, null, 2)}`
@@ -480,6 +482,8 @@ class SLP {
         if (utxo && utxo.tokenId === this.config.SLP_TOKEN_ID && utxo.isValid) {
           return true
         }
+
+        return false
       })
       // console.log(
       //   `tokenUtxos (filter 1): ${JSON.stringify(tokenUtxos, null, 2)}`
@@ -672,11 +676,7 @@ class SLP {
   }
 
   async handleMoveTokenError (error) {
-    const errorMsg = `Attempt ${
-      error.attemptNumber
-    } to send tokens to the 245 path failed. There are ${
-      error.retriesLeft
-    } retries left. Waiting 4 minutes before trying again.`
+    const errorMsg = `Attempt ${error.attemptNumber} to send tokens to the 245 path failed. There are ${error.retriesLeft} retries left. Waiting 4 minutes before trying again.`
 
     //   failed attempt.
     console.log(' ')

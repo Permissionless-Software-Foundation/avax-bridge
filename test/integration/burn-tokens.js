@@ -119,7 +119,7 @@ async function findBiggestUtxo (utxos) {
   let largestAmount = 0
   let largestIndex = 0
 
-  for (var i = 0; i < utxos.length; i++) {
+  for (let i = 0; i < utxos.length; i++) {
     const thisUtxo = utxos[i]
 
     if (thisUtxo.satoshis > largestAmount) {

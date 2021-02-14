@@ -7,7 +7,7 @@ const config = require('../../config')
 
 const testUtils = require('./utils')
 
-const axios = require('axios')
+const axios = require('axios').default
 
 const sinon = require('sinon')
 

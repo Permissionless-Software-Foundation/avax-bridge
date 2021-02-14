@@ -20,7 +20,7 @@ const wlogger = require('./wlogger')
 // const TokenLiquidity = require('./token-liquidity')
 // const tokenApp = new TokenLiquidity()
 
-const STATE_FILE_NAME = `${__dirname}/../../state/state.json`
+const STATE_FILE_NAME = `${__dirname.toString()}/../../state/state.json`
 
 class TLUtils {
   // constructor () {}
@@ -77,9 +77,9 @@ class TLUtils {
       let walletInfo
 
       if (config.NETWORK === 'testnet') {
-        walletInfo = require(`${__dirname}/../../wallet-test.json`)
+        walletInfo = require(`${__dirname.toString()}/../../wallet-test.json`)
       } else {
-        walletInfo = require(`${__dirname}/../../wallet-main.json`)
+        walletInfo = require(`${__dirname.toString()}/../../wallet-main.json`)
       }
       // console.log(`walletInfo in slp: ${JSON.stringify(walletInfo, null, 2)}`)
 
@@ -90,7 +90,7 @@ class TLUtils {
   }
 
   sleep (ms) {
-    return new Promise(resolve => setTimeout(resolve, ms))
+    return new Promise((resolve) => setTimeout(resolve, ms))
   }
 }
 
