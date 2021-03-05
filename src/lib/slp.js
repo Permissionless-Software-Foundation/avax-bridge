@@ -141,7 +141,7 @@ class SLP {
       }
 
       // Open the wallet controlling the tokens
-      const walletInfo = this.tlUtils.openWallet()
+      const walletInfo = _this.tlUtils.openWallet()
       const mnemonic = walletInfo.mnemonic
 
       // root seed buffer
@@ -398,7 +398,7 @@ class SLP {
       }
 
       // Open the wallet controlling the tokens
-      const walletInfo = this.tlUtils.openWallet()
+      const walletInfo = _this.tlUtils.openWallet()
       const mnemonic = walletInfo.mnemonic
 
       // root seed buffer
@@ -676,17 +676,24 @@ class SLP {
   }
 
   async handleMoveTokenError (error) {
-    const errorMsg = `Attempt ${error.attemptNumber} to send tokens to the 245 path failed. There are ${error.retriesLeft} retries left. Waiting 4 minutes before trying again.`
+    try {
+      const errorMsg = `Attempt ${error.attemptNumber} to send tokens to the 245 path failed. There are ${error.retriesLeft} retries left. Waiting 4 minutes before trying again.`
 
-    //   failed attempt.
-    console.log(' ')
-    console.log(errorMsg)
-    console.log(' ')
-    wlogger.error(errorMsg)
+      //   failed attempt.
+      console.log(' ')
+      console.log(errorMsg)
+      console.log(' ')
+      wlogger.error(errorMsg)
 
-    if (process.env.TL_ENV !== 'test') {
-      await this.tlUtils.sleep(60000 * 4)
-    } // Sleep for 4 minutes
+      if (process.env.TL_ENV !== 'test') {
+        await _this.tlUtils.sleep(60000 * 4)
+      } // Sleep for 4 minutes
+    } catch (err) {
+      console.log(
+        'Unhandled error caught in handleMoveTokenError(). Continuing. Error: ',
+        err
+      )
+    }
   }
 
   // This function is used by moveTokens() to transfer the tokens from the 145
