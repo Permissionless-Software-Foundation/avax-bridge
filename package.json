@@ -49,6 +49,7 @@
     "request": "^2.85.0",
     "request-promise": "^4.2.2",
     "shelljs": "^0.8.3",
+    "slp-avax-bridge": "^1.5.0",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.0"
   },
