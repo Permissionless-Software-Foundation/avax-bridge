@@ -201,71 +201,11 @@ class TokenLiquidity {
             "Dust recieved. This is probably a token tx that SLPDB doesn't know about."
           )
         }
-
-        // Exchange BCH for tokens
-        const exchangeObj = {
-          bchIn: Number(bchQty),
-          bchBalance: Number(bchBalance),
-          bchOriginalBalance: BCH_QTY_ORIGINAL,
-          tokenOriginalBalance: TOKENS_QTY_ORIGINAL
-        }
-
-        // CT 7-9-2020 Debugging issues
-        wlogger.info(`exchangeObj: ${JSON.stringify(exchangeObj, null, 2)}`)
-
-        const retObj = _this.exchangeBCHForTokens(exchangeObj)
-
-        wlogger.info(
-          `Ready to send ${
-            retObj.tokensOut
-          } tokens in exchange for ${bchQty} BCH`
-        )
-
-        // Calculate the new balances
-        newBchBalance = this.tlUtil.round8(
-          Number(bchBalance) + exchangeObj.bchIn
-        )
-        newTokenBalance = this.tlUtil.round8(
-          Number(tokenBalance) - retObj.tokensOut
-        )
-        wlogger.debug(`retObj: ${util.inspect(retObj)}`)
-        wlogger.info(`New BCH balance: ${newBchBalance}`)
-        wlogger.info(`New token balance: ${newTokenBalance}`)
-        console.log('retObj.tokensOut', retObj.tokensOut)
-
-        // Check if transaction includes an OP_RETURN instruction
-        const opReturnData = await bch.readOpReturn(txid)
-        // console.log(`opReturnData: ${JSON.stringify(opReturnData, null, 2)}`)
-
-        // If the TX contains a valid OP_RETURN code
-        if (opReturnData.isValid) {
-          if (opReturnData.type === 'burn') {
-            wlogger.info(
-              `BURN OP_RETURN detected. Burning ${retObj.tokensOut} tokens.`
-            )
-
-            // Call a method in the slp library to burn a select amount of tokens
-            // instead of sending them to a return address.
-            const hex = await slp.burnTokenTx(retObj.tokensOut)
-            await slp.broadcastTokenTx(hex)
-          }
-
-          // Normal BCH transaction with no OP_RETURN.
-        } else {
-          // Send Tokens
-          const tokenHex = await slp.createTokenTx(
-            userAddr,
-            retObj.tokensOut,
-            245
-          )
-
-          await slp.broadcastTokenTx(tokenHex)
-        }
-
-        // Send Tokens
-        // const tokenConfig = await slp.createTokenTx(userAddr, retObj.tokensOut, 245)
-
-        // await slp.broadcastTokenTx(tokenConfig)
+        
+        // check if the TX contains a valid OP_RETURN code
+        // const opReturnData = await bch.readOpReturn(txid)
+        // if (opReturnData.isValid && opReturnData.type === 'burn') {
+        // }
       }
 
       const retObj = {
