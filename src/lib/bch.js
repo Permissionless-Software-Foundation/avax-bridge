@@ -447,7 +447,8 @@ class BCH {
   }
 
   // Checks BCH transactions to see if they have an OP_RETURN. Returns an object.
-  // This method primarily targets BURN messages.
+  // This method primarily targets AVAX messages that follow this formula.
+  // AVAX <avax address> <slp txid>
   // If no OP_RETURN is present, the isValid property will be false.
   // If OP_RETURN is present, it will attempt to be decoded.
   async readOpReturn (txid) {
@@ -473,21 +474,40 @@ class BCH {
       if (script[0] !== 'OP_RETURN') return retObj
 
       // Decode the command
-      const cmd = Buffer.from(script[2], 'hex').toString('ascii')
-      // cmd = cmd.split(' ')
-      // console.log(`cmd: ${JSON.stringify(cmd, null, 2)}`)
+      let cmd = Buffer.from(script[2], 'hex').toString('ascii').trim()
+      // Make sure there are no extra spaces
+      cmd = cmd.replace(/\s+/g, ' ').split(' ')
+      console.log(`cmd: ${JSON.stringify(cmd, null, 2)}`)
 
-      // if (cmd[0] === 'BURN') {
-      if (cmd.indexOf('BURN') > -1) {
-        // let qty = Number(cmd[1])
-        // console.log(`qty: ${qty}`)
-        // qty = Number(qty)
-
-        retObj.isValid = true
-        retObj.type = 'burn'
-        // retObj.qty = qty
+      if (cmd[0].toLowerCase() !== 'avax' || cmd.length < 3) {
+        return retObj
       }
 
+      let avaxAddress
+      let incomingTxid
+      // find the avalanche address and the txid
+      for (const value of cmd) {
+        if (value.indexOf('avax1') > -1) {
+          avaxAddress = value
+          continue
+        }
+        incomingTxid = value
+      }
+
+      // failed to find address in op_return
+      if (typeof avaxAddress !== 'string' || avaxAddress.length === 0) {
+        return retObj
+      }
+
+      // failed to find txid in op_return
+      if (incomingTxid.toLowerCase() === 'avax') {
+        return retObj
+      }
+
+      retObj.isValid = true
+      retObj.type = 'avax'
+      retObj.avaxAddress = avaxAddress
+      retObj.incomingTxid = incomingTxid
       return retObj
     } catch (err) {
       wlogger.error('Error in bch.js/readOpReturn(): ', err)
