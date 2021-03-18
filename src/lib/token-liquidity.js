@@ -40,6 +40,9 @@ const BCH_ADDR1 = config.BCH_ADDR
 const TOKENS_QTY_ORIGINAL = config.TOKENS_QTY_ORIGINAL
 const BCH_QTY_ORIGINAL = config.BCH_QTY_ORIGINAL
 
+const BchAvaxBridge = require('slp-avax-bridge')
+const bridge = new BchAvaxBridge()
+
 // p-retry library
 // const pRetry = require('p-retry')
 
@@ -56,6 +59,7 @@ class TokenLiquidity {
     this.txs = txs
     this.tlUtil = tlUtil
     this.got = got
+    this.bridge = bridge
   }
 
   async getObjProcessTx () {
@@ -152,37 +156,11 @@ class TokenLiquidity {
       if (isTokenTx) {
         wlogger.info(`${isTokenTx} tokens recieved.`)
 
-        // Exchange tokens for BCH
-        const exchangeObj = {
-          tokenIn: isTokenTx,
-          bchBalance: Number(bchBalance),
-          bchOriginalBalance: BCH_QTY_ORIGINAL,
-          tokenOriginalBalance: TOKENS_QTY_ORIGINAL
-        }
+        // Run operation to burn the received tokens
+        const burnTxID = await _this.bridge.bch.burnSlp(isTokenTx)
 
-        const retObj = _this.exchangeTokensForBCH(exchangeObj)
-        wlogger.debug('retObj: ', retObj)
-
-        const bchOut = retObj.bchOut
-        wlogger.info(
-          `Ready to send ${bchOut} BCH in exchange for ${isTokenTx} tokens`
-        )
-
-        // Update the balances
-        wlogger.info(`New BCH balance: ${retObj.bch2}`)
-        wlogger.info(`New token balance: ${retObj.token2}`)
-
-        // Send BCH
-        const obj = {
-          recvAddr: userAddr,
-          satoshisToSend: Math.floor(bchOut * 100000000)
-        }
-        wlogger.debug(`obj.satoshisToSend: ${obj.satoshisToSend}`)
-
-        // Send BCH to the user.
-        const hex = await bch.createBchTx(obj)
-        const userBCHTXID = await bch.broadcastBchTx(hex)
-        wlogger.info(`BCH sent to user: ${userBCHTXID}`)
+        wlogger.info(`${isTokenTx} tokens will be burned.`)
+        wlogger.info(`SLP Tokens burned: ${burnTxID}`)
 
         // User sent BCH
       } else {
