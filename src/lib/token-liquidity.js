@@ -37,8 +37,6 @@ util.inspect.defaultOptions = { depth: 5 }
 
 const BCH_ADDR1 = config.BCH_ADDR
 // const TOKEN_ID = config.TOKEN_ID
-const TOKENS_QTY_ORIGINAL = config.TOKENS_QTY_ORIGINAL
-const BCH_QTY_ORIGINAL = config.BCH_QTY_ORIGINAL
 
 const BchAvaxBridge = require('slp-avax-bridge')
 const bridge = new BchAvaxBridge()
@@ -149,8 +147,8 @@ class TokenLiquidity {
       const isTokenTx = await slp.tokenTxInfo(lastTransaction)
       wlogger.debug(`isTokenTx: ${isTokenTx}`)
 
-      let newTokenBalance = tokenBalance
-      let newBchBalance = bchBalance
+      const newTokenBalance = tokenBalance
+      const newBchBalance = bchBalance
 
       // User sent tokens.
       if (isTokenTx) {
@@ -179,11 +177,14 @@ class TokenLiquidity {
             "Dust recieved. This is probably a token tx that SLPDB doesn't know about."
           )
         }
-        
+
         // check if the TX contains a valid OP_RETURN code
         // const opReturnData = await bch.readOpReturn(txid)
-        // if (opReturnData.isValid && opReturnData.type === 'burn') {
-        // }
+        const opReturnData = await bch.readOpReturn(txid)
+        if (opReturnData.isValid && opReturnData.type === 'avax') {
+          console.log(`The avax address is : ${opReturnData.avaxAddress}`)
+          console.log(`The txid with the tokens is : ${opReturnData.incomingTxid}`)
+        }
       }
 
       const retObj = {
