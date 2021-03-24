@@ -464,11 +464,11 @@ describe('#bch-lib', () => {
       assert.equal(opReturnData.isValid, false)
     })
 
-    it('should processes a valid BURN command', async () => {
+    it('should processes a valid AVAX command', async () => {
       // Mock network calls.
       sandbox
         .stub(uut.bchjs.RawTransactions, 'getRawTransaction')
-        .resolves(bchMockData.burnOpReturnTx)
+        .resolves(bchMockData.avaxOpReturnTx)
 
       const txid =
         '73e0b24ab94413c8bf003168c533653b91c9409218cf4ed601b77734856770d1'
@@ -477,7 +477,9 @@ describe('#bch-lib', () => {
       // console.log(`opReturnData: ${JSON.stringify(opReturnData, null, 2)}`)
 
       assert.equal(opReturnData.isValid, true)
-      assert.equal(opReturnData.type, 'burn')
+      assert.equal(opReturnData.type, 'avax')
+      assert.property(opReturnData, 'avaxAddress')
+      assert.property(opReturnData, 'incomingTxid')
       // assert.equal(opReturnData.qty, 10)
     })
 
