@@ -36,6 +36,15 @@ class AvaxLib {
               type
               acceptedAt
               memo
+              inputs {
+                output {
+                  id
+                  transactionID
+                  assetID
+                  amount
+                  addresses
+                }
+              }
               outputs {
                 id
                 transactionID
@@ -88,19 +97,22 @@ class AvaxLib {
 
   // retrieves the current token balance in the given address
   async getTokenBalance (addr, withDecimals = false) {
-    console.log(`addr: ${addr}`)
-    const lib = _this.slpAvaxBridgeLib.avax
-    const tokenBuffer = lib.binTools.cb58Decode(_this.config.AVAX_TOKEN_ID)
-    const balance = await lib.xchain.getBalance(addr, tokenBuffer)
+    try {
+      const lib = _this.slpAvaxBridgeLib.avax
+      const { balance } = await lib.xchain.getBalance(addr, _this.config.AVAX_TOKEN_ID)
 
-    if (!withDecimals) {
-      return balance.toNumber()
+      if (!withDecimals) {
+        return parseInt(balance)
+      }
+
+      const assetDescription = await lib.xchain.getAssetDescription(_this.config.AVAX_TOKEN_ID)
+      const denomination = assetDescription.denomination
+
+      return parseInt(balance) / Math.pow(10, denomination)
+    } catch (err) {
+      console.error('Error in avax.js/getTransactions(): ', err)
+      throw err
     }
-
-    const assetDescription = await lib.xchain.getAssetDescription(tokenBuffer)
-    const denomination = assetDescription.denomination
-
-    return balance.toNumber() / Math.pow(10, denomination)
   }
 
   // Maps the transaction arrays into an transaction id array

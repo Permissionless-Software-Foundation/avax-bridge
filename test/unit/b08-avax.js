@@ -85,7 +85,7 @@ describe('#avax-lib', () => {
     it('should get token balance in the address', async () => {
       sandbox
         .stub(uut.slpAvaxBridgeLib.avax.xchain, 'getBalance')
-        .resolves(new uut.slpAvaxBridgeLib.avax.BN(2000))
+        .resolves({ balance: '2000' })
 
       const addr = 'X-avax150agl543yn0n5z9z20tgmrggs8fc2ckkma4qfv'
 
@@ -97,7 +97,7 @@ describe('#avax-lib', () => {
     it('should get token balance in the address with decimals', async () => {
       sandbox
         .stub(uut.slpAvaxBridgeLib.avax.xchain, 'getBalance')
-        .resolves(new uut.slpAvaxBridgeLib.avax.BN(2000))
+        .resolves({ balance: '2000' })
       sandbox
         .stub(uut.slpAvaxBridgeLib.avax.xchain, 'getAssetDescription')
         .resolves({ denomination: 2 })
@@ -107,6 +107,20 @@ describe('#avax-lib', () => {
       const balance = await uut.getTokenBalance(addr, true)
 
       assert.equal(balance, 20.00)
+    })
+
+    it('should throw and catch an error', async () => {
+      try {
+        sandbox
+          .stub(uut.slpAvaxBridgeLib.avax.xchain, 'getBalance')
+          .rejects(new Error('test error'))
+
+        const addr = 'X-avax150agl543yn0n5z9z20tgmrggs8fc2ckkma4qfv'
+        await uut.getTokenBalance(addr, false)
+        assert.fail('unexpected result')
+      } catch (err) {
+        assert.include(err.message, 'test error')
+      }
     })
   })
 
