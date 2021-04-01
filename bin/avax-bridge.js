@@ -184,23 +184,23 @@ async function processingLoop (seenTxs, seenAvaxTxs) {
       bchBalance = retObj2.bchBalance
       tokenBalance = retObj2.tokenBalance
 
-      outStr += `...nothing new on SLP. SLP: ${tokenBalance}`
+      outStr += `\n\t...nothing new on SLP. SLP: ${tokenBalance}`
     } else {
       newTxids.map((x) => seenTxs.push(x.txid))
-      outStr += `...${newTxids.length} new transactions found on SLP!`
+      outStr += `\n\t...${newTxids.length} new transactions found on SLP!`
     }
 
     if (newAvaxTx.length === 0) {
       // Retrieve the balances from the avalanche X chain.
-      const retObj3 = await avax.getTokenBalance(config.AVAX_TOKEN_ID, true)
+      const retObj3 = await avax.getTokenBalance(config.AVAX_ADDR, true)
 
       // Update the app balances.
       avaxBalance = retObj3
 
-      outStr += `...nothing new on avax. Token amount: ${avaxBalance}`
+      outStr += `\n\t...nothing new on avax. Token amount: ${avaxBalance}`
     } else {
       newAvaxTx.map((x) => seenAvaxTxs.push(x.id))
-      outStr += `...${newAvaxTx.length} new transactions found on avalanche!`
+      outStr += `\n\t...${newAvaxTx.length} new transactions found on avalanche!`
     }
 
     if (newAvaxTx.length === 0 && newTxids.length === 0) {
@@ -334,7 +334,6 @@ async function checkBalances () {
     const state = tlUtil.readState()
     const effTokenBal = lib.getEffectiveTokenBalance(state.bchBalance)
     const realTokenBal = await slp.getTokenBalance()
-    // const avaxTokenBal = await avax.getTokenBalance(config.AVAX_TOKEN_ID, true)
     const avaxTokenBal = await avax.getTokenBalance(config.AVAX_ADDR, true)
 
     wlogger.info(
