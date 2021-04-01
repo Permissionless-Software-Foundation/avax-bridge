@@ -104,7 +104,7 @@ async function startAvaxBridge () {
   wlogger.info(
     `SLP token address ${config.SLP_ADDR} has a balance of: ${tokenBalance} PSF`
   )
-  avaxBalance = await avax.getTokenBalance(config.AVAX_TOKEN_ID, true)
+  avaxBalance = await avax.getTokenBalance(config.AVAX_ADDR, true)
   wlogger.info(
     `AVAX address ${config.AVAX_ADDR} has a token balance of: ${avaxBalance} tokens`
   )
@@ -334,7 +334,8 @@ async function checkBalances () {
     const state = tlUtil.readState()
     const effTokenBal = lib.getEffectiveTokenBalance(state.bchBalance)
     const realTokenBal = await slp.getTokenBalance()
-    const avaxTokenBal = await avax.getTokenBalance(config.AVAX_TOKEN_ID, true)
+    // const avaxTokenBal = await avax.getTokenBalance(config.AVAX_TOKEN_ID, true)
+    const avaxTokenBal = await avax.getTokenBalance(config.AVAX_ADDR, true)
 
     wlogger.info(
       `usdPerBCH: ${state.usdPerBCH}, ` +

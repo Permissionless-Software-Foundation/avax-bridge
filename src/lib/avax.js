@@ -88,6 +88,7 @@ class AvaxLib {
 
   // retrieves the current token balance in the given address
   async getTokenBalance (addr, withDecimals = false) {
+    console.log(`addr: ${addr}`)
     const lib = _this.slpAvaxBridgeLib.avax
     const tokenBuffer = lib.binTools.cb58Decode(_this.config.AVAX_TOKEN_ID)
     const balance = await lib.xchain.getBalance(addr, tokenBuffer)
