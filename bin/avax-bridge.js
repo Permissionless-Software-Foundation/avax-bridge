@@ -323,7 +323,7 @@ async function getJwt () {
     // Set the environment variable.
     process.env.BCHJSTOKEN = apiToken
   } catch (err) {
-    wlogger.error('Error in token-liquidity.js/getJwt(): ', err)
+    wlogger.error('Error in avax-bridge.js/getJwt(): ', err)
     throw err
   }
 }

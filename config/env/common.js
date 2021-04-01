@@ -14,7 +14,7 @@ if (NETWORK === 'mainnet') {
     BCH_ADDR: 'bitcoincash:qq5f0qz09xfnu536eegkr879sxusrl2pvyzm9nhyeh',
 
     // 245 derivation address
-    SLP_ADDR: 'simpleledger:qzd3jfcpy0kftnwqcrxkwsw360zl00c87ynv8ytppe',
+    SLP_ADDR: 'simpleledger:qq5f0qz09xfnu536eegkr879sxusrl2pvywqwgzy8f',
     AVAX_ADDR: 'X-avax150agl543yn0n5z9z20tgmrggs8fc2ckkma4qfv',
     AVAX_TOKEN_ID: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
     TOKENS_QTY_ORIGINAL: 50000,
