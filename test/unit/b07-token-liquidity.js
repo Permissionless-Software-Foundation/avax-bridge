@@ -13,6 +13,7 @@ const TokenLiquidity = require('../../src/lib/token-liquidity')
 // const bitboxMock = require('bitbox-mock')
 // const txMockData = require('./mocks/transactions')
 const libMockData = require('./mocks/token-liquidity-mock')
+const avaxMockData = require('./mocks/avax.mock')
 
 // Used for debugging.
 const util = require('util')
@@ -255,6 +256,78 @@ describe('#token-liquidity', () => {
         assert.fail('Unexpected result')
       } catch (err) {
         assert.include(err.message, 'test error')
+      }
+    })
+  })
+
+  describe('#detectNewAvaxTxs', () => {
+    it('should return new txs', async () => {
+      const knownTxids = avaxMockData.knownTxids
+      const txHistory = avaxMockData.txHistory.data.transactions.results
+
+      const obj = {
+        seenAvaxTxs: knownTxids.slice(0, -1)
+      }
+
+      sandbox.stub(lib.avax, 'getTransactions').resolves(txHistory)
+
+      const result = await lib.detectNewAvaxTxs(obj)
+
+      assert.isArray(result)
+      assert.hasAllKeys(result[0], ['id', 'memo', 'inputs', 'outputs'])
+    })
+
+    it('should return an empty array if no new txs', async () => {
+      const knownTxids = avaxMockData.knownTxids
+      const txHistory = avaxMockData.txHistory.data.transactions.results
+
+      const obj = {
+        seenAvaxTxs: knownTxids
+      }
+
+      sandbox.stub(lib.avax, 'getTransactions').resolves(txHistory)
+      const result = await lib.detectNewAvaxTxs(obj)
+
+      assert.isArray(result)
+      assert.equal(result.length, 0)
+    })
+
+    it('should throw and catch an error', async () => {
+      try {
+        const knownTxids = avaxMockData.knownTxids
+
+        const obj = {
+          seenAvaxTxs: knownTxids.slice(0, -1)
+        }
+        // Force an error
+        sandbox
+          .stub(lib.avax, 'getTransactions')
+          .rejects(new Error('test error'))
+        await lib.detectNewAvaxTxs(obj)
+        assert.fail('Unexpected result')
+      } catch (err) {
+        assert.include(err.message, 'test error')
+      }
+    })
+  })
+
+  describe('#proccessAvaxTx', () => {
+    it('should log some info and return the sender address', async () => {
+      try {
+        const formatedTx = avaxMockData.formatedTx
+        const result = await lib.proccessAvaxTx(formatedTx)
+        assert.isString(result)
+      } catch (error) {
+        assert.fail('Unexpected result')
+      }
+    })
+
+    it('should throw and catch an error', async () => {
+      try {
+        await lib.proccessAvaxTx({ id: null })
+        assert.fail('Unexpected result')
+      } catch (error) {
+        assert.include(error.message, 'txid needs to be a string')
       }
     })
   })

@@ -22,6 +22,10 @@ const bch = new BCH(config)
 const SLP = require('./slp')
 const slp = new SLP(config)
 
+// AVALANCHE library
+const AVAX = require('./avax')
+const avax = new AVAX(config)
+
 // Transactions library
 const Transactions = require('./transactions')
 const txs = new Transactions()
@@ -58,6 +62,7 @@ class TokenLiquidity {
     this.tlUtil = tlUtil
     this.got = got
     this.bridge = bridge
+    this.avax = avax
   }
 
   async getObjProcessTx () {
@@ -113,6 +118,56 @@ class TokenLiquidity {
     }
   }
 
+  // seenAvaxTxs = array of txs that have already been processed.
+  // curTxs = Gets a list of transactions associated with the address.
+  // diffTxs = diff seenTxs from curTxs
+  // filter out all the txs in diffTx that dont have a valid memo
+  // Add them to the seenTxs array after they've been processed.
+  // process these txs
+  async detectNewAvaxTxs (obj) {
+    try {
+      const { seenAvaxTxs } = obj
+
+      // Get the current list of transactions for the apps address.
+      const historicalTxs = await _this.avax.getTransactions(config.AVAX_ADDR)
+      const txids = _this.avax.justTxs(historicalTxs)
+
+      const curTxs = collect(txids)
+
+      // Diff the transactions against the list of processed txs.
+      const diffTxs = curTxs.diff(seenAvaxTxs)
+
+      // Exit if there are no new transactions.
+      if (diffTxs.items.length === 0) return []
+
+      const newTxs = _this.avax.filterNewTx(diffTxs.items, historicalTxs)
+      return newTxs
+    } catch (err) {
+      wlogger.error('Error in lib/token-liquidity.js/detectNewAvaxTxs()')
+      throw err
+    }
+  }
+
+  async proccessAvaxTx (avaxTx) {
+    try {
+      const { id } = avaxTx
+
+      if (typeof id !== 'string') {
+        throw new Error('txid needs to be a string')
+      }
+
+      wlogger.info(`Processing new avax TXID ${id}.`)
+
+      const address = _this.avax.getUserAddress(avaxTx)
+      console.log(`The sender address is ${address}`)
+      return address
+    } catch (err) {
+      wlogger.error(`Error in token-liquidity.js/proccessAvaxTx(${avaxTx.id})`)
+      console.log('Error in token-liquidity.js/proccessAvaxTx(): ', err)
+      throw err
+    }
+  }
+
   // Processes a single TX, sends tokens or BCH based on the type of transaction.
   async processTx (inObj) {
     try {
@@ -121,7 +176,7 @@ class TokenLiquidity {
       // Data validation
       if (typeof txid !== 'string') throw new Error('txid needs to be a string')
 
-      wlogger.info(`Processing new TXID ${txid}.`)
+      wlogger.info(`Processing new slp TXID ${txid}.`)
 
       const lastTransaction = txid
 

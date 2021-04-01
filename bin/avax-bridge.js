@@ -23,6 +23,9 @@ let slp = new SLP(config)
 const BCH = require('../src/lib/bch')
 let bch = new BCH(config)
 
+const AVAX = require('../src/lib/avax')
+let avax = new AVAX(config)
+
 const { default: PQueue } = require('p-queue')
 const queue = new PQueue({ concurrency: 1 })
 
@@ -59,6 +62,7 @@ let timerHandle
 
 let bchBalance
 let tokenBalance
+let avaxBalance
 
 async function startAvaxBridge () {
   // Read in the state file.
@@ -73,6 +77,7 @@ async function startAvaxBridge () {
   await getJwt()
   bch = new BCH(config) // Reinitialize bchjs with the JWT token.
   slp = new SLP(config) // Reinitialize bchjs with the JWT token.
+  avax = new AVAX(config)
 
   // Get BCH balance.
   const addressBalance = await bch.getBCHBalance(config.BCH_ADDR, false)
@@ -84,11 +89,14 @@ async function startAvaxBridge () {
 
   // console.log(`addressInfo: ${JSON.stringify(addressInfo, null, 2)}`)
 
-  // Get all the TXIDs associated with this apps address. The app assumes all
+  // Get all the TXIDs associated with this apps addresses. The app assumes all
   // these TXs have been processed.
   // const seenTxs = addressInfo.txids
   const historicalTxs = await bch.getTransactions(config.BCH_ADDR)
   const seenTxs = bch.justTxs(historicalTxs)
+
+  const historicalAvaxTxs = await avax.getTransactions(config.AVAX_ADDR)
+  const seenAvaxTxs = avax.justTxs(historicalAvaxTxs)
   // console.log(`seenTxs: ${JSON.stringify(seenTxs, null, 2)}`)
 
   // Get SLP token balance
@@ -96,7 +104,12 @@ async function startAvaxBridge () {
   wlogger.info(
     `SLP token address ${config.SLP_ADDR} has a balance of: ${tokenBalance} PSF`
   )
+  avaxBalance = await avax.getTokenBalance(config.AVAX_ADDR, true)
+  wlogger.info(
+    `AVAX address ${config.AVAX_ADDR} has a token balance of: ${avaxBalance} tokens`
+  )
   config.tokenBalance = tokenBalance
+  config.avaxBalance = avaxBalance
 
   // Get the BCH-USD exchange rate.
   const USDperBCH = await lib.getPrice()
@@ -110,7 +123,7 @@ async function startAvaxBridge () {
   // Kick off the processing loop. It periodically checks for new transactions
   // and reacts to them.
   timerHandle = setInterval(async function () {
-    await processingLoop(seenTxs)
+    await processingLoop(seenTxs, seenAvaxTxs)
   }, 60000 * 2)
 
   // Interval to consolidate UTXOs (maintenance)
@@ -147,16 +160,18 @@ async function startAvaxBridge () {
 
 // This 'processing loop' function is called periodically to identify and process
 // any new transactions.
-async function processingLoop (seenTxs) {
+async function processingLoop (seenTxs, seenAvaxTxs) {
   try {
     const now = new Date()
     let outStr = `${now.toLocaleString()}: Checking transactions... `
 
     const obj = {
-      seenTxs
+      seenTxs,
+      seenAvaxTxs
     }
 
     const newTxids = await lib.detectNewTxs(obj)
+    const newAvaxTx = await lib.detectNewAvaxTxs(obj)
     // console.log(`newTxids: ${JSON.stringify(newTxids, null, 2)}`)
 
     // If there are no new transactions, exit.
@@ -169,18 +184,37 @@ async function processingLoop (seenTxs) {
       bchBalance = retObj2.bchBalance
       tokenBalance = retObj2.tokenBalance
 
-      outStr += `...nothing new. BCH: ${bchBalance}, SLP: ${tokenBalance}`
+      outStr += `...nothing new on SLP. SLP: ${tokenBalance}`
+    } else {
+      newTxids.map((x) => seenTxs.push(x.txid))
+      outStr += `...${newTxids.length} new transactions found on SLP!`
+    }
+
+    if (newAvaxTx.length === 0) {
+      // Retrieve the balances from the avalanche X chain.
+      const retObj3 = await avax.getTokenBalance(config.AVAX_TOKEN_ID, true)
+
+      // Update the app balances.
+      avaxBalance = retObj3
+
+      outStr += `...nothing new on avax. Token amount: ${avaxBalance}`
+    } else {
+      newAvaxTx.map((x) => seenAvaxTxs.push(x.id))
+      outStr += `...${newAvaxTx.length} new transactions found on avalanche!`
+    }
+
+    if (newAvaxTx.length === 0 && newTxids.length === 0) {
       console.log(`${outStr}`)
       console.log(' ')
-
       return
     }
 
     // Add the new txids to the seenTxs array.
-    newTxids.map((x) => seenTxs.push(x.txid))
-
-    outStr += `...${newTxids.length} new transactions found!`
     console.log(`${outStr}`)
+    // process the new AVALANCHE TX.
+    for (let i = 0; i < newAvaxTx.length; i++) {
+      lib.proccessAvaxTx(newAvaxTx[i])
+    }
 
     // process the new TX.
     for (let i = 0; i < newTxids.length; i++) {
@@ -193,7 +227,7 @@ async function processingLoop (seenTxs) {
       console.log(' ')
       console.log(' ')
       console.log(
-        `Processing new transaction with this data: ${JSON.stringify(
+        `Processing new transaction on slp with this data: ${JSON.stringify(
           obj,
           null,
           2
@@ -241,7 +275,7 @@ async function processingLoop (seenTxs) {
       }
 
       timerHandle = setInterval(async function () {
-        await processingLoop(seenTxs)
+        await processingLoop(seenTxs, seenAvaxTxs)
       }, 60000 * 2)
     }
   } catch (err) {
@@ -289,7 +323,7 @@ async function getJwt () {
     // Set the environment variable.
     process.env.BCHJSTOKEN = apiToken
   } catch (err) {
-    wlogger.error('Error in token-liquidity.js/getJwt(): ', err)
+    wlogger.error('Error in avax-bridge.js/getJwt(): ', err)
     throw err
   }
 }
@@ -300,9 +334,12 @@ async function checkBalances () {
     const state = tlUtil.readState()
     const effTokenBal = lib.getEffectiveTokenBalance(state.bchBalance)
     const realTokenBal = await slp.getTokenBalance()
+    // const avaxTokenBal = await avax.getTokenBalance(config.AVAX_TOKEN_ID, true)
+    const avaxTokenBal = await avax.getTokenBalance(config.AVAX_ADDR, true)
 
     wlogger.info(
       `usdPerBCH: ${state.usdPerBCH}, ` +
+        `tokens in avalanche: ${avaxTokenBal}, ` +
         `BCH balance: ${state.bchBalance}, ` +
         `Actual token balance: ${realTokenBal}, ` +
         `Effective token balance: ${effTokenBal}`

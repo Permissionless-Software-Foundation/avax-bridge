@@ -477,7 +477,7 @@ class BCH {
       let cmd = Buffer.from(script[2], 'hex').toString('ascii').trim()
       // Make sure there are no extra spaces
       cmd = cmd.replace(/\s+/g, ' ').split(' ')
-      console.log(`cmd: ${JSON.stringify(cmd, null, 2)}`)
+      // console.log(`cmd: ${JSON.stringify(cmd, null, 2)}`)
 
       if (cmd[0].toLowerCase() !== 'avax' || cmd.length < 3) {
         return retObj
