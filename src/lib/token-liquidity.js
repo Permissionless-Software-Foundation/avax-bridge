@@ -148,19 +148,31 @@ class TokenLiquidity {
     }
   }
 
-  async proccessAvaxTx (avaxTx) {
+  async proccessAvaxTx (avaxTx, assetDescription) {
     try {
-      const { id } = avaxTx
-
+      const { id, memo, outputs } = avaxTx
       if (typeof id !== 'string') {
         throw new Error('txid needs to be a string')
       }
 
-      wlogger.info(`Processing new avax TXID ${id}.`)
+      const memoObj = _this.avax.readMemoField(memo)
+      const assetUTXO = _this.avax.findValidUTXO(outputs)
+      const senderAddress = _this.avax.getUserAddress(avaxTx)
 
-      const address = _this.avax.getUserAddress(avaxTx)
-      console.log(`The sender address is ${address}`)
-      return address
+
+      if (!memoObj.isValid || assetUTXO === null || senderAddress === config.AVAX_ADDR) {
+        wlogger.info(`New avax TXID ${id} is not valid`)
+        console.log(`New avax TXID ${id} is not valid`)
+        return ''
+      }
+      const { denomination } = assetDescription
+      const amount = parseInt(assetUTXO.amount) / Math.pow(10, denomination)
+
+      wlogger.info(`Processing new avax TXID ${id}.`)
+      console.log('\n\nBCH TXID')
+      console.log(`${amount.toFixed(denomination)} Tokens should be send to ${memoObj.bchaddr}`)
+
+      return memoObj.bchaddr
     } catch (err) {
       wlogger.error(`Error in token-liquidity.js/proccessAvaxTx(${avaxTx.id})`)
       console.log('Error in token-liquidity.js/proccessAvaxTx(): ', err)

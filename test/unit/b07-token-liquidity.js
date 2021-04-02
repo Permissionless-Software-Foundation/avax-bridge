@@ -315,10 +315,21 @@ describe('#token-liquidity', () => {
     it('should log some info and return the sender address', async () => {
       try {
         const formatedTx = avaxMockData.formatedTx
-        const result = await lib.proccessAvaxTx(formatedTx)
+        const result = await lib.proccessAvaxTx(formatedTx, avaxMockData.assetDescription)
         assert.isString(result)
+        assert.notEqual(result.length, 0)
       } catch (error) {
         assert.fail('Unexpected result')
+      }
+    })
+
+    it('should return an empty string', async () => {
+      try {
+        const result = await lib.proccessAvaxTx(avaxMockData.formatedSelfTx)
+        assert.isString(result)
+        assert.equal(result, 0)
+      } catch (error) {
+        assert.include(error.message, 'txid needs to be a string')
       }
     })
 
