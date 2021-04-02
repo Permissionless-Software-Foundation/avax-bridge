@@ -100,7 +100,7 @@ describe('#avax-lib', () => {
         .resolves({ balance: '2000' })
       sandbox
         .stub(uut.slpAvaxBridgeLib.avax.xchain, 'getAssetDescription')
-        .resolves({ denomination: 2 })
+        .resolves(avaxMockData.assetDescription)
 
       const addr = 'X-avax150agl543yn0n5z9z20tgmrggs8fc2ckkma4qfv'
 
@@ -149,7 +149,69 @@ describe('#avax-lib', () => {
   describe('#getUserAddress', () => {
     it('should return the senders address', () => {
       const address = uut.getUserAddress(avaxMockData.formatedTx)
-      assert.equal(address, avaxMockData.senderAddress)
+      assert.typeOf(address, 'string')
+    })
+  })
+
+  describe('#getAssetDescription', () => {
+    it('should return the senders address', async () => {
+      sandbox
+        .stub(uut.slpAvaxBridgeLib.avax.xchain, 'getAssetDescription')
+        .resolves(avaxMockData.assetDescription)
+      const desc = await uut.getAssetDescription()
+      assert.property(desc, 'denomination')
+      assert.typeOf(desc.denomination, 'number')
+    })
+  })
+
+  describe('#parseMemoFrom64', () => {
+    it('should throw an error if there encodedMemo argument is not a string', async () => {
+      try {
+        await uut.parseMemoFrom64(42)
+        assert.fail('unexpected result')
+      } catch (err) {
+        assert.include(err.message, 'must be of type string')
+      }
+    })
+
+    it('should return the pased memo field', async () => {
+      try {
+        const memo = uut.parseMemoFrom64('U29tZSBtZW1vIHRvIGNoZWNrIGFmdGVy')
+        assert.typeOf(memo, 'string')
+      } catch (err) {
+        assert.fail('unexpected result')
+      }
+    })
+  })
+
+  describe('#readMemoField', () => {
+    it('should throw an error if there encodedMemo argument is not a string', async () => {
+      try {
+        await uut.readMemoField(42)
+        assert.fail('unexpected result')
+      } catch (err) {
+        assert.include(err.message, 'must be of type string')
+      }
+    })
+
+    it('should return an invalid object', async () => {
+      try {
+        const obj = uut.readMemoField(avaxMockData.invalidMemo)
+        assert.equal(obj.isValid, false)
+      } catch (err) {
+        assert.fail('unexpected result')
+      }
+    })
+
+    it('should return a valid object', async () => {
+      try {
+        const obj = uut.readMemoField(avaxMockData.base64Memo)
+        assert.equal(obj.isValid, true)
+        assert.property(obj, 'code')
+        assert.property(obj, 'bchaddr')
+      } catch (err) {
+        assert.fail('unexpected result')
+      }
     })
   })
 })

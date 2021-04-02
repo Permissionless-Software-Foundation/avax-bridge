@@ -164,6 +164,7 @@ async function processingLoop (seenTxs, seenAvaxTxs) {
   try {
     const now = new Date()
     let outStr = `${now.toLocaleString()}: Checking transactions... `
+    let assetDescription;
 
     const obj = {
       seenTxs,
@@ -201,6 +202,7 @@ async function processingLoop (seenTxs, seenAvaxTxs) {
     } else {
       newAvaxTx.map((x) => seenAvaxTxs.push(x.id))
       outStr += `\n\t...${newAvaxTx.length} new transactions found on avalanche!`
+      assetDescription = await avax.getAssetDescription()
     }
 
     if (newAvaxTx.length === 0 && newTxids.length === 0) {
@@ -213,7 +215,7 @@ async function processingLoop (seenTxs, seenAvaxTxs) {
     console.log(`${outStr}`)
     // process the new AVALANCHE TX.
     for (let i = 0; i < newAvaxTx.length; i++) {
-      lib.proccessAvaxTx(newAvaxTx[i])
+      lib.proccessAvaxTx(newAvaxTx[i], assetDescription)
     }
 
     // process the new TX.

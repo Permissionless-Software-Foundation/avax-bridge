@@ -26,7 +26,7 @@ class AvaxLib {
         transactions(
           address: "${addr}"
           offset: 0
-          orderBy: { acceptedAt: "desc" }
+          orderBy: { acceptedAt: "asc" }
         ) {
           count
           results {
@@ -43,6 +43,7 @@ class AvaxLib {
                   assetID
                   amount
                   addresses
+                  outputType
                 }
               }
               outputs {
@@ -59,6 +60,16 @@ class AvaxLib {
               chainID
               type
               acceptedAt
+              inputs {
+                output {
+                  id
+                  transactionID
+                  assetID
+                  amount
+                  addresses
+                  outputType
+                }
+              }
               outputs {
                 id
                 transactionID
@@ -66,7 +77,6 @@ class AvaxLib {
                 outputType
                 amount
                 addresses
-                type
               }
             }
           }
@@ -78,12 +88,53 @@ class AvaxLib {
       if (request.status >= 400) {
         throw new Error(`No transaction history could be found for ${addr}`)
       }
-
-      return request.data.data.transactions.results
+      const transactions = request.data.data.transactions.results
+      return transactions.reverse()
     } catch (err) {
       console.error('Error in avax.js/getTransactions(): ', err)
       throw err
     }
+  }
+
+  // check the memo field
+  readMemoField (memoBase64) {
+    try {
+      const returnObj = {
+        isValid: false
+      }
+      const decodedMemo = _this.parseMemoFrom64(memoBase64)
+      const [code, bchaddr] = decodedMemo.split(' ');
+      if(!code.includes('BCH') || !Boolean(bchaddr)) {
+        return returnObj
+      }
+
+      returnObj.isValid = true
+      returnObj.code = code
+      returnObj.bchaddr = bchaddr;
+
+      return returnObj
+    } catch (err) {
+      console.log('Error in avax.js/readMemoField()', err)
+      throw err
+    }
+  }
+
+  parseMemoFrom64 (encodedMemo) {
+    try {
+      if (typeof encodedMemo !== 'string') {
+        throw new Error('the encodedMemo must be of type string')
+      }
+
+      const decodedMemo = Buffer.from(encodedMemo, 'base64').toString('utf-8')
+      return decodedMemo
+    } catch (err) {
+      console.log('Error in avax.js/parseMemo64()', err)
+      throw err
+    }
+  }
+
+  findValidUTXO (utxos) {
+    return utxos.find(utxo => utxo.isValidAsset && utxo.isUserAddress && utxo.outputType === 7)
   }
 
   // gets the sender address
@@ -93,6 +144,12 @@ class AvaxLib {
     const firstInputs = tx.inputs[0]
     const address = firstInputs.addresses[0]
     return address
+  }
+
+  // fetches the asset details
+  async getAssetDescription () {
+    const lib = _this.slpAvaxBridgeLib.avax
+    return lib.xchain.getAssetDescription(_this.config.AVAX_TOKEN_ID)
   }
 
   // retrieves the current token balance in the given address
@@ -105,7 +162,7 @@ class AvaxLib {
         return parseInt(balance)
       }
 
-      const assetDescription = await lib.xchain.getAssetDescription(_this.config.AVAX_TOKEN_ID)
+      const assetDescription = await _this.getAssetDescription()
       const denomination = assetDescription.denomination
 
       return parseInt(balance) / Math.pow(10, denomination)
@@ -135,7 +192,7 @@ class AvaxLib {
 
     return {
       id: tx.id,
-      memo: tx.memo,
+      memo: tx.memo ?? '',
       inputs,
       outputs
     }
@@ -149,6 +206,7 @@ class AvaxLib {
       id: utxo.id, // utxo id
       txid: utxo.transactionID,
       assetID: utxo.assetID,
+      outputType: utxo.outputType,
       addresses: utxo.addresses,
       amount: parseInt(utxo.amount),
       isValidAsset: utxo.assetID === assetID,
