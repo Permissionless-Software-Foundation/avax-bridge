@@ -11,7 +11,7 @@ class AvaxLib {
     this.config = config
     this.slpAvaxBridgeLib = new SlpAvaxBridgeLib()
     this.axios = axios
-
+    this.limit = 100
     _this = this
   }
 
@@ -21,79 +21,93 @@ class AvaxLib {
       if (typeof addr !== 'string' || !addr.length) {
         throw new Error('The provided avax address is not valid')
       }
-
-      const query = `{
-        transactions(
-          address: "${addr}"
-          offset: 0
-          orderBy: { acceptedAt: "asc" }
-        ) {
-          count
-          results {
-            ... on XBaseTransaction {
-              id
-              chainID
-              type
-              acceptedAt
-              memo
-              inputs {
-                output {
-                  id
-                  transactionID
-                  assetID
-                  amount
-                  addresses
-                  outputType
-                }
-              }
-              outputs {
-                id
-                transactionID
-                assetID
-                outputType
-                amount
-                addresses
-              }
-            }
-            ... on XCreateAssetTransaction {
-              id
-              chainID
-              type
-              acceptedAt
-              inputs {
-                output {
-                  id
-                  transactionID
-                  assetID
-                  amount
-                  addresses
-                  outputType
-                }
-              }
-              outputs {
-                id
-                transactionID
-                assetID
-                outputType
-                amount
-                addresses
-              }
-            }
-          }
-        }
-      }`
-
+      let offset = 0
+      const transactions = []
+      let res = []
       // Get transaction history for the address.
-      const request = await _this.axios.post('https://graphql.avascan.info/', { query })
-      if (request.status >= 400) {
-        throw new Error(`No transaction history could be found for ${addr}`)
-      }
-      const transactions = request.data.data.transactions.results
+      do {
+        const query = _this.getQuery(addr, offset)
+        const request = await _this.axios.post('https://graphql.avascan.info/', { query })
+
+        if (request.status >= 400) {
+          throw new Error(`No transaction history could be found for ${addr}`)
+        }
+
+        res = request.data.data.transactions.results
+        transactions.push(...res)
+
+        offset += _this.limit
+      } while (res.length && res.length >= _this.limit)
+
       return transactions.reverse()
     } catch (err) {
       console.error('Error in avax.js/getTransactions(): ', err)
       throw err
     }
+  }
+
+  getQuery (addr, offset) {
+    return `{
+      transactions(
+        address: "${addr}"
+        offset: ${offset}
+        limit: ${_this.limit}
+        orderBy: { acceptedAt: "asc" }
+      ) {
+        count
+        results {
+          ... on XBaseTransaction {
+            id
+            chainID
+            type
+            acceptedAt
+            memo
+            inputs {
+              output {
+                id
+                transactionID
+                assetID
+                amount
+                addresses
+                outputType
+              }
+            }
+            outputs {
+              id
+              transactionID
+              assetID
+              outputType
+              amount
+              addresses
+            }
+          }
+          ... on XCreateAssetTransaction {
+            id
+            chainID
+            type
+            acceptedAt
+            inputs {
+              output {
+                id
+                transactionID
+                assetID
+                amount
+                addresses
+                outputType
+              }
+            }
+            outputs {
+              id
+              transactionID
+              assetID
+              outputType
+              amount
+              addresses
+            }
+          }
+        }
+      }
+    }`
   }
 
   // check the memo field
@@ -103,14 +117,14 @@ class AvaxLib {
         isValid: false
       }
       const decodedMemo = _this.parseMemoFrom64(memoBase64)
-      const [code, bchaddr] = decodedMemo.split(' ');
-      if(!code.includes('BCH') || !Boolean(bchaddr)) {
+      const [code, bchaddr] = decodedMemo.split(' ')
+      if (!code.includes('BCH') || !bchaddr) {
         return returnObj
       }
 
       returnObj.isValid = true
       returnObj.code = code
-      returnObj.bchaddr = bchaddr;
+      returnObj.bchaddr = bchaddr
 
       return returnObj
     } catch (err) {
@@ -126,7 +140,7 @@ class AvaxLib {
       }
 
       const decodedMemo = Buffer.from(encodedMemo, 'base64').toString('utf-8')
-      return decodedMemo
+      return decodedMemo.trim()
     } catch (err) {
       console.log('Error in avax.js/parseMemo64()', err)
       throw err

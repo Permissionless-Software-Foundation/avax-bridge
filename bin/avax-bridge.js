@@ -164,7 +164,7 @@ async function processingLoop (seenTxs, seenAvaxTxs) {
   try {
     const now = new Date()
     let outStr = `${now.toLocaleString()}: Checking transactions... `
-    let assetDescription;
+    let assetDescription
 
     const obj = {
       seenTxs,
@@ -214,8 +214,29 @@ async function processingLoop (seenTxs, seenAvaxTxs) {
     // Add the new txids to the seenTxs array.
     console.log(`${outStr}`)
     // process the new AVALANCHE TX.
+    let hasBroadcasted = false
     for (let i = 0; i < newAvaxTx.length; i++) {
-      lib.proccessAvaxTx(newAvaxTx[i], assetDescription)
+      const result = await lib.proccessAvaxTx(newAvaxTx[i], assetDescription)
+      if (!result.isValid) {
+        continue
+      }
+      // Sleep for 5 minutes to give Blockbook time to process the last transaction.
+      // another slp tx has been broadcasted recently
+      if (hasBroadcasted) {
+        clearInterval(timerHandle)
+        await waitForBlockbook(seenAvaxTxs)
+      }
+
+      await queue.add(() => lib.pRetryMintSlp(result))
+
+      if (hasBroadcasted) {
+        timerHandle = setInterval(async function () {
+          await processingLoop(seenTxs, seenAvaxTxs)
+        }, 60000 * 2)
+      }
+
+      hasBroadcasted = true
+      console.log(`queue.size: ${queue.size}`)
     }
 
     // process the new TX.
@@ -238,7 +259,12 @@ async function processingLoop (seenTxs, seenAvaxTxs) {
 
       clearInterval(timerHandle)
 
-      // const result = await queue.pRetryProcessTx(obj)
+      // at least one slp tx has been broadcasted recently by the bridge as a response to a avax tx
+      if (hasBroadcasted) {
+        hasBroadcasted = false
+        await waitForBlockbook(seenAvaxTxs)
+      }
+
       const result = await queue.add(() => lib.pRetryProcessTx(obj))
       console.log(`queue.size: ${queue.size}`)
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)

@@ -11,10 +11,10 @@ if (NETWORK === 'mainnet') {
     port: process.env.PORT || 5000,
 
     // 145 derivation address.
-    BCH_ADDR: 'bitcoincash:qq5f0qz09xfnu536eegkr879sxusrl2pvyzm9nhyeh',
+    BCH_ADDR: 'bitcoincash:qqd6adqvk0m7cmhjy4736r9dawjt3q8wmqsk3dcx3p',
 
     // 245 derivation address
-    SLP_ADDR: 'simpleledger:qq5f0qz09xfnu536eegkr879sxusrl2pvywqwgzy8f',
+    SLP_ADDR: 'simpleledger:qqd6adqvk0m7cmhjy4736r9dawjt3q8wmqud6kdx0l',
     AVAX_ADDR: 'X-avax150agl543yn0n5z9z20tgmrggs8fc2ckkma4qfv',
     AVAX_TOKEN_ID: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
     TOKENS_QTY_ORIGINAL: 50000,

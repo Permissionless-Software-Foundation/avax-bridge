@@ -159,24 +159,76 @@ class TokenLiquidity {
       const assetUTXO = _this.avax.findValidUTXO(outputs)
       const senderAddress = _this.avax.getUserAddress(avaxTx)
 
-
       if (!memoObj.isValid || assetUTXO === null || senderAddress === config.AVAX_ADDR) {
         wlogger.info(`New avax TXID ${id} is not valid`)
-        console.log(`New avax TXID ${id} is not valid`)
-        return ''
+        return memoObj
       }
       const { denomination } = assetDescription
-      const amount = parseInt(assetUTXO.amount) / Math.pow(10, denomination)
+      const wholeNumber = parseInt(assetUTXO.amount)
+      const amount = wholeNumber / Math.pow(10, denomination)
 
+      memoObj.amount = this.tlUtil.round8(amount)
+      console.log(' ')
       wlogger.info(`Processing new avax TXID ${id}.`)
-      console.log('\n\nBCH TXID')
-      console.log(`${amount.toFixed(denomination)} Tokens should be send to ${memoObj.bchaddr}`)
+      console.log(`Processing new avax tx with this data ${JSON.stringify(memoObj, null, 2)}.`)
 
-      return memoObj.bchaddr
+      const lib = _this.avax.slpAvaxBridgeLib
+
+      console.log(' ')
+      console.log('Burning')
+      const burnTxId = await lib.avax.burnToken(wholeNumber)
+      wlogger.info(`Burning transaction ID: ${burnTxId}`)
+
+      // console.log('Mininting')
+      // const mintTxId = await lib.bch.mintSlp(memoObj.amount, memoObj.bchaddr)
+      // wlogger.info(`Minting transaction ID: ${mintTxId}`)
+
+      return memoObj
     } catch (err) {
       wlogger.error(`Error in token-liquidity.js/proccessAvaxTx(${avaxTx.id})`)
       console.log('Error in token-liquidity.js/proccessAvaxTx(): ', err)
       throw err
+    }
+  }
+
+  async pRetryMintSlp (obj) {
+    try {
+      if (!obj) throw new Error('obj is undefined')
+
+      const lib = _this.avax.slpAvaxBridgeLib
+      const result = await pRetry(() => lib.bch.mintSlp(obj.amount, obj.bchaddr), {
+        onFailedAttempt: async error => {
+          //   failed attempt.
+          console.log(' ')
+          wlogger.info(
+            `Attempt ${error.attemptNumber} failed. There are ${
+              error.retriesLeft
+            } retries left. Waiting 4 minutes before trying again.`
+          )
+
+          wlogger.error('error caught by pRetryMintSlp(): ', error)
+          console.log(' ')
+
+          // Abort for dust attacks
+          if (error.message.indexOf('Unsupported address format') > -1) {
+            throw new pRetry.AbortError('Invalid OP_RETURN')
+          }
+
+          // Abort for non-PSF tokens
+          if (error.message.indexOf('Dust recieved.') > -1) {
+            throw new pRetry.AbortError('Dust or non-PSF token')
+          }
+
+          await this.tlUtil.sleep(60000 * 4) // Sleep for 4 minutes
+        },
+        retries: 5 // Retry 5 times
+      })
+
+      return result
+    } catch (error) {
+      console.log('Error in token-liquidity.js/pRetryMintSlp()')
+      wlogger.error('Error in token-liquidity.js/pRetryMintSlp()', error)
+      throw error
     }
   }
 
