@@ -312,29 +312,41 @@ describe('#token-liquidity', () => {
   })
 
   describe('#proccessAvaxTx', () => {
-    it('should log some info and return the sender address', async () => {
+    it('should log some info and return a valid object', async () => {
       try {
+        sandbox
+          .stub(lib.avax.slpAvaxBridgeLib.avax, 'burnToken')
+          .resolves(avaxMockData.knownTxids[0])
+
         const formatedTx = avaxMockData.formatedTx
         const result = await lib.proccessAvaxTx(formatedTx, avaxMockData.assetDescription)
-        assert.isString(result)
-        assert.notEqual(result.length, 0)
+
+        assert.equal(result.isValid, true)
+        assert.hasAllKeys(result, ['amount', 'code', 'bchaddr', 'isValid'])
       } catch (error) {
-        assert.fail('Unexpected result')
+        assert.fail('Unexpected result', error)
       }
     })
 
-    it('should return an empty string', async () => {
+    it('should return an invalid object if the tx was to the same wallet', async () => {
       try {
+        sandbox
+          .stub(lib.avax.slpAvaxBridgeLib.avax, 'burnToken')
+          .resolves(avaxMockData.knownTxids[0])
+
         const result = await lib.proccessAvaxTx(avaxMockData.formatedSelfTx)
-        assert.isString(result)
-        assert.equal(result, 0)
+        assert.isFalse(result.isValid)
       } catch (error) {
-        assert.include(error.message, 'txid needs to be a string')
+        assert.fail('unexpected result', error)
       }
     })
 
     it('should throw and catch an error', async () => {
       try {
+        sandbox
+          .stub(lib.avax.slpAvaxBridgeLib.avax, 'burnToken')
+          .resolves(avaxMockData.knownTxids[0])
+
         await lib.proccessAvaxTx({ id: null })
         assert.fail('Unexpected result')
       } catch (error) {
