@@ -111,6 +111,16 @@ class TokenLiquidity {
       const newTxs = confs.filter(x => x.confirmations > 0)
       // console.log(`newTxs: ${JSON.stringify(newTxs, null, 2)}`)
 
+      for (let index = 0; index < newTxs.length; index++) {
+        const thisTx = newTxs[index]
+        const tokens = await slp.tokenTxInfo(thisTx.txid)
+        if (!tokens) {
+          continue
+        }
+        thisTx.tokens = tokens
+      }
+      // move the txs with tokens to the end of the array
+      newTxs.sort((a, b) => a.tokens && !b.tokens ? 1 : -1)
       return newTxs
     } catch (err) {
       wlogger.error('Error in lib/token-liquidity.js/detectNewTxs()')
@@ -145,6 +155,36 @@ class TokenLiquidity {
     } catch (err) {
       wlogger.error('Error in lib/token-liquidity.js/detectNewAvaxTxs()')
       throw err
+    }
+  }
+
+  async pRetryMintAvax (obj) {
+    try {
+      if (!obj) throw new Error('obj is undefined')
+
+      const lib = _this.avax.slpAvaxBridgeLib
+      const result = await pRetry(() => lib.avax.mintToken(obj.amount, obj.addr), {
+        onFailedAttempt: async error => {
+          //   failed attempt.
+          console.log(' ')
+          wlogger.info(
+            `Attempt ${error.attemptNumber} failed. There are ${
+              error.retriesLeft
+            } retries left. Waiting 4 minutes before trying again.`
+          )
+
+          wlogger.error('error caught by pRetryMintAvax(): ', error)
+          console.log(' ')
+          await this.tlUtil.sleep(60000) // Sleep for 1 minute
+        },
+        retries: 5 // Retry 5 times
+      })
+
+      return result
+    } catch (error) {
+      console.log('Error in token-liquidity.js/pRetryMintAvax()')
+      wlogger.error('Error in token-liquidity.js/pRetryMintAvax()', error)
+      throw error
     }
   }
 
@@ -233,9 +273,9 @@ class TokenLiquidity {
   }
 
   // Processes a single TX, sends tokens or BCH based on the type of transaction.
-  async processTx (inObj) {
+  async processTx (inObj, memoTx, assetDescription) {
     try {
-      const { txid, bchBalance, tokenBalance } = inObj
+      const { txid, bchBalance, tokenBalance, isTokenTx } = inObj
 
       // Data validation
       if (typeof txid !== 'string') throw new Error('txid needs to be a string')
@@ -263,14 +303,25 @@ class TokenLiquidity {
       }
 
       // Process new txid.
-      const isTokenTx = await slp.tokenTxInfo(lastTransaction)
       wlogger.debug(`isTokenTx: ${isTokenTx}`)
 
       const newTokenBalance = tokenBalance
       const newBchBalance = bchBalance
 
+      const retObj = {
+        txid: '',
+        bchBalance: this.tlUtil.round8(newBchBalance),
+        tokenBalance: this.tlUtil.round8(newTokenBalance)
+      }
+
       // User sent tokens.
       if (isTokenTx) {
+        if (!memoTx) {
+          // here the refound can be handled
+          // since it was an unexpected token tx
+          throw new Error('unexpected token tx')
+        }
+
         wlogger.info(`${isTokenTx} tokens recieved.`)
 
         // Run operation to burn the received tokens
@@ -279,49 +330,45 @@ class TokenLiquidity {
         wlogger.info(`${isTokenTx} tokens will be burned.`)
         wlogger.info(`SLP Tokens burned: ${burnTxID}`)
 
-        // User sent BCH
-      } else {
-        // Get the BCH send amount.
-        let bchQty = await bch.recievedBch(lastTransaction, BCH_ADDR1)
-        wlogger.info(`${bchQty} BCH recieved.`)
+        const { denomination } = assetDescription
+        const wholeNumber = parseFloat(isTokenTx)
+        const amount = wholeNumber * Math.pow(10, denomination)
 
-        // Ensure bchQty is a number
-        bchQty = Number(bchQty)
-        if (isNaN(bchQty)) {
-          throw new Error('bchQty could not be converted to a number.')
-        }
-
-        if (bchQty < 0.00000547) {
-          throw new Error(
-            "Dust recieved. This is probably a token tx that SLPDB doesn't know about."
-          )
-        }
-
-        // check if the TX contains a valid OP_RETURN code
-        // const opReturnData = await bch.readOpReturn(txid)
-        const opReturnData = await bch.readOpReturn(txid)
-        if (opReturnData.isValid && opReturnData.type === 'avax') {
-          console.log(`The avax address is : ${opReturnData.avaxAddress}`)
-          console.log(`The txid with the tokens is : ${opReturnData.incomingTxid}`)
-        }
-      }
-
-      const retObj = {
-        txid,
-        bchBalance: this.tlUtil.round8(newBchBalance),
-        tokenBalance: this.tlUtil.round8(newTokenBalance)
-      }
-
-      // Report the type of transaction we just processed.
-      // If tokens, report the qty of tokens.
-      if (isTokenTx) {
         retObj.type = 'token'
-        retObj.tokenQty = isTokenTx
-      } else retObj.type = 'bch'
+        retObj.txid = burnTxID
+        retObj.amount = amount
+        wlogger.debug(`processTx() retObj: ${JSON.stringify(retObj, null, 2)}`)
+        return retObj
+      }
 
+      // User sent BCH with a potential opreturn
+      // Get the BCH send amount.
+      let bchQty = await bch.recievedBch(lastTransaction, BCH_ADDR1)
+      wlogger.info(`${bchQty} BCH recieved.`)
+
+      // Ensure bchQty is a number
+      bchQty = Number(bchQty)
+      if (isNaN(bchQty)) {
+        throw new Error('bchQty could not be converted to a number.')
+      }
+
+      // check if the TX contains a valid OP_RETURN code
+      // const opReturnData = await bch.readOpReturn(txid)
+      const opreturn = await bch.readOpReturn(txid)
+      if (!opreturn.isValid || opreturn.type !== 'avax') {
+        inObj.txid = null
+        return inObj
+      }
+
+      console.log(`The avax address is : ${opreturn.avaxAddress}`)
+      console.log(`The txid with the tokens is : ${opreturn.incomingTxid}`)
+
+      retObj.type = 'avax'
+      retObj.txid = opreturn.incomingTxid
+      retObj.addr = opreturn.avaxAddress
       wlogger.debug(`processTx() retObj: ${JSON.stringify(retObj, null, 2)}`)
 
-      // Return the newly detected txid.
+      // Return the data for a new memoTx
       return retObj
     } catch (err) {
       wlogger.error(`Error in token-liquidity.js/processTx(${inObj.txid})`)
@@ -332,7 +379,7 @@ class TokenLiquidity {
 
   // This function wraps the tryProcessTx() function with the p-retry library.
   // This will allow it to try multiple times in the event of an error.
-  async pRetryProcessTx (obj) {
+  async pRetryProcessTx (obj, memoTx, assetDescription) {
     try {
       // Update global var with obj
       // This is because the function that executes the p-retry library
@@ -341,7 +388,7 @@ class TokenLiquidity {
 
       if (!obj) throw new Error('obj is undefined')
 
-      const result = await pRetry(() => _this.processTx(obj), {
+      const result = await pRetry(() => _this.processTx(obj, memoTx, assetDescription), {
         onFailedAttempt: async error => {
           //   failed attempt.
           console.log(' ')

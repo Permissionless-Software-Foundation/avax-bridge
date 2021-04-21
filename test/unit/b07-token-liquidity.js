@@ -365,20 +365,44 @@ describe('#token-liquidity', () => {
       }
     })
 
-    it('Should return object', async () => {
+    it('Should return object with avax code', async () => {
+      try {
+        const obj = {
+          txid:
+            'c040ce544e219133f9562c795b4f92a329b9b9152f47a831609781f197f8d7a6',
+          bchBalance: 12,
+          isTokenTx: 0,
+          tokenBalance: 1
+        }
+
+        sandbox.stub(lib, 'processTx').resolves(libMockData.processOpReturnTx)
+
+        const result = await lib.pRetryProcessTx(obj, false, { denomination: 2 })
+        assert.hasAllKeys(result, ['txid', 'bchBalance', 'tokenBalance', 'type', 'addr'])
+        assert.equal(result.type, 'avax')
+        assert.equal(result.txid, 'e15fef99a0df2b450cadd0c6644f1edfc17fe55951f1fdfcf3eabe0abfe46e79')
+      } catch (error) {
+        console.log(error)
+        // assert.include(error.message, `Error in "pRetryProcessTx" functions`)
+      }
+    })
+
+    it('Should return object with token code', async () => {
       try {
         // console.log('init test')
         const obj = {
           txid:
-            '14df82e3ec54fa0227531309f7189ed695bafad6f5062407d3a528fbeddc4a09',
-          bchBalance: 12.01044695,
+            'e15fef99a0df2b450cadd0c6644f1edfc17fe55951f1fdfcf3eabe0abfe46e79',
+          bchBalance: 12,
+          isTokenTx: 10,
           tokenBalance: 1
         }
 
-        sandbox.stub(lib, 'processTx').resolves(libMockData.processTx)
+        sandbox.stub(lib, 'processTx').resolves(libMockData.processSLPTx)
 
-        const result = await lib.pRetryProcessTx(obj)
-        assert.hasAllKeys(result, ['txid', 'bchBalance', 'tokenBalance'])
+        const result = await lib.pRetryProcessTx(obj, true, { denomination: 2 })
+        assert.hasAllKeys(result, ['txid', 'bchBalance', 'tokenBalance', 'type', 'txid', 'addr'])
+        assert.equal(result.type, 'avax')
       } catch (error) {
         console.log(error)
         // assert.include(error.message, `Error in "pRetryProcessTx" functions`)
