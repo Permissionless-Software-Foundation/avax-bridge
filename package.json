@@ -23,6 +23,7 @@
   "repository": "Permissionless-Software-Foundation/avax-bridge",
   "dependencies": {
     "@psf/bch-js": "4.17.6",
+    "avalanche": "^3.2.6",
     "axios": "^0.21.1",
     "bcryptjs": "^2.4.3",
     "collect.js": "^4.16.6",
