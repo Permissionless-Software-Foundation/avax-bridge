@@ -71,11 +71,23 @@ const confs = [
     confirmations: 45937
   }
 ]
-const processTx = {
-  txid: '14df82e3ec54fa0227531309f7189ed695bafad6f5062407d3a528fbeddc4a09',
+
+const processOpReturnTx = {
+  txid: 'e15fef99a0df2b450cadd0c6644f1edfc17fe55951f1fdfcf3eabe0abfe46e79',
   bchBalance: 12,
+  type: 'avax',
+  addr: 'X-avax1xasw9kra42luktrckgc8z3hsgzme7h4ck6r4s9',
   tokenBalance: 100
 }
+
+const processSLPTx = {
+  txid: '39b76f288ded8611c2a40fbb0a375d3822cb500768f8805e52da0169884c04e0',
+  bchBalance: 12,
+  type: 'token',
+  amount: 1000,
+  tokenBalance: 100
+}
+
 const exchangeRatesResponse = {
   body: JSON.stringify({
     data: {
@@ -89,7 +101,8 @@ module.exports = {
   knownTxids,
   addrInfo,
   confs,
-  processTx,
+  processOpReturnTx,
+  processSLPTx,
   mockGetTxs,
   exchangeRatesResponse
 }

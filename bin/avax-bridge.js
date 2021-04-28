@@ -55,6 +55,7 @@ util.inspect.defaultOptions = {
 // const BCH_ADDR1 = config.BCH_ADDR
 // const TOKEN_ID = config.TOKEN_ID
 
+const TWO_MINUTES = 60000 * 2
 const FIVE_MINUTES = 60000 * 5
 const CONSOLIDATE_INTERVAL = 60000 * 100
 const PRICE_UPDATE_INTERVAL = 60000 * 5
@@ -99,6 +100,8 @@ async function startAvaxBridge () {
   const seenAvaxTxs = avax.justTxs(historicalAvaxTxs)
   // console.log(`seenTxs: ${JSON.stringify(seenTxs, null, 2)}`)
 
+  const waitingList = []
+
   // Get SLP token balance
   tokenBalance = await slp.getTokenBalance(config.SLP_ADDR)
   wlogger.info(
@@ -123,8 +126,8 @@ async function startAvaxBridge () {
   // Kick off the processing loop. It periodically checks for new transactions
   // and reacts to them.
   timerHandle = setInterval(async function () {
-    await processingLoop(seenTxs, seenAvaxTxs)
-  }, 60000 * 2)
+    await processingLoop(seenTxs, seenAvaxTxs, waitingList)
+  }, TWO_MINUTES)
 
   // Interval to consolidate UTXOs (maintenance)
   setInterval(async function () {
@@ -160,11 +163,11 @@ async function startAvaxBridge () {
 
 // This 'processing loop' function is called periodically to identify and process
 // any new transactions.
-async function processingLoop (seenTxs, seenAvaxTxs) {
+async function processingLoop (seenTxs, seenAvaxTxs, waitingList) {
   try {
     const now = new Date()
     let outStr = `${now.toLocaleString()}: Checking transactions... `
-    let assetDescription
+    const assetDescription = await avax.getAssetDescription()
 
     const obj = {
       seenTxs,
@@ -202,7 +205,6 @@ async function processingLoop (seenTxs, seenAvaxTxs) {
     } else {
       newAvaxTx.map((x) => seenAvaxTxs.push(x.id))
       outStr += `\n\t...${newAvaxTx.length} new transactions found on avalanche!`
-      assetDescription = await avax.getAssetDescription()
     }
 
     if (newAvaxTx.length === 0 && newTxids.length === 0) {
@@ -232,7 +234,7 @@ async function processingLoop (seenTxs, seenAvaxTxs) {
       if (hasBroadcasted) {
         timerHandle = setInterval(async function () {
           await processingLoop(seenTxs, seenAvaxTxs)
-        }, 60000 * 2)
+        }, TWO_MINUTES)
       }
 
       hasBroadcasted = true
@@ -243,6 +245,7 @@ async function processingLoop (seenTxs, seenAvaxTxs) {
     for (let i = 0; i < newTxids.length; i++) {
       const obj = {
         txid: newTxids[i].txid,
+        isTokenTx: newTxids[i].tokens,
         bchBalance,
         tokenBalance
       }
@@ -265,19 +268,34 @@ async function processingLoop (seenTxs, seenAvaxTxs) {
         await waitForBlockbook(seenAvaxTxs)
       }
 
-      const result = await queue.add(() => lib.pRetryProcessTx(obj))
-      console.log(`queue.size: ${queue.size}`)
+      // check if the txid is in the waiting list
+      const memoindex = waitingList.findIndex((item) => item.txid === obj.txid)
+      const inList = memoindex >= 0
+      const result = await queue.add(() => lib.pRetryProcessTx(obj, inList, assetDescription))
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
-      // If the app received tokens, send them to the 245 path.
+      // If the app received tokens, send them to the avalanche address
       if (result.type === 'token') {
-        // Wait before moving tokens, allows previous transaction to get picked
-        // up by the network. Prevents race-condition.
-        wlogger.debug('Waiting 2 minutes before moving tokens...')
-        await sleep(60000 * 2)
+        // wait 5 seconds just in case the Avalanche network has to catch up
+        await sleep(5000)
+        const memoTx = waitingList[memoindex]
+        const obj = {
+          amount: result.amount,
+          addr: memoTx.addr
+        }
+        await queue.add(() => lib.pRetryMintAvax(obj))
+        // remove the tx from the waiting list
+        wlogger.info(`Removing ${memoTx.txid} from waiting list`)
+        waitingList.splice(memoindex, 1)
+      }
 
-        const obj = { tokenQty: result.tokenQty }
-        await queue.add(() => slp.moveTokens(obj))
+      // If the app received an opreturn add it to the waitingList
+      if (result.type === 'avax') {
+        wlogger.info(`Adding ${result.txid} to waiting list`)
+        waitingList.push({
+          txid: result.txid,
+          addr: result.addr
+        })
       }
 
       // Update the app balances. This temporarily updates the app balances until
@@ -298,13 +316,13 @@ async function processingLoop (seenTxs, seenAvaxTxs) {
 
       // Sleep for 5 minutes to give Blockbook time to process the last transaction.
       // If result.txid === null, it's a self-generated TX, so we don't need to wait.
-      if (result.txid !== null) {
+      if (result.type === 'token') {
         await waitForBlockbook(seenTxs)
       }
 
       timerHandle = setInterval(async function () {
-        await processingLoop(seenTxs, seenAvaxTxs)
-      }, 60000 * 2)
+        await processingLoop(seenTxs, seenAvaxTxs, waitingList)
+      }, TWO_MINUTES)
     }
   } catch (err) {
     wlogger.error('Error in token-liquidity.js.', err)
