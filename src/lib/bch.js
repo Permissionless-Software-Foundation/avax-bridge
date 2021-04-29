@@ -9,7 +9,7 @@ const tlUtils = new TLUtils()
 
 // Winston logger
 const wlogger = require('./wlogger')
-
+const SlpAvaxBridgeLib = require('slp-avax-bridge')
 // Mainnet by default
 // const bchjs = new this.config.BCHLIB({ restURL: this.config.MAINNET_REST })
 
@@ -20,7 +20,7 @@ const wlogger = require('./wlogger')
 class BCH {
   constructor (config) {
     this.config = config
-
+    this.bridge = new SlpAvaxBridgeLib()
     // Determine if this is a testnet wallet or a mainnet wallet.
     if (this.config.NETWORK === 'testnet') {
       this.bchjs = new this.config.BCHLIB({ restURL: this.config.TESTNET_REST })
@@ -504,7 +504,8 @@ class BCH {
         return retObj
       }
 
-      retObj.isValid = true
+      const legacy = this.bridge.avax.getValidAddress(avaxAddress, '')
+      retObj.isValid = true && Boolean(legacy)
       retObj.type = 'avax'
       retObj.avaxAddress = avaxAddress
       retObj.incomingTxid = incomingTxid

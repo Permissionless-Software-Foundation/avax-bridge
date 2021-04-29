@@ -26,10 +26,10 @@ describe('#avax-lib', () => {
   before(() => {})
 
   beforeEach(() => {
-    uut = new AVAX(config)
-
     avaxMockData = cloneDeep(avaxMockDataLib)
+    config.AVAX_TOKEN_ID = avaxMockData.fakeConfig.AVAX_TOKEN
 
+    uut = new AVAX(avaxMockData.fakeConfig)
     // mockedWallet = Object.assign({}, testwallet) // Clone the testwallet
     sandbox = sinon.createSandbox()
   })
@@ -84,7 +84,7 @@ describe('#avax-lib', () => {
   describe('#getTokenBalance', () => {
     it('should get token balance in the address', async () => {
       sandbox
-        .stub(uut.slpAvaxBridgeLib.avax.xchain, 'getBalance')
+        .stub(uut.xchain, 'getBalance')
         .resolves({ balance: '2000' })
 
       const addr = 'X-avax150agl543yn0n5z9z20tgmrggs8fc2ckkma4qfv'
@@ -96,10 +96,10 @@ describe('#avax-lib', () => {
 
     it('should get token balance in the address with decimals', async () => {
       sandbox
-        .stub(uut.slpAvaxBridgeLib.avax.xchain, 'getBalance')
+        .stub(uut.xchain, 'getBalance')
         .resolves({ balance: '2000' })
       sandbox
-        .stub(uut.slpAvaxBridgeLib.avax.xchain, 'getAssetDescription')
+        .stub(uut.xchain, 'getAssetDescription')
         .resolves(avaxMockData.assetDescription)
 
       const addr = 'X-avax150agl543yn0n5z9z20tgmrggs8fc2ckkma4qfv'
@@ -112,7 +112,7 @@ describe('#avax-lib', () => {
     it('should throw and catch an error', async () => {
       try {
         sandbox
-          .stub(uut.slpAvaxBridgeLib.avax.xchain, 'getBalance')
+          .stub(uut.xchain, 'getBalance')
           .rejects(new Error('test error'))
 
         const addr = 'X-avax150agl543yn0n5z9z20tgmrggs8fc2ckkma4qfv'
@@ -156,7 +156,7 @@ describe('#avax-lib', () => {
   describe('#getAssetDescription', () => {
     it('should return the senders address', async () => {
       sandbox
-        .stub(uut.slpAvaxBridgeLib.avax.xchain, 'getAssetDescription')
+        .stub(uut.xchain, 'getAssetDescription')
         .resolves(avaxMockData.assetDescription)
       const desc = await uut.getAssetDescription()
       assert.property(desc, 'denomination')
@@ -210,6 +210,136 @@ describe('#avax-lib', () => {
         assert.property(obj, 'code')
         assert.property(obj, 'bchaddr')
       } catch (err) {
+        assert.fail('unexpected result')
+      }
+    })
+  })
+
+  describe('#sendTokens', () => {
+    it('should throw an error if AVAX_PRIVATE_KEY doesnt create an address', async () => {
+      try {
+        sandbox.stub(uut.xchain, 'getAVAXAssetID').resolves(avaxMockData.avaxID)
+        sandbox.stub(uut.xchain.keyChain(), 'getAddresses').returns([])
+        sandbox.stub(uut.xchain.keyChain(), 'getAddressStrings').returns([])
+        const num = 10
+
+        await uut.sendTokens(avaxMockData.senderAddress, num)
+        assert.fail('unexpected result')
+      } catch (err) {
+        assert.include(err.message, 'No available addresses')
+      }
+    })
+
+    it('should throw an error if there are no UTXOS', async () => {
+      try {
+        sandbox.stub(uut.xchain, 'getAVAXAssetID').resolves(avaxMockData.avaxID)
+        sandbox
+          .stub(uut.xchain.keyChain(), 'getAddresses')
+          .returns(avaxMockData.addresses)
+        sandbox
+          .stub(uut.xchain.keyChain(), 'getAddressStrings')
+          .returns([avaxMockData.fakeConfig.AVAX_ADDR])
+        sandbox
+          .stub(uut.xchain, 'getUTXOs')
+          .resolves({ utxos: avaxMockData.emptyUTXOSet })
+
+        const num = 10
+
+        await uut.sendTokens(avaxMockData.senderAddress, num)
+        assert.fail('unexpected result')
+      } catch (err) {
+        assert.include(err.message, 'no UTXOs')
+      }
+    })
+
+    it('should throw an error if the wallet doesnt have enought founds', async () => {
+      try {
+        sandbox.stub(uut.xchain, 'getAVAXAssetID').resolves(avaxMockData.avaxID)
+        sandbox
+          .stub(uut.xchain.keyChain(), 'getAddresses')
+          .returns(avaxMockData.addresses)
+        sandbox
+          .stub(uut.xchain.keyChain(), 'getAddressStrings')
+          .returns([avaxMockData.fakeConfig.AVAX_ADDR])
+        sandbox
+          .stub(uut.xchain, 'getUTXOs')
+          .resolves({ utxos: avaxMockData.UTXOWithoutFee })
+
+        const num = 10
+
+        await uut.sendTokens(avaxMockData.senderAddress, num)
+        assert.fail('unexpected result')
+      } catch (err) {
+        assert.include(err.message, 'enough founds')
+      }
+    })
+
+    it('should throw an error if the token amount in the wallet is already 0', async () => {
+      try {
+        sandbox.stub(uut.xchain, 'getAVAXAssetID').resolves(avaxMockData.avaxID)
+        sandbox
+          .stub(uut.xchain.keyChain(), 'getAddresses')
+          .returns(avaxMockData.addresses)
+        sandbox
+          .stub(uut.xchain.keyChain(), 'getAddressStrings')
+          .returns([avaxMockData.fakeConfig.AVAX_ADDR])
+        sandbox
+          .stub(uut.xchain, 'getUTXOs')
+          .resolves({ utxos: avaxMockData.UTXOWithoutToken })
+
+        const num = 10
+
+        await uut.sendTokens(avaxMockData.senderAddress, num)
+        assert.fail('unexpected result')
+      } catch (err) {
+        assert.include(err.message, 'Token quantity is not enough')
+      }
+    })
+
+    it('should complete successfully', async () => {
+      try {
+        sandbox.stub(uut.xchain, 'getAVAXAssetID').resolves(avaxMockData.avaxID)
+        sandbox
+          .stub(uut.xchain.keyChain(), 'getAddresses')
+          .returns(avaxMockData.addresses)
+        sandbox
+          .stub(uut.xchain.keyChain(), 'getAddressStrings')
+          .returns([avaxMockData.fakeConfig.AVAX_ADDR])
+        sandbox
+          .stub(uut.xchain, 'getUTXOs')
+          .resolves({ utxos: avaxMockData.UTXOWithToken })
+        sandbox.stub(uut.xchain, 'issueTx').resolves(avaxMockData.knownTxids[0])
+
+        const num = 5
+
+        const txid = await uut.sendTokens(avaxMockData.senderAddress, num)
+        assert.typeOf(txid, 'string')
+      } catch (err) {
+        console.log(err)
+        assert.fail('unexpected result')
+      }
+    })
+
+    it('should complete successfully with no remainder', async () => {
+      try {
+        sandbox.stub(uut.xchain, 'getAVAXAssetID').resolves(avaxMockData.avaxID)
+        sandbox
+          .stub(uut.xchain.keyChain(), 'getAddresses')
+          .returns(avaxMockData.addresses)
+        sandbox
+          .stub(uut.xchain.keyChain(), 'getAddressStrings')
+          .returns([avaxMockData.fakeConfig.AVAX_ADDR])
+        sandbox
+          .stub(uut.xchain, 'getUTXOs')
+          .resolves({ utxos: avaxMockData.UTXOWithToken })
+        sandbox.stub(uut.xchain, 'issueTx').resolves(avaxMockData.knownTxids[0])
+
+        const num = 50
+
+        const txid = await uut.sendTokens(avaxMockData.senderAddress, num)
+        assert.typeOf(txid, 'string')
+      } catch (err) {
+        console.log(err)
         assert.fail('unexpected result')
       }
     })

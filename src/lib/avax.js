@@ -4,15 +4,161 @@
 
 const axios = require('axios').default
 const SlpAvaxBridgeLib = require('slp-avax-bridge')
+const bridge = new SlpAvaxBridgeLib()
 
 let _this
 class AvaxLib {
   constructor (config) {
     this.config = config
-    this.slpAvaxBridgeLib = new SlpAvaxBridgeLib()
+    this.bridge = bridge
     this.axios = axios
     this.limit = 100
+    this.avax = bridge.avax
+    this.xchain = bridge.avax.avax.XChain()
     _this = this
+  }
+
+  async sendTokens (receiverAddress, amount) {
+    try {
+      // set up the libraries
+      const binTools = _this.avax.binTools
+      const avm = _this.avax.avm
+      _this.xchain.keyChain().importKey(_this.config.AVAX_PRIVATE_KEY)
+
+      // set the required buffers
+      const avaxIDBuffer = await _this.xchain.getAVAXAssetID()
+      const tokenIDBuffer = binTools.cb58Decode(_this.config.AVAX_TOKEN_ID)
+      const addresses = _this.xchain.keyChain().getAddresses()
+      const addressStrings = _this.xchain.keyChain().getAddressStrings()
+
+      const receiverBuffer = _this.xchain.parseAddress(receiverAddress)
+
+      if (!addressStrings.length || !addresses.length) {
+        throw new Error('No available addresses registered in the keyChain')
+      }
+
+      const { utxos: utxoSet } = await _this.xchain.getUTXOs(addressStrings)
+      const utxos = utxoSet.getAllUTXOs()
+
+      if (!utxos.length) {
+        throw new Error('There are no UTXOs in the address')
+      }
+      // get the token information
+      const balance = utxoSet.getBalance(addresses, avaxIDBuffer)
+      const fee = _this.xchain.getDefaultTxFee()
+
+      if (balance.lt(fee)) {
+        throw new Error('Not enough founds to pay for transaction')
+      }
+
+      const amountToSend = new _this.avax.BN(amount)
+      const tokenBalance = utxoSet.getBalance(addresses, tokenIDBuffer)
+      // check that the amount to send is not greater than the current amount
+      if (tokenBalance.isZero() || tokenBalance.lt(amountToSend)) {
+        throw new Error('Token quantity is not enough')
+      }
+
+      const remainder = tokenBalance.sub(amountToSend)
+
+      // get the inputs for the transcation
+      const inputs = utxos.reduce((txInputs, utxo) => {
+        // typeID 7 is a transferable output, all the others gets skipped
+        if (utxo.getOutput().getTypeID() !== 7) {
+          return txInputs
+        }
+
+        const amountOutput = utxo.getOutput()
+        const amt = amountOutput.getAmount().clone()
+        const txid = utxo.getTxID()
+        const outputidx = utxo.getOutputIdx()
+        const assetID = utxo.getAssetID()
+
+        // get all the AVAX utxos as input
+        if (assetID.toString('hex') === avaxIDBuffer.toString('hex')) {
+          const transferInput = new avm.SECPTransferInput(amt)
+          transferInput.addSignatureIdx(0, addresses[0])
+          const input = new avm.TransferableInput(
+            txid,
+            outputidx,
+            avaxIDBuffer,
+            transferInput
+          )
+          txInputs.push(input)
+        }
+
+        // get all the TOKEN utxos as input too
+        if (assetID.toString('hex') === tokenIDBuffer.toString('hex')) {
+          const transferInput = new avm.SECPTransferInput(amt)
+          transferInput.addSignatureIdx(0, addresses[0])
+          const input = new avm.TransferableInput(
+            txid,
+            outputidx,
+            assetID,
+            transferInput
+          )
+          txInputs.push(input)
+        }
+
+        return txInputs
+      }, [])
+
+      // get the desired outputs for the transaction
+      const outputs = []
+      const avaxTransferOutput = new avm.SECPTransferOutput(
+        balance.sub(fee),
+        addresses
+      )
+      const avaxTransferableOutput = new avm.TransferableOutput(
+        avaxIDBuffer,
+        avaxTransferOutput
+      )
+      // Add the AVAX output = the avax input minus the fee
+      outputs.push(avaxTransferableOutput)
+
+      const tokenTransferOutput = new avm.SECPTransferOutput(
+        amountToSend,
+        [receiverBuffer]
+      )
+      const tokenTransferableOutput = new avm.TransferableOutput(
+        tokenIDBuffer,
+        tokenTransferOutput
+      )
+      // Add the Token output
+      outputs.push(tokenTransferableOutput)
+
+      // add the remainder as output to be sent back to the address
+      if (!remainder.isZero()) {
+        const remainderTransferOutput = new avm.SECPTransferOutput(
+          remainder,
+          addresses
+        )
+        const remainderTransferableOutput = new avm.TransferableOutput(
+          tokenIDBuffer,
+          remainderTransferOutput
+        )
+        outputs.push(remainderTransferableOutput)
+      }
+      // Add the Token output
+
+      // Build the transcation
+      const baseTx = new avm.BaseTx(
+        _this.avax.avax.getNetworkID(),
+        binTools.cb58Decode(_this.xchain.getBlockchainID()),
+        outputs,
+        inputs
+      )
+      const unsignedTx = new avm.UnsignedTx(baseTx)
+
+      const tx = unsignedTx.sign(_this.xchain.keyChain())
+      const txid = await _this.xchain.issueTx(tx)
+
+      console.log(`Tokens send back to the address ${receiverAddress}`)
+      console.log(`https://explorer.avax.network/tx/${txid}`)
+      return txid
+    } catch (err) {
+      console.log('Error in avax.js/sendTokens(): ', err)
+      throw err
+    }
   }
 
   // Retrieve the most recent transactions for an address from Avascan.
@@ -117,12 +263,13 @@ class AvaxLib {
         isValid: false
       }
       const decodedMemo = _this.parseMemoFrom64(memoBase64)
-      const [code, bchaddr] = decodedMemo.split(' ')
-      if (!code.includes('BCH') || !bchaddr) {
+      const [code, bchaddr] = decodedMemo.trim().split(' ')
+      const regex = RegExp(/BCH/ig)
+      if (!regex.test(code) || !bchaddr) {
         return returnObj
       }
-
-      returnObj.isValid = true
+      const legacy = _this.bridge.bch.getValidAddress(bchaddr, '')
+      returnObj.isValid = true && Boolean(legacy)
       returnObj.code = code
       returnObj.bchaddr = bchaddr
 
@@ -162,15 +309,13 @@ class AvaxLib {
 
   // fetches the asset details
   async getAssetDescription () {
-    const lib = _this.slpAvaxBridgeLib.avax
-    return lib.xchain.getAssetDescription(_this.config.AVAX_TOKEN_ID)
+    return _this.xchain.getAssetDescription(_this.config.AVAX_TOKEN_ID)
   }
 
   // retrieves the current token balance in the given address
   async getTokenBalance (addr, withDecimals = false) {
     try {
-      const lib = _this.slpAvaxBridgeLib.avax
-      const { balance } = await lib.xchain.getBalance(addr, _this.config.AVAX_TOKEN_ID)
+      const { balance } = await _this.xchain.getBalance(addr, _this.config.AVAX_TOKEN_ID)
 
       if (!withDecimals) {
         return parseInt(balance)

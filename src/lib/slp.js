@@ -125,112 +125,42 @@ class SLP {
   }
 
   // Craft a SLP token TX.
-  // Sends tokens from the address on the 'path' derivation, but pays miner fees
-  // from the 145 address.
-  // path should equal 245 for normal tokens sends to users.
-  // path should equal 145 for transfering tokens from 145 to 245 address.
-  async createTokenTx (addr, qty, path) {
+  // Sends tokens to the provided address
+  async createTokenTx (receiverAddress, qty) {
     try {
-      // console.log(`path: ${path}`)
-      if (path !== 145 && path !== 245) {
-        throw new Error('path must have a value of 145 or 245')
-      }
-
       if (isNaN(Number(qty)) || Number(qty) <= 0) {
         throw new Error('qty must be a positive number.')
       }
 
       // Open the wallet controlling the tokens
       const walletInfo = _this.tlUtils.openWallet()
-      const mnemonic = walletInfo.mnemonic
+      const keyPair = _this.bchjs.ECPair.fromWIF(walletInfo.WIF)
 
-      // root seed buffer
-      const rootSeed = await this.bchjs.Mnemonic.toSeed(mnemonic)
+      const cashAddress = _this.bchjs.ECPair.toCashAddress(keyPair)
+      const legacyAddress = _this.bchjs.ECPair.toLegacyAddress(keyPair)
+      const receiver = _this.bchjs.Address.toLegacyAddress(receiverAddress)
 
-      // master HDNode
-      let masterHDNode
-      if (this.config.NETWORK === 'mainnet') {
-        masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed)
-      } else masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed, 'testnet') // Testnet
+      // Utxos from address derivation
+      const data = await _this.bchjs.Electrumx.utxo(cashAddress)
+      const utxos = data.utxos
 
-      // BEGIN - Get BCH to UTXO to pay transaction
-
-      // Account path 145 to pay for bch miner fees
-      const accountBCH = this.bchjs.HDNode.derivePath(
-        masterHDNode,
-        "m/44'/145'/0'"
-      )
-
-      const changeBCH = this.bchjs.HDNode.derivePath(accountBCH, '0/0')
-
-      // Generate an EC key pair for signing the transaction.
-      const keyPairBCH = this.bchjs.HDNode.toKeyPair(changeBCH)
-
-      const cashAddressBCH = this.bchjs.HDNode.toCashAddress(changeBCH)
-      // console.log(`cashAddressBCH: ${JSON.stringify(cashAddressBCH, null, 2)}`)
-
-      // Utxos from address derivation 145
-      // const utxosBCH = await this.bchjs.Blockbook.utxo(cashAddressBCH)
-      const fulcrumResult = await this.bchjs.Electrumx.utxo(cashAddressBCH)
-      const utxosBCH = fulcrumResult.utxos
-      // console.log(`utxosBCH: ${JSON.stringify(utxosBCH, null, 2)}`)
-
-      if (utxosBCH.length === 0) {
+      if (utxos.length === 0) {
         throw new Error('Wallet does not have a BCH UTXO to pay miner fees.')
       }
 
       // Choose a BCH UTXO to pay for the transaction.
-      const bchUtxo = await this.bch.findBiggestUtxo(utxosBCH)
-      // console.log(`bchUtxo: ${JSON.stringify(bchUtxo, null, 2)}`)
-
-      // Add Insight property that is missing from Blockbook.
+      const bchUtxo = await _this.bch.findBiggestUtxo(utxos)
       bchUtxo.satoshis = Number(bchUtxo.value)
 
-      // END - Get BCH to UTXO to pay transaction
-
-      // BEGIN - Get token UTXOs for SLP transaction
-
-      // HDNode of BIP44 account
-      const account = this.bchjs.HDNode.derivePath(
-        masterHDNode,
-        `m/44'/${path}'/0'`
-      )
-
-      const change = this.bchjs.HDNode.derivePath(account, '0/0')
-
-      // Generate an EC key pair for signing the transaction.
-      const keyPair = this.bchjs.HDNode.toKeyPair(change)
-
-      // get the cash address
-      const cashAddress = this.bchjs.HDNode.toCashAddress(change)
-      const slpAddress = this.bchjs.HDNode.toSLPAddress(change)
-      // console.log(`cashAddress: ${JSON.stringify(cashAddress, null, 2)}`)
-
-      // Get UTXOs held by this address. Derivation 245
-      // const utxos = await this.bchjs.Blockbook.utxo(cashAddress)
-      const fulcrumResult2 = await this.bchjs.Electrumx.utxo(cashAddress)
-      const utxos = fulcrumResult2.utxos
-      // console.log(`utxos: ${JSON.stringify(utxos, null, 2)}`)
-
-      if (utxos.length === 0) {
-        throw new Error('No token UTXOs to spend! Exiting.')
-      }
-
-      // Identify the SLP token UTXOs.
-      let tokenUtxos = await this.bchjs.SLP.Utils.tokenUtxoDetails(utxos)
-      // console.log(`tokenUtxos: ${JSON.stringify(tokenUtxos, null, 2)}`)
+      let tokenUtxos = await _this.bchjs.SLP.Utils.tokenUtxoDetails(utxos)
 
       // Filter out the token UTXOs that match the user-provided token ID.
-      tokenUtxos = tokenUtxos.filter((utxo, index) => {
-        if (utxo && utxo.tokenId === this.config.SLP_TOKEN_ID && utxo.isValid) {
-          return true
-        }
-
-        return false
-      })
-      // console.log(
-      //   `tokenUtxos (filter 1): ${JSON.stringify(tokenUtxos, null, 2)}`
-      // )
+      tokenUtxos = tokenUtxos.filter((utxo) =>
+        Boolean(utxo) &&
+        utxo.tokenId === _this.config.SLP_TOKEN_ID &&
+        utxo.isValid &&
+        utxo.utxoType !== 'minting-baton'
+      )
 
       // Further filter out the invalid token UTXOs
       for (let i = 0; i < tokenUtxos.length; i++) {
@@ -239,39 +169,25 @@ class SLP {
         // Ask the full node to validate the UTXO.
         // This is caused by stale data in the indexer. Use getTxOut to ask the
         // full node to validate each UTXO.
-        const isValidUtxo = await this.bchjs.Blockchain.getTxOut(
+        const isValidUtxo = await _this.bchjs.Blockchain.getTxOut(
           thisUtxos.tx_hash,
           thisUtxos.tx_pos
         )
-        // console.log(`isValidUtxo: ${JSON.stringify(isValidUtxo, null, 2)}`)
 
         // Delete the current element from the array if the UTXO is not valid.
-        if (isValidUtxo === null) {
+        if (!isValidUtxo) {
           tokenUtxos.splice(i, 1)
         }
       }
-      // console.log(
-      //   `tokenUtxos (filter 2): ${JSON.stringify(tokenUtxos, null, 2)}`
-      // )
 
       // Bail out if no token UTXOs are found.
       if (tokenUtxos.length === 0) {
         throw new Error('No token UTXOs are available!')
       }
-
-      // Generate the OP_RETURN code.
-      // console.log(`qty: ${qty}`)
-      // const slpSendObj = this.bchjs.SLP.TokenType1.generateSendOpReturn(
-      //   tokenUtxos,
-      //   Number(qty)
-      // )
-      // const slpData = this.bchjs.Script.encode(slpSendObj.script)
-      // console.log(`slpOutputs: ${slpSendObj.outputs}`)
-
       const {
         script,
         outputs
-      } = this.bchjs.SLP.TokenType1.generateSendOpReturn(
+      } = _this.bchjs.SLP.TokenType1.generateSendOpReturn(
         tokenUtxos,
         Number(qty)
       )
@@ -279,16 +195,11 @@ class SLP {
       // END - Get token UTXOs for SLP transaction
 
       // BEGIN transaction construction.
-
-      // console.log(`config.NETWORK: ${config.NETWORK}`)
-      // console.log(`bchUtxo: ${JSON.stringify(bchUtxo, null, 2)}`)
-      // console.log(`tokenUtxos: ${JSON.stringify(tokenUtxos, null, 2)}`)
-
       // instance of transaction builder
       let transactionBuilder
-      if (this.config.NETWORK === 'mainnet') {
-        transactionBuilder = new this.bchjs.TransactionBuilder()
-      } else transactionBuilder = new this.bchjs.TransactionBuilder('testnet')
+      if (_this.config.NETWORK === 'mainnet') {
+        transactionBuilder = new _this.bchjs.TransactionBuilder()
+      } else transactionBuilder = new _this.bchjs.TransactionBuilder('testnet')
 
       // Add the BCH UTXO as input to pay for the transaction.
       const originalAmount = Number(bchUtxo.value)
@@ -299,51 +210,36 @@ class SLP {
         transactionBuilder.addInput(tokenUtxos[i].tx_hash, tokenUtxos[i].tx_pos)
       }
 
-      // TODO: Create fee calculator like slpjs
-      // get byte count to calculate fee. paying 1 sat
-      // Note: This may not be totally accurate. Just guessing on the byteCount size.
-      // const byteCount = this.BITBOX.BitcoinCash.getByteCount(
-      //   { P2PKH: 3 },
-      //   { P2PKH: 5 }
-      // )
-      // //console.log(`byteCount: ${byteCount}`)
-      // const satoshisPerByte = 1.1
-      // const txFee = Math.floor(satoshisPerByte * byteCount)
-      // console.log(`txFee: ${txFee} satoshis\n`)
       const txFee = 250
 
       // amount to send back to the sending address.
       // It's the original amount - 1 sat/byte for tx size
       const remainder = originalAmount - txFee - 546 * 2
 
-      // console.log(`originalAmount: ${originalAmount}`)
-      // console.log(`remainder: ${remainder}`)
-
       if (remainder < 546) {
         throw new Error('Selected UTXO does not have enough satoshis')
       }
-      // console.log(`remainder: ${remainder}`)
 
       // Add OP_RETURN as first output.
       transactionBuilder.addOutput(script, 0)
 
       // Send dust transaction representing tokens being sent.
       transactionBuilder.addOutput(
-        this.bchjs.SLP.Address.toLegacyAddress(addr),
+        receiver,
         546
       )
 
       // Return token change back to the token-liquidity app.
       if (outputs > 1) {
         transactionBuilder.addOutput(
-          this.bchjs.SLP.Address.toLegacyAddress(slpAddress),
+          legacyAddress,
           546
         )
       }
 
       // Last output: send the BCH change back to the wallet.
       transactionBuilder.addOutput(
-        this.bchjs.Address.toLegacyAddress(cashAddressBCH),
+        legacyAddress,
         remainder
       )
 
@@ -351,7 +247,7 @@ class SLP {
       let redeemScript
       transactionBuilder.sign(
         0,
-        keyPairBCH,
+        keyPair,
         redeemScript,
         transactionBuilder.hashTypes.SIGHASH_ALL,
         originalAmount
@@ -372,19 +268,16 @@ class SLP {
 
       // build tx
       const tx = transactionBuilder.build()
-
-      // output rawhex
       const hex = tx.toHex()
-      // console.log(`Transaction raw hex: `, hex)
-
+      const txid = await _this.bchjs.RawTransactions.sendRawTransaction(hex)
       // END transaction construction.
 
-      return hex
+      console.log(`Tokens send back to the address ${receiverAddress}`)
+      console.log(`https://explorer.bitcoin.com/bch/tx/${txid}`)
+
+      return txid
     } catch (err) {
       wlogger.error(`Error in createTokenTx: ${err.message}`, err)
-
-      // if (err.message) throw new Error(err.message)
-      // else throw new Error('Error in createTokenTx()')
       throw err
     }
   }
