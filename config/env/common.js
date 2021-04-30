@@ -42,6 +42,8 @@ if (NETWORK === 'mainnet') {
 }
 
 configOut.logPass = 'test'
+// Avalanche Wallet key
+configOut.AVAX_PRIVATE_KEY = process.env.AVAX_PRIVATE_KEY
 
 // Email
 configOut.emailServer = process.env.EMAILSERVER

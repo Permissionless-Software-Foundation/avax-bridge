@@ -239,7 +239,7 @@ describe('#slp-lib', () => {
         const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
         const qty = 1
 
-        await uut.createTokenTx(addr, qty, 245)
+        await uut.createTokenTx(addr, qty)
 
         assert.fail('Unexpected result')
       } catch (err) {
@@ -263,12 +263,12 @@ describe('#slp-lib', () => {
           .resolves(slpMockDataCopy.utxos[0])
         sandbox
           .stub(uut.bchjs.SLP.Utils, 'tokenUtxoDetails')
-          .resolves([false, false])
+          .resolves([])
 
         const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
         const qty = 1
 
-        await uut.createTokenTx(addr, qty, 245)
+        await uut.createTokenTx(addr, qty)
         // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
         assert.fail('Unexpected result')
@@ -296,7 +296,7 @@ describe('#slp-lib', () => {
         const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
         const qty = 1
 
-        await uut.createTokenTx(addr, qty, 245)
+        await uut.createTokenTx(addr, qty)
         // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
         assert.fail('Unexpected result')
@@ -306,26 +306,11 @@ describe('#slp-lib', () => {
       }
     })
 
-    it('should throw an error if path is zero', async () => {
-      try {
-        const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
-        const qty = 1
-
-        await uut.createTokenTx(addr, qty, 0)
-        // console.log(`result: ${JSON.stringify(result, null, 2)}`)
-
-        assert.fail('Unexpected result')
-      } catch (err) {
-        // console.log(`err.message: ${err.message}`)
-        assert.include(err.message, 'path must have a value of 145 or 245')
-      }
-    })
-
     it('should throw an error if qty is 0', async () => {
       try {
         const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
 
-        await uut.createTokenTx(addr, 0, 245)
+        await uut.createTokenTx(addr, 0)
         // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
         assert.fail('Unexpected result')
@@ -335,74 +320,14 @@ describe('#slp-lib', () => {
       }
     })
 
-    it('should generate a transaction hex for testnet', async () => {
-      // Mock out down-stream dependencies for a unit test.
-      sandbox.stub(uut.tlUtils, 'openWallet').returns(mockWallet)
-      // sandbox.stub(slp.bchjs.Blockbook, 'utxo').resolves(slpMockData.utxos)
-      sandbox
-        .stub(uut.bchjs.Electrumx, 'utxo')
-        .resolves(slpMockDataCopy.fulcrumUtxos)
-      sandbox
-        .stub(uut.bchjs.SLP.Utils, 'tokenUtxoDetails')
-        .resolves(slpMockDataCopy.tokenUtxos)
-      sandbox
-        .stub(uut.bch, 'findBiggestUtxo')
-        .resolves(slpMockDataCopy.utxos[0])
-      sandbox
-        .stub(uut.bchjs.Blockchain, 'getTxOut')
-        .resolves(slpMockDataCopy.validUtxo)
-
-      const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
-      const qty = 1
-
-      const result = await uut.createTokenTx(addr, qty, 245)
-      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
-
-      assert.isString(result)
-      assert.equal(result.indexOf('0200'), 0, 'First part of string matches.')
-    })
-
-    it('should generate a transaction hex for mainnet', async () => {
-      tempConfig.NETWORK = 'mainnet'
-
-      uut = new SLP(tempConfig)
-
-      // Mock out down-stream dependencies for a unit test.
-      sandbox.stub(uut.tlUtils, 'openWallet').returns(mockWallet)
-      // sandbox.stub(slp.bchjs.Blockbook, 'utxo').resolves(slpMockData.utxos)
-      sandbox
-        .stub(uut.bchjs.Electrumx, 'utxo')
-        .resolves(slpMockDataCopy.fulcrumUtxos)
-      sandbox
-        .stub(uut.bchjs.SLP.Utils, 'tokenUtxoDetails')
-        .resolves(slpMockDataCopy.tokenUtxos)
-      sandbox
-        .stub(uut.bch, 'findBiggestUtxo')
-        .resolves(slpMockDataCopy.utxos[0])
-      sandbox
-        .stub(uut.bchjs.Blockchain, 'getTxOut')
-        .resolves(slpMockDataCopy.validUtxo)
-
-      const addr = 'bitcoincash:qzdq6jzvyzhyuj639l72rmqfzu3vd7eux5nhdzndwm'
-      const qty = 1
-
-      const result = await uut.createTokenTx(addr, qty, 245)
-      // console.log(`result: ${JSON.stringify(result, null, 2)}`)
-
-      assert.isString(result)
-      assert.equal(result.indexOf('0200'), 0, 'First part of string matches.')
-    })
-
-    it('should throw an error if 245 address has no UTXOs', async () => {
+    it('should generate a transaction', async () => {
       try {
         // Mock out down-stream dependencies for a unit test.
         sandbox.stub(uut.tlUtils, 'openWallet').returns(mockWallet)
+        // sandbox.stub(slp.bchjs.Blockbook, 'utxo').resolves(slpMockData.utxos)
         sandbox
           .stub(uut.bchjs.Electrumx, 'utxo')
-          .onCall(0)
           .resolves(slpMockDataCopy.fulcrumUtxos)
-          .onCall(1)
-          .resolves(slpMockDataCopy.fulcrumEmtpyUtxos)
         sandbox
           .stub(uut.bchjs.SLP.Utils, 'tokenUtxoDetails')
           .resolves(slpMockDataCopy.tokenUtxos)
@@ -412,16 +337,22 @@ describe('#slp-lib', () => {
         sandbox
           .stub(uut.bchjs.Blockchain, 'getTxOut')
           .resolves(slpMockDataCopy.validUtxo)
+        sandbox
+          .stub(uut.bchjs.RawTransactions, 'sendRawTransaction')
+          .resolves(slpMockData.tokenTx.txid)
 
         const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
         const qty = 1
 
-        await uut.createTokenTx(addr, qty, 245)
+        console.log(tempConfig)
+
+        const result = await uut.createTokenTx(addr, qty, 245)
         // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
+        assert.isString(result)
+      } catch (error) {
+        console.log(error)
         assert.fail('Unexpected result')
-      } catch (err) {
-        assert.include(err.message, 'No token UTXOs to spend! Exiting.')
       }
     })
 
@@ -448,7 +379,7 @@ describe('#slp-lib', () => {
         const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
         const qty = 1
 
-        await uut.createTokenTx(addr, qty, 245)
+        await uut.createTokenTx(addr, qty)
         // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
         assert.fail('Unexpected result')

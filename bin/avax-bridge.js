@@ -218,7 +218,13 @@ async function processingLoop (seenTxs, seenAvaxTxs, waitingList) {
     // process the new AVALANCHE TX.
     let hasBroadcasted = false
     for (let i = 0; i < newAvaxTx.length; i++) {
-      const result = await lib.proccessAvaxTx(newAvaxTx[i], assetDescription)
+      const result = await lib.processAvaxTx(newAvaxTx[i], assetDescription)
+      if (result.refundTx) {
+        // wait 5 seconds just in case the Avalanche network has to catch up
+        // after sending tokens back
+        await sleep(5000)
+      }
+
       if (!result.isValid) {
         continue
       }
@@ -274,8 +280,7 @@ async function processingLoop (seenTxs, seenAvaxTxs, waitingList) {
       const result = await queue.add(() => lib.pRetryProcessTx(obj, inList, assetDescription))
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
-      // If the app received tokens, send them to the avalanche address
-      if (result.type === 'token') {
+      if (result.type === 'token' && inList) {
         // wait 5 seconds just in case the Avalanche network has to catch up
         await sleep(5000)
         const memoTx = waitingList[memoindex]

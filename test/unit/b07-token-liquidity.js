@@ -311,15 +311,15 @@ describe('#token-liquidity', () => {
     })
   })
 
-  describe('#proccessAvaxTx', () => {
+  describe('#processAvaxTx', () => {
     it('should log some info and return a valid object', async () => {
       try {
         sandbox
-          .stub(lib.avax.slpAvaxBridgeLib.avax, 'burnToken')
+          .stub(lib.bridge.avax, 'burnToken')
           .resolves(avaxMockData.knownTxids[0])
 
         const formatedTx = avaxMockData.formatedTx
-        const result = await lib.proccessAvaxTx(formatedTx, avaxMockData.assetDescription)
+        const result = await lib.processAvaxTx(formatedTx, avaxMockData.assetDescription)
 
         assert.equal(result.isValid, true)
         assert.hasAllKeys(result, ['amount', 'code', 'bchaddr', 'isValid'])
@@ -331,10 +331,10 @@ describe('#token-liquidity', () => {
     it('should return an invalid object if the tx was to the same wallet', async () => {
       try {
         sandbox
-          .stub(lib.avax.slpAvaxBridgeLib.avax, 'burnToken')
+          .stub(lib.bridge.avax, 'burnToken')
           .resolves(avaxMockData.knownTxids[0])
 
-        const result = await lib.proccessAvaxTx(avaxMockData.formatedSelfTx)
+        const result = await lib.processAvaxTx(avaxMockData.formatedSelfTx)
         assert.isFalse(result.isValid)
       } catch (error) {
         assert.fail('unexpected result', error)
@@ -344,12 +344,13 @@ describe('#token-liquidity', () => {
     it('should throw and catch an error', async () => {
       try {
         sandbox
-          .stub(lib.avax.slpAvaxBridgeLib.avax, 'burnToken')
+          .stub(lib.bridge.avax, 'burnToken')
           .resolves(avaxMockData.knownTxids[0])
 
-        await lib.proccessAvaxTx({ id: null })
+        await lib.processAvaxTx({ id: null })
         assert.fail('Unexpected result')
       } catch (error) {
+        console.log(error)
         assert.include(error.message, 'txid needs to be a string')
       }
     })
@@ -401,8 +402,8 @@ describe('#token-liquidity', () => {
         sandbox.stub(lib, 'processTx').resolves(libMockData.processSLPTx)
 
         const result = await lib.pRetryProcessTx(obj, true, { denomination: 2 })
-        assert.hasAllKeys(result, ['txid', 'bchBalance', 'tokenBalance', 'type', 'txid', 'addr'])
-        assert.equal(result.type, 'avax')
+        assert.hasAllKeys(result, ['txid', 'bchBalance', 'tokenBalance', 'type', 'amount'])
+        assert.equal(result.type, 'token')
       } catch (error) {
         console.log(error)
         // assert.include(error.message, `Error in "pRetryProcessTx" functions`)

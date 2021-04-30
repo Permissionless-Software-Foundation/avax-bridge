@@ -1,6 +1,7 @@
 {
   "network": "testnet",
   "mnemonic": "during ask there already rebel february switch pipe purity alert humor silent manual smart whale melody hybrid depend axis extra elevator struggle evidence matrix",
+  "WIF": "cSaoMYsHk7yZvCU1LCVWhgQsJt3Dwn4iSHgsTE6yQorpBVJNnPh4",
   "rootAddress": "bchtest:qzsfqeqtdk6plsvglccadkqtf0trf2nyz58090e6tt",
   "balance": 0.09999751999999999,
   "nextAddress": 4,

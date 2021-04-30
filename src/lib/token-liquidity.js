@@ -162,7 +162,7 @@ class TokenLiquidity {
     try {
       if (!obj) throw new Error('obj is undefined')
 
-      const lib = _this.avax.slpAvaxBridgeLib
+      const lib = _this.bridge
       const result = await pRetry(() => lib.avax.mintToken(obj.amount, obj.addr), {
         onFailedAttempt: async error => {
           //   failed attempt.
@@ -188,7 +188,7 @@ class TokenLiquidity {
     }
   }
 
-  async proccessAvaxTx (avaxTx, assetDescription) {
+  async processAvaxTx (avaxTx, assetDescription) {
     try {
       const { id, memo, outputs } = avaxTx
       if (typeof id !== 'string') {
@@ -199,10 +199,19 @@ class TokenLiquidity {
       const assetUTXO = _this.avax.findValidUTXO(outputs)
       const senderAddress = _this.avax.getUserAddress(avaxTx)
 
+      // return tx with tokens but invalid memo
+      if (!memoObj.isValid && assetUTXO !== null && senderAddress !== config.AVAX_ADDR) {
+        wlogger.info(`New avax TXID ${id} has an invalid memo field`)
+        await _this.avax.sendTokens(senderAddress, parseInt(assetUTXO.amount))
+        memoObj.refundTx = true
+        return memoObj
+      }
+
       if (!memoObj.isValid || assetUTXO === null || senderAddress === config.AVAX_ADDR) {
         wlogger.info(`New avax TXID ${id} is not valid`)
         return memoObj
       }
+
       const { denomination } = assetDescription
       const wholeNumber = parseInt(assetUTXO.amount)
       const amount = wholeNumber / Math.pow(10, denomination)
@@ -212,7 +221,7 @@ class TokenLiquidity {
       wlogger.info(`Processing new avax TXID ${id}.`)
       console.log(`Processing new avax tx with this data ${JSON.stringify(memoObj, null, 2)}.`)
 
-      const lib = _this.avax.slpAvaxBridgeLib
+      const lib = _this.bridge
 
       console.log(' ')
       console.log('Burning')
@@ -225,8 +234,8 @@ class TokenLiquidity {
 
       return memoObj
     } catch (err) {
-      wlogger.error(`Error in token-liquidity.js/proccessAvaxTx(${avaxTx.id})`)
-      console.log('Error in token-liquidity.js/proccessAvaxTx(): ', err)
+      wlogger.error(`Error in token-liquidity.js/processAvaxTx(${avaxTx.id})`)
+      console.log('Error in token-liquidity.js/processAvaxTx(): ', err)
       throw err
     }
   }
@@ -235,7 +244,7 @@ class TokenLiquidity {
     try {
       if (!obj) throw new Error('obj is undefined')
 
-      const lib = _this.avax.slpAvaxBridgeLib
+      const lib = _this.bridge
       const result = await pRetry(() => lib.bch.mintSlp(obj.amount, obj.bchaddr), {
         onFailedAttempt: async error => {
           //   failed attempt.
@@ -316,13 +325,16 @@ class TokenLiquidity {
 
       // User sent tokens.
       if (isTokenTx) {
+        wlogger.info(`${isTokenTx} tokens recieved.`)
+        retObj.type = 'token'
+
         if (!memoTx) {
           // here the refound can be handled
           // since it was an unexpected token tx
-          throw new Error('unexpected token tx')
+          wlogger.info(`${isTokenTx} in unexpected token tx`)
+          await _this.slp.createTokenTx(userAddr, isTokenTx)
+          return retObj
         }
-
-        wlogger.info(`${isTokenTx} tokens recieved.`)
 
         // Run operation to burn the received tokens
         const burnTxID = await _this.bridge.bch.burnSlp(isTokenTx)
@@ -334,7 +346,6 @@ class TokenLiquidity {
         const wholeNumber = parseFloat(isTokenTx)
         const amount = wholeNumber * Math.pow(10, denomination)
 
-        retObj.type = 'token'
         retObj.txid = burnTxID
         retObj.amount = amount
         wlogger.debug(`processTx() retObj: ${JSON.stringify(retObj, null, 2)}`)
