@@ -264,7 +264,7 @@ class AvaxLib {
       }
       const decodedMemo = _this.parseMemoFrom64(memoBase64)
       const [code, bchaddr] = decodedMemo.trim().split(' ')
-      const regex = RegExp(/BCH/ig)
+      const regex = /BCH/ig
       if (!regex.test(code) || !bchaddr) {
         return returnObj
       }
