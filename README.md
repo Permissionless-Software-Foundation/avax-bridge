@@ -6,7 +6,7 @@ This is a node.js JavaScript application that creates a bridge between two block
 
 Sending a token to this app on one chain, will cause the app to burn the tokens on that chain and re-mint them on the other chain. It does not work with general tokens, but only with specific tokens the app is set up to handle. The memo field is used to communicate the address where the newly-minted tokens should be sent.
 
-Additional documenation can be found in the [docs folder](./docs)
+Additional documentation can be found in the [docs folder](./markdown)
 
 
 ## License
