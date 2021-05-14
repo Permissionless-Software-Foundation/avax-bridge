@@ -58,7 +58,7 @@ describe('#slp-lib', () => {
       sandbox.stub(uut.bchjs.SLP.Utils, 'balancesForAddress').resolves([
         {
           tokenId:
-            '155784a206873c98acc09e8dabcccf6abf13c4c14d8662190534138a16bb93ce',
+            'c7cb019764df3a352d9433749330b4b2eb022d8fbc101e68a6943a7a58a8ee84',
           balance: 11999.16572854,
           slpAddress: 'slptest:qpt74e74f75w6s7cd8r9p5fumvdhqf995g69udvd5n',
           decimalCount: 8

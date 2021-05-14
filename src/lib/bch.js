@@ -346,10 +346,15 @@ class BCH {
       // const utxos = await this.bchjs.Blockbook.utxo(appAddr)
       const fulcrumResult = await this.bchjs.Electrumx.utxo(appAddr)
       const utxos = fulcrumResult.utxos
+      const tokenUtxos = await this.bchjs.SLP.Utils.tokenUtxoDetails(utxos)
+
+      const bchUtxos = utxos.filter(
+        (utxo, index) => !tokenUtxos[index].isValid && !utxo.tokenID
+      )
 
       // If the number of UTXOs are less than the minimum, exit this function.
-      if (utxos.length < minUtxos) {
-        console.log('Not enough UTXOs to consolidate')
+      if (bchUtxos.length < minUtxos) {
+        console.log('Not enough BCH UTXOs to consolidate')
         return false
       }
 
@@ -367,14 +372,14 @@ class BCH {
 
       // master HDNode
       let masterHDNode
-      if (this.config.NETWORK === 'mainnet') {
-        masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed)
-      } else masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed, 'testnet') // Testnet
+      if (this.config.NETWORK === 'testnet') {
+        masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed, 'testnet') // Testnet
+      } else masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed)
 
       // HDNode of BIP44 account
       const account = this.bchjs.HDNode.derivePath(
         masterHDNode,
-        "m/44'/145'/0'"
+        "m/44'/245'/0'"
       )
       const changePath = this.bchjs.HDNode.derivePath(account, '0/0')
 
@@ -387,8 +392,8 @@ class BCH {
 
       // Add the satoshis quantity of all UTXOs
       let satoshisAmount = 0
-      for (let i = 0; i < utxos.length; i++) {
-        const utxo = utxos[i]
+      for (let i = 0; i < bchUtxos.length; i++) {
+        const utxo = bchUtxos[i]
         satoshisAmount = satoshisAmount + utxo.value
         transactionBuilder.addInput(utxo.tx_hash, utxo.tx_pos)
       }
@@ -399,7 +404,7 @@ class BCH {
 
       // Get byte count to calculate fee. paying 1 sat/byte
       const byteCount = this.bchjs.BitcoinCash.getByteCount(
-        { P2PKH: utxos.length },
+        { P2PKH: bchUtxos.length },
         { P2PKH: 1 }
       )
       const fee = Math.ceil(1.1 * byteCount)
@@ -415,10 +420,9 @@ class BCH {
 
       // Loop through each input and sign
       let redeemScript
-      for (let i = 0; i < utxos.length; i++) {
-        const utxo = utxos[i]
-        const change = await this.changeAddrFromMnemonic(mnemonic)
-        const keyPair = this.bchjs.HDNode.toKeyPair(change)
+      for (let i = 0; i < bchUtxos.length; i++) {
+        const utxo = bchUtxos[i]
+        const keyPair = this.bchjs.HDNode.toKeyPair(changePath)
 
         transactionBuilder.sign(
           i,
