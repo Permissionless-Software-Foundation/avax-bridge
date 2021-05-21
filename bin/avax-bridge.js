@@ -57,7 +57,7 @@ util.inspect.defaultOptions = {
 
 const TWO_MINUTES = 60000 * 2
 const FIVE_MINUTES = 60000 * 5
-const CONSOLIDATE_INTERVAL = 60000 * 100
+// const CONSOLIDATE_INTERVAL = 60000 * 100
 const PRICE_UPDATE_INTERVAL = 60000 * 5
 let timerHandle
 
@@ -130,15 +130,16 @@ async function startAvaxBridge () {
   }, TWO_MINUTES)
 
   // Interval to consolidate UTXOs (maintenance)
-  setInterval(async function () {
-    const hex = await bch.consolidateUtxos()
+  // setInterval(async function () {
+  //  const hex = await bch.consolidateUtxos()
 
-    // Exit if there is not enough UTXOs to consolidate.
-    if (!hex) return
+  // Exit if there is not enough UTXOs to consolidate.
+  //  if (!hex) return
 
-    wlogger.info('consolidateUtxos hex: ', hex)
-    await bch.broadcastBchTx(hex)
-  }, CONSOLIDATE_INTERVAL)
+  //  wlogger.info('consolidateUtxos hex: ', hex)
+
+  //  await bch.broadcastBchTx(hex)
+  // }, CONSOLIDATE_INTERVAL)
 
   // Interval to update BCH spot price.
   setInterval(async function () {
