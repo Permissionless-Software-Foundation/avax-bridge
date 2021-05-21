@@ -57,7 +57,7 @@ util.inspect.defaultOptions = {
 
 const TWO_MINUTES = 60000 * 2
 const FIVE_MINUTES = 60000 * 5
-//const CONSOLIDATE_INTERVAL = 60000 * 100
+// const CONSOLIDATE_INTERVAL = 60000 * 100
 const PRICE_UPDATE_INTERVAL = 60000 * 5
 let timerHandle
 
