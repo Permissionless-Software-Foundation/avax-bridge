@@ -5,7 +5,7 @@
   "main": "avax-bridge.js",
   "scripts": {
     "start": "NETWORK=mainnet node avax-bridge.js",
-    "test": "export AB_ENV=test && npm run prep-test && NETWORK=testnet  TEST_ENV=unit nyc --reporter=text mocha --exit --timeout 15000 test/unit",
+    "test": "export AB_ENV=test && npm run prep-test && NETWORK=testnet  TEST_ENV=unit nyc --reporter=text mocha --exit --timeout 25000 test/unit",
     "test:integration": "export AB_ENV=test && npm run prep-test && NETWORK=mainnet TEST_ENV=integration nyc --reporter=text mocha --exit --timeout 30000 test/unit",
     "test:temp": "mocha -g '#token-liquidity' test/unit",
     "lint": "standard --env mocha --fix",
@@ -22,7 +22,7 @@
   },
   "repository": "Permissionless-Software-Foundation/avax-bridge",
   "dependencies": {
-    "@psf/bch-js": "4.17.6",
+    "@psf/bch-js": "4.18.1",
     "avalanche": "^3.2.6",
     "axios": "^0.21.1",
     "bcryptjs": "^2.4.3",
@@ -57,7 +57,6 @@
   "devDependencies": {
     "ajv": "^5.5.2",
     "apidoc": "^0.26.0",
-    "bitbox-mock": "^1.0.3",
     "chai": "^4.3.0",
     "coveralls": "^3.1.0",
     "eslint": "7.19.0",
@@ -71,7 +70,7 @@
     "mocha": "^8.2.1",
     "nock": "^10.0.6",
     "nyc": "^15.1.0",
-    "semantic-release": "^17.3.9",
+    "semantic-release": "^17.4.2",
     "sinon": "^9.2.4",
     "standard": "^16.0.3"
   },
