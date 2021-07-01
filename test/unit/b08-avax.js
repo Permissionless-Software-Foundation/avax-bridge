@@ -42,7 +42,7 @@ describe('#avax-lib', () => {
     it('should get Token balance in the given avalanche address', async () => {
       sandbox
         .stub(uut.axios, 'post')
-        .resolves({ status: 200, data: avaxMockData.txHistory })
+        .resolves({ status: 200, data: { transactions: avaxMockData.transactions } })
 
       const addr = 'X-avax150agl543yn0n5z9z20tgmrggs8fc2ckkma4qfv'
 
@@ -126,7 +126,7 @@ describe('#avax-lib', () => {
 
   describe('#justTxs', () => {
     it('should return an array with only the txids', () => {
-      const txHistory = avaxMockData.txHistory.data.transactions.results
+      const txHistory = avaxMockData.transactions
       const txids = uut.justTxs(txHistory)
 
       assert.isArray(txids)
@@ -137,12 +137,12 @@ describe('#avax-lib', () => {
 
   describe('#filterNewTx', () => {
     it('should return only the new txs', () => {
-      const txHistory = avaxMockData.txHistory.data.transactions.results
+      const txHistory = avaxMockData.transactions
       const newTx = avaxMockData.knownTxids.slice(-1)
       const txs = uut.filterNewTx(newTx, txHistory)
 
       assert.isArray(txs)
-      assert.hasAllKeys(txs[0], ['id', 'memo', 'inputs', 'outputs'])
+      assert.hasAllKeys(txs[0], ['id', 'memo', 'inputs', 'outputs', 'chainID', 'type'])
     })
   })
 

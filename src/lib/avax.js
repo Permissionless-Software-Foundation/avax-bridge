@@ -167,93 +167,32 @@ class AvaxLib {
       if (typeof addr !== 'string' || !addr.length) {
         throw new Error('The provided avax address is not valid')
       }
-      let offset = 0
+
       const transactions = []
       let res = []
       // Get transaction history for the address.
-      do {
-        const query = _this.getQuery(addr, offset)
-        const request = await _this.axios.post('https://graphql.avascan.info/', { query })
+      const query = this.getQuery(addr)
+      const request = await _this.axios.post(query)
 
-        if (request.status >= 400) {
-          throw new Error(`No transaction history could be found for ${addr}`)
-        }
+      if (request.status >= 400) {
+        throw new Error(`No transaction history could be found for ${addr}`)
+      }
 
-        res = request.data.data.transactions.results
-        transactions.push(...res)
+      res = request.data.transactions
+      transactions.push(...res)
 
-        offset += _this.limit
-      } while (res.length && res.length >= _this.limit)
-
-      return transactions.reverse()
+      return transactions
     } catch (err) {
       console.error('Error in avax.js/getTransactions(): ', err)
       throw err
     }
   }
 
-  getQuery (addr, offset) {
-    return `{
-      transactions(
-        address: "${addr}"
-        offset: ${offset}
-        limit: ${_this.limit}
-        orderBy: { acceptedAt: "asc" }
-      ) {
-        count
-        results {
-          ... on XBaseTransaction {
-            id
-            chainID
-            type
-            acceptedAt
-            memo
-            inputs {
-              output {
-                id
-                transactionID
-                assetID
-                amount
-                addresses
-                outputType
-              }
-            }
-            outputs {
-              id
-              transactionID
-              assetID
-              outputType
-              amount
-              addresses
-            }
-          }
-          ... on XCreateAssetTransaction {
-            id
-            chainID
-            type
-            acceptedAt
-            inputs {
-              output {
-                id
-                transactionID
-                assetID
-                amount
-                addresses
-                outputType
-              }
-            }
-            outputs {
-              id
-              transactionID
-              assetID
-              outputType
-              amount
-              addresses
-            }
-          }
-        }
-      }
-    }`
+  getQuery (addr) {
+    if (addr.startsWith('X-')) {
+      addr = addr.replace('X-', '')
+    }
+    return `https://explorerapi.avax.network/v2/transactions?address=${addr}&sort=timestamp-desc`
   }
 
   // check the memo field
@@ -303,7 +242,8 @@ class AvaxLib {
   getUserAddress (tx) {
     // The first input represents the sender of the tokens.
     const firstInputs = tx.inputs[0]
-    const address = firstInputs.addresses[0]
+    let address = firstInputs.addresses[0]
+    address = !address.includes('-') ? `X-${address}` : address
     return address
   }
 
@@ -351,7 +291,9 @@ class AvaxLib {
 
     return {
       id: tx.id,
-      memo: tx.memo ?? '',
+      memo: tx.memo || '',
+      type: tx.type,
+      chainID: tx.chainID,
       inputs,
       outputs
     }
@@ -359,6 +301,9 @@ class AvaxLib {
 
   // formats the utxos (inputs, and outputs)
   formatUTXO (utxo, assetID = this.config.AVAX_TOKEN_ID, address = this.config.AVAX_ADDR) {
+    if (address.startsWith('X-')) {
+      address = address.replace('X-', '')
+    }
     const isAddress = utxo.addresses.includes(address)
 
     return {

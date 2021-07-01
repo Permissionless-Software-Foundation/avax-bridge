@@ -24,7 +24,7 @@ describe('#bch-lib', () => {
   let bchMockData
   let tempConfig
 
-  before(() => {})
+  before(() => { })
 
   beforeEach(() => {
     uut = new BCH(config)
@@ -269,6 +269,9 @@ describe('#bch-lib', () => {
 
   describe('#createBchTx', () => {
     it('should send BCH on testnet', async () => {
+      // Mock out down-stream dependencies for a unit test.
+      uut.config.NETWORK = 'testnet'
+
       sandbox.stub(uut.tlUtils, 'openWallet').returns(mockWallet)
 
       sandbox.stub(uut, 'getBCHBalance').resolves(100095602)
@@ -291,6 +294,7 @@ describe('#bch-lib', () => {
     })
 
     it('should stop app if balance is zero', async () => {
+      uut.config.NETWORK = 'mainnet'
       sandbox.stub(uut.tlUtils, 'openWallet').returns(mockWallet)
 
       sandbox.stub(uut, 'getBCHBalance').resolves(0)
