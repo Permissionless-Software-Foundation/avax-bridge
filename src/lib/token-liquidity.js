@@ -168,8 +168,7 @@ class TokenLiquidity {
           //   failed attempt.
           console.log(' ')
           wlogger.info(
-            `Attempt ${error.attemptNumber} failed. There are ${
-              error.retriesLeft
+            `Attempt ${error.attemptNumber} failed. There are ${error.retriesLeft
             } retries left. Waiting 4 minutes before trying again.`
           )
 
@@ -200,14 +199,14 @@ class TokenLiquidity {
       const senderAddress = _this.avax.getUserAddress(avaxTx)
 
       // return tx with tokens but invalid memo
-      if (!memoObj.isValid && assetUTXO !== null && senderAddress !== config.AVAX_ADDR) {
+      if (!memoObj.isValid && assetUTXO && senderAddress !== config.AVAX_ADDR) {
         wlogger.info(`New avax TXID ${id} has an invalid memo field`)
         await _this.avax.sendTokens(senderAddress, parseInt(assetUTXO.amount))
         memoObj.refundTx = true
         return memoObj
       }
 
-      if (!memoObj.isValid || assetUTXO === null || senderAddress === config.AVAX_ADDR) {
+      if (!memoObj.isValid || !assetUTXO || senderAddress === config.AVAX_ADDR) {
         wlogger.info(`New avax TXID ${id} is not valid`)
         return memoObj
       }
@@ -250,8 +249,7 @@ class TokenLiquidity {
           //   failed attempt.
           console.log(' ')
           wlogger.info(
-            `Attempt ${error.attemptNumber} failed. There are ${
-              error.retriesLeft
+            `Attempt ${error.attemptNumber} failed. There are ${error.retriesLeft
             } retries left. Waiting 4 minutes before trying again.`
           )
 
@@ -404,8 +402,7 @@ class TokenLiquidity {
           //   failed attempt.
           console.log(' ')
           wlogger.info(
-            `Attempt ${error.attemptNumber} failed. There are ${
-              error.retriesLeft
+            `Attempt ${error.attemptNumber} failed. There are ${error.retriesLeft
             } retries left. Waiting 4 minutes before trying again.`
           )
 

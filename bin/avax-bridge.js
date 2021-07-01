@@ -240,7 +240,7 @@ async function processingLoop (seenTxs, seenAvaxTxs, waitingList) {
 
       if (hasBroadcasted) {
         timerHandle = setInterval(async function () {
-          await processingLoop(seenTxs, seenAvaxTxs)
+          await processingLoop(seenTxs, seenAvaxTxs, waitingList)
         }, TWO_MINUTES)
       }
 

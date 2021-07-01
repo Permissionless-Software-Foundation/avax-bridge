@@ -368,7 +368,7 @@ const validUtxo = {
     hex: '76a91457eae7d54fa8ed43d869c650d13cdb1b7024a5a288ac',
     reqSigs: 1,
     type: 'pubkeyhash',
-    addresses: ['bchtest:qpt74e74f75w6s7cd8r9p5fumvdhqf995gp3mkk6xw']
+    addresses: ['bchtest:qzsfqeqtdk6plsvglccadkqtf0trf2nyz58090e6tt']
   },
   coinbase: false
 }
