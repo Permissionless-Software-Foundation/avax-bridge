@@ -281,20 +281,6 @@ async function processingLoop (seenTxs, seenAvaxTxs, waitingList) {
       const result = await queue.add(() => lib.pRetryProcessTx(obj, inList, assetDescription))
       // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
-      if (result.type === 'token' && inList) {
-        // wait 5 seconds just in case the Avalanche network has to catch up
-        await sleep(5000)
-        const memoTx = waitingList[memoindex]
-        const obj = {
-          amount: result.amount,
-          addr: memoTx.addr
-        }
-        await queue.add(() => lib.pRetryMintAvax(obj))
-        // remove the tx from the waiting list
-        wlogger.info(`Removing ${memoTx.txid} from waiting list`)
-        waitingList.splice(memoindex, 1)
-      }
-
       // If the app received an opreturn add it to the waitingList
       if (result.type === 'avax') {
         wlogger.info(`Adding ${result.txid} to waiting list`)
@@ -302,6 +288,21 @@ async function processingLoop (seenTxs, seenAvaxTxs, waitingList) {
           txid: result.txid,
           addr: result.addr
         })
+      }
+
+      if (result.type === 'token' || result.isSingleTx) {
+        const txIndex = result.isSingleTx ? waitingList.length - 1 : memoindex
+        // wait 5 seconds just in case the Avalanche network has to catch up
+        await sleep(5000)
+        const memoTx = waitingList[txIndex]
+        const obj = {
+          amount: result.amount,
+          addr: memoTx.addr
+        }
+        await queue.add(() => lib.pRetryMintAvax(obj))
+        // remove the tx from the waiting list
+        wlogger.info(`Removing ${memoTx.txid} from waiting list`)
+        waitingList.splice(txIndex, 1)
       }
 
       // Update the app balances. This temporarily updates the app balances until
@@ -322,7 +323,7 @@ async function processingLoop (seenTxs, seenAvaxTxs, waitingList) {
 
       // Sleep for 5 minutes to give Blockbook time to process the last transaction.
       // If result.txid === null, it's a self-generated TX, so we don't need to wait.
-      if (result.type === 'token') {
+      if (result.type === 'token' || result.op_return) {
         await waitForBlockbook(seenTxs)
       }
 
@@ -390,10 +391,10 @@ async function checkBalances () {
 
     wlogger.info(
       `usdPerBCH: ${state.usdPerBCH}, ` +
-        `tokens in avalanche: ${avaxTokenBal}, ` +
-        `BCH balance: ${state.bchBalance}, ` +
-        `Actual token balance: ${realTokenBal}, ` +
-        `Effective token balance: ${effTokenBal}`
+      `tokens in avalanche: ${avaxTokenBal}, ` +
+      `BCH balance: ${state.bchBalance}, ` +
+      `Actual token balance: ${realTokenBal}, ` +
+      `Effective token balance: ${effTokenBal}`
     )
   } catch (err) {
     wlogger.error('Error in checkBalances(): ', err)

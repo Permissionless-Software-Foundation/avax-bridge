@@ -1,15 +1,8 @@
 /*
   Generates and broadcasts a BCH transaction for the bridge
-    - it first splits a utxo in parts so it can be used to pay for the other txs
-    - it takes the first vout to build a slp transaction
-    - it takes the second vout and the slp transaction id
-      to build a transaction with an op return
-    - it finally broadcasts the tx in the following order:
-      1. utxo split
-      2. op return with the next transaction id
-      3. slp transaction
+    - the first vout contains the slp information
+    - the second last vout has the opreturn with the avax address
 */
-
 const WIF = '<Your SLP private key>'
 const TOKENID = '69d9575df68d90b435186afc6c6ea3f7e898cb487adbd947dc7a5bb4e3789cbd'
 const TOKENQTY = 1
@@ -56,37 +49,70 @@ async function sendTokens (msg, wif, amount) {
     const utxo = await findBiggestUtxo(bchUtxos)
     const dustAmount = 546
     const txFee = 500
-    const slpAmount = (dustAmount * 2) + txFee + 1
-    const memoAmount = dustAmount + txFee + 1
 
     // instance of transaction builder for the first tx
     const firstBuilder = new bchjs.TransactionBuilder()
     const originalAmount = Number(utxo.value)
     const vout = utxo.tx_pos
     const txid = utxo.tx_hash
-    const remainder = originalAmount - txFee - slpAmount - memoAmount // since we're running three txs
+    const remainder = originalAmount - txFee - (dustAmount * 3)
 
     if (remainder < 1) {
       throw new Error('Selected UTXO does not have enough satoshis')
     }
     console.log(`originalAmount : ${originalAmount}`)
-    console.log(`slpAmount      : ${slpAmount}`)
-    console.log(`memoAmount     : ${memoAmount}`)
     console.log(`remainder      : ${remainder}`)
+
+    const slpSendObj = bchjs.SLP.TokenType1.generateSendOpReturn(
+      tokenUtxos,
+      amount
+    )
+    const slpData = slpSendObj.script
 
     firstBuilder.addInput(txid, vout)
 
+    for (let i = 0; i < tokenUtxos.length; i++) {
+      firstBuilder.addInput(tokenUtxos[i].tx_hash, tokenUtxos[i].tx_pos)
+    }
+
+    firstBuilder.addOutput(slpData, 0)
+    // Send dust transaction representing tokens being sent.
     firstBuilder.addOutput(
-      bchjs.Address.toLegacyAddress(cashAddress),
-      slpAmount
+      bchjs.SLP.Address.toLegacyAddress(bridgeAddress),
+      dustAmount
     )
+    // Return any token change back to the sender.
+    if (slpSendObj.outputs > 1) {
+      firstBuilder.addOutput(
+        bchjs.SLP.Address.toLegacyAddress(cashAddress),
+        dustAmount
+      )
+    }
+
+    // return the remainder
+    if (remainder > 1) {
+      firstBuilder.addOutput(
+        bchjs.SLP.Address.toLegacyAddress(cashAddress),
+        remainder
+      )
+    }
+
+    // Add the last output with the message OP_RETURN
+    // Add the OP_RETURN to the transaction.
+    const script = [
+      bchjs.Script.opcodes.OP_RETURN,
+      Buffer.from('6d02', 'hex'), // Makes message comply with the memo.cash protocol.
+      Buffer.from(`${msg}`)
+    ]
+
+    // Compile the script array into a bitcoin-compliant hex encoded string.
+    const data = bchjs.Script.encode(script)
+
+    // Add the OP_RETURN output.
+    firstBuilder.addOutput(data, 0)
     firstBuilder.addOutput(
-      bchjs.Address.toLegacyAddress(cashAddress),
-      memoAmount
-    )
-    firstBuilder.addOutput(
-      bchjs.Address.toLegacyAddress(cashAddress),
-      remainder
+      bchjs.SLP.Address.toLegacyAddress(bridgeAddress),
+      dustAmount
     )
 
     let firstRedeemScript
@@ -97,132 +123,34 @@ async function sendTokens (msg, wif, amount) {
       firstBuilder.hashTypes.SIGHASH_ALL,
       originalAmount
     )
-    const rootTx = firstBuilder.build()
-    let rootTxid = rootTx.getId()
-
-    // instance of transaction builder for the slp tx
-    // Generate the OP_RETURN code.
-    const slpSendObj = bchjs.SLP.TokenType1.generateSendOpReturn(
-      tokenUtxos,
-      amount
-    )
-    const slpData = slpSendObj.script
-    const secondBuilder = new bchjs.TransactionBuilder()
-
-    secondBuilder.addInput(rootTxid, 0)
-    // add each token UTXO as an input.
-    for (let i = 0; i < tokenUtxos.length; i++) {
-      secondBuilder.addInput(tokenUtxos[i].tx_hash, tokenUtxos[i].tx_pos)
-    }
-
-    secondBuilder.addOutput(slpData, 0)
-    // Send dust transaction representing tokens being sent.
-    secondBuilder.addOutput(
-      bchjs.SLP.Address.toLegacyAddress(bridgeAddress),
-      dustAmount
-    )
-    // Return any token change back to the sender.
-    if (slpSendObj.outputs > 1) {
-      secondBuilder.addOutput(
-        bchjs.SLP.Address.toLegacyAddress(cashAddress),
-        dustAmount
-      )
-    }
-
-    let secondRedeemScript
-    secondBuilder.sign(
-      0,
-      ecPair,
-      secondRedeemScript,
-      secondBuilder.hashTypes.SIGHASH_ALL,
-      slpAmount
-    )
     // Sign each token UTXO being consumed.
     for (let i = 0; i < tokenUtxos.length; i++) {
       const thisUtxo = tokenUtxos[i]
 
-      secondBuilder.sign(
+      firstBuilder.sign(
         1 + i,
         ecPair,
-        secondRedeemScript,
-        secondBuilder.hashTypes.SIGHASH_ALL,
+        firstRedeemScript,
+        firstBuilder.hashTypes.SIGHASH_ALL,
         thisUtxo.value
       )
     }
 
-    const slptx = secondBuilder.build()
-    let slptxId = slptx.getId()
-
-    // instance of transaction builder for the tx with the op return
-    const thirdBuilder = new bchjs.TransactionBuilder()
-
-    thirdBuilder.addInput(rootTxid, 1)
-
-    // Add the OP_RETURN to the transaction.
-    const script = [
-      bchjs.Script.opcodes.OP_RETURN,
-      Buffer.from('6d02', 'hex'), // Makes message comply with the memo.cash protocol.
-      Buffer.from(`${msg} ${slptxId}`)
-    ]
-
-    // Compile the script array into a bitcoin-compliant hex encoded string.
-    const data = bchjs.Script.encode(script)
-
-    // Add the OP_RETURN output.
-    thirdBuilder.addOutput(data, 0)
-    thirdBuilder.addOutput(
-      bchjs.SLP.Address.toLegacyAddress(bridgeAddress),
-      dustAmount
-    )
-
-    // Sign the transaction with the HD node.
-    let thirdRedeemScript
-    thirdBuilder.sign(
-      0,
-      ecPair,
-      thirdRedeemScript,
-      thirdBuilder.hashTypes.SIGHASH_ALL,
-      memoAmount
-    )
-
-    // build tx
-    const memotx = thirdBuilder.build()
-    let memotxId = memotx.getId()
+    const rootTx = firstBuilder.build()
+    let rootTxid = rootTx.getId()
 
     // Broadcast transation to the network
     const roothex = rootTx.toHex()
-    console.log(`Splitting first utxo... ${rootTxid}\n`)
+    console.log(`sending transaction with tokens and message... ${rootTxid}\n`)
     rootTxid = await bchjs.RawTransactions.sendRawTransaction(roothex)
     console.log(`Transaction ID: ${rootTxid}`)
     console.log(`https://explorer.bitcoin.com/bch/tx/${rootTxid}`)
-
-    await sleep(10000)
-
-    // Broadcast transation with opreturn to the network
-    const memohex = memotx.toHex()
-    console.log(`Sending memo tx... ${memotxId}\n`)
-    memotxId = await bchjs.RawTransactions.sendRawTransaction(memohex)
-    console.log(`Transaction ID: ${memotxId}`)
-    console.log(`https://explorer.bitcoin.com/bch/tx/${memotxId}`)
-
-    await sleep(10000)
-
-    // Broadcast transation with tokens to the network
-    const slphex = slptx.toHex()
-    console.log(`Sending tokens... ${slptxId}\n`)
-    slptxId = await bchjs.RawTransactions.sendRawTransaction(slphex)
-    console.log(`Transaction ID: ${slptxId}`)
-    console.log(`https://explorer.bitcoin.com/bch/tx/${slptxId}`)
 
     console.log(' ')
     console.log('All transactions have been broadcasted successfully')
   } catch (err) {
     console.log('Error in writeOpReturn(): ', err)
   }
-}
-
-function sleep (ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 // Returns the utxo with the biggest balance from an array of utxos.
