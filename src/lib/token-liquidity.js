@@ -39,7 +39,7 @@ const wlogger = require('./wlogger')
 const util = require('util')
 util.inspect.defaultOptions = { depth: 5 }
 
-const BCH_ADDR1 = config.BCH_ADDR
+// const BCH_ADDR1 = config.BCH_ADDR
 // const TOKEN_ID = config.TOKEN_ID
 
 const BchAvaxBridge = require('slp-avax-bridge')
@@ -321,19 +321,29 @@ class TokenLiquidity {
         tokenBalance: this.tlUtil.round8(newTokenBalance)
       }
 
-      // User sent tokens.
+      // check if the TX contains a valid OP_RETURN code
+      // const opReturnData = await bch.readOpReturn(txid)
+      const opreturn = await bch.readOpReturn(txid, isTokenTx)
+      console.log(opreturn)
+      const hasOPReturn = opreturn.isValid && opreturn.type === 'avax'
+      if (!isTokenTx && !hasOPReturn) {
+        inObj.txid = null
+        return inObj
+      }
+
+      // User sent tokens without valid opreturn
+      if (isTokenTx && !hasOPReturn && !memoTx) {
+        // here the refound can be handled
+        // since it was an unexpected token tx
+        wlogger.info(`${isTokenTx} in unexpected token tx with an invalid OP RETURN`)
+        await _this.slp.createTokenTx(userAddr, isTokenTx)
+
+        return retObj
+      }
+
       if (isTokenTx) {
         wlogger.info(`${isTokenTx} tokens recieved.`)
         retObj.type = 'token'
-
-        if (!memoTx) {
-          // here the refound can be handled
-          // since it was an unexpected token tx
-          wlogger.info(`${isTokenTx} in unexpected token tx`)
-          await _this.slp.createTokenTx(userAddr, isTokenTx)
-          return retObj
-        }
-
         // Run operation to burn the received tokens
         const burnTxID = await _this.bridge.bch.burnSlp(isTokenTx)
 
@@ -346,37 +356,21 @@ class TokenLiquidity {
 
         retObj.txid = burnTxID
         retObj.amount = amount
-        wlogger.debug(`processTx() retObj: ${JSON.stringify(retObj, null, 2)}`)
-        return retObj
+        // wlogger.debug(`processTx() retObj: ${JSON.stringify(retObj, null, 2)}`)
+        // return retObj
       }
 
-      // User sent BCH with a potential opreturn
-      // Get the BCH send amount.
-      let bchQty = await bch.recievedBch(lastTransaction, BCH_ADDR1)
-      wlogger.info(`${bchQty} BCH recieved.`)
+      if (hasOPReturn) {
+        console.log(`The avax address is : ${opreturn.avaxAddress}`)
+        console.log(`The txid with the tokens is : ${opreturn.incomingTxid}`)
 
-      // Ensure bchQty is a number
-      bchQty = Number(bchQty)
-      if (isNaN(bchQty)) {
-        throw new Error('bchQty could not be converted to a number.')
+        retObj.type = 'avax'
+        retObj.txid = opreturn.incomingTxid
+        retObj.addr = opreturn.avaxAddress
+        retObj.isSingleTx = isTokenTx
       }
 
-      // check if the TX contains a valid OP_RETURN code
-      // const opReturnData = await bch.readOpReturn(txid)
-      const opreturn = await bch.readOpReturn(txid)
-      if (!opreturn.isValid || opreturn.type !== 'avax') {
-        inObj.txid = null
-        return inObj
-      }
-
-      console.log(`The avax address is : ${opreturn.avaxAddress}`)
-      console.log(`The txid with the tokens is : ${opreturn.incomingTxid}`)
-
-      retObj.type = 'avax'
-      retObj.txid = opreturn.incomingTxid
-      retObj.addr = opreturn.avaxAddress
       wlogger.debug(`processTx() retObj: ${JSON.stringify(retObj, null, 2)}`)
-
       // Return the data for a new memoTx
       return retObj
     } catch (err) {

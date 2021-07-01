@@ -452,10 +452,10 @@ class BCH {
 
   // Checks BCH transactions to see if they have an OP_RETURN. Returns an object.
   // This method primarily targets AVAX messages that follow this formula.
-  // AVAX <avax address> <slp txid>
+  // AVAX <avax address> <slp txid> or just AVAX <avax address>
   // If no OP_RETURN is present, the isValid property will be false.
   // If OP_RETURN is present, it will attempt to be decoded.
-  async readOpReturn (txid) {
+  async readOpReturn (txid, hasTokens = false) {
     const retObj = {
       isValid: false // Return false by default.
     }
@@ -466,24 +466,26 @@ class BCH {
         txid,
         true
       )
-      // console.log(`txData: ${JSON.stringify(txData, null, 2)}`)
 
+      // console.log(`txData: ${JSON.stringify(txData, null, 2)}`)
+      const [vout] = hasTokens ? txData.vout.slice(-2) : txData.vout
       // Decode the hex into normal text.
       const script = this.bchjs.Script.toASM(
-        Buffer.from(txData.vout[0].scriptPubKey.hex, 'hex')
+        Buffer.from(vout.scriptPubKey.hex, 'hex')
       ).split(' ')
       // console.log(`script: ${JSON.stringify(script, null, 2)}`)
 
       // If there is no OP_RETURN present, then
-      if (script[0] !== 'OP_RETURN') return retObj
+      if (script[0] !== 'OP_RETURN') {
+        return retObj
+      }
 
       // Decode the command
       let cmd = Buffer.from(script[2], 'hex').toString('ascii').trim()
       // Make sure there are no extra spaces
       cmd = cmd.replace(/\s+/g, ' ').split(' ')
       // console.log(`cmd: ${JSON.stringify(cmd, null, 2)}`)
-
-      if (cmd[0].toLowerCase() !== 'avax' || cmd.length < 3) {
+      if (!cmd.length || cmd[0].toLowerCase() !== 'avax') {
         return retObj
       }
 
@@ -498,6 +500,9 @@ class BCH {
         incomingTxid = value
       }
 
+      if (hasTokens) {
+        incomingTxid = txid
+      }
       // failed to find address in op_return
       if (typeof avaxAddress !== 'string' || avaxAddress.length === 0) {
         return retObj
