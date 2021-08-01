@@ -346,10 +346,15 @@ class BCH {
       // const utxos = await this.bchjs.Blockbook.utxo(appAddr)
       const fulcrumResult = await this.bchjs.Electrumx.utxo(appAddr)
       const utxos = fulcrumResult.utxos
+      const tokenUtxos = await this.bchjs.SLP.Utils.tokenUtxoDetails(utxos)
+
+      const bchUtxos = utxos.filter(
+        (utxo, index) => !tokenUtxos[index].isValid && !utxo.tokenID
+      )
 
       // If the number of UTXOs are less than the minimum, exit this function.
-      if (utxos.length < minUtxos) {
-        console.log('Not enough UTXOs to consolidate')
+      if (bchUtxos.length < minUtxos) {
+        console.log('Not enough BCH UTXOs to consolidate')
         return false
       }
 
@@ -367,14 +372,14 @@ class BCH {
 
       // master HDNode
       let masterHDNode
-      if (this.config.NETWORK === 'mainnet') {
-        masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed)
-      } else masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed, 'testnet') // Testnet
+      if (this.config.NETWORK === 'testnet') {
+        masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed, 'testnet') // Testnet
+      } else masterHDNode = this.bchjs.HDNode.fromSeed(rootSeed)
 
       // HDNode of BIP44 account
       const account = this.bchjs.HDNode.derivePath(
         masterHDNode,
-        "m/44'/145'/0'"
+        "m/44'/245'/0'"
       )
       const changePath = this.bchjs.HDNode.derivePath(account, '0/0')
 
@@ -387,8 +392,8 @@ class BCH {
 
       // Add the satoshis quantity of all UTXOs
       let satoshisAmount = 0
-      for (let i = 0; i < utxos.length; i++) {
-        const utxo = utxos[i]
+      for (let i = 0; i < bchUtxos.length; i++) {
+        const utxo = bchUtxos[i]
         satoshisAmount = satoshisAmount + utxo.value
         transactionBuilder.addInput(utxo.tx_hash, utxo.tx_pos)
       }
@@ -399,7 +404,7 @@ class BCH {
 
       // Get byte count to calculate fee. paying 1 sat/byte
       const byteCount = this.bchjs.BitcoinCash.getByteCount(
-        { P2PKH: utxos.length },
+        { P2PKH: bchUtxos.length },
         { P2PKH: 1 }
       )
       const fee = Math.ceil(1.1 * byteCount)
@@ -415,10 +420,9 @@ class BCH {
 
       // Loop through each input and sign
       let redeemScript
-      for (let i = 0; i < utxos.length; i++) {
-        const utxo = utxos[i]
-        const change = await this.changeAddrFromMnemonic(mnemonic)
-        const keyPair = this.bchjs.HDNode.toKeyPair(change)
+      for (let i = 0; i < bchUtxos.length; i++) {
+        const utxo = bchUtxos[i]
+        const keyPair = this.bchjs.HDNode.toKeyPair(changePath)
 
         transactionBuilder.sign(
           i,
@@ -448,10 +452,10 @@ class BCH {
 
   // Checks BCH transactions to see if they have an OP_RETURN. Returns an object.
   // This method primarily targets AVAX messages that follow this formula.
-  // AVAX <avax address> <slp txid>
+  // AVAX <avax address> <slp txid> or just AVAX <avax address>
   // If no OP_RETURN is present, the isValid property will be false.
   // If OP_RETURN is present, it will attempt to be decoded.
-  async readOpReturn (txid) {
+  async readOpReturn (txid, hasTokens = false) {
     const retObj = {
       isValid: false // Return false by default.
     }
@@ -462,24 +466,26 @@ class BCH {
         txid,
         true
       )
-      // console.log(`txData: ${JSON.stringify(txData, null, 2)}`)
 
+      // console.log(`txData: ${JSON.stringify(txData, null, 2)}`)
+      const [vout] = hasTokens ? txData.vout.slice(-2) : txData.vout
       // Decode the hex into normal text.
       const script = this.bchjs.Script.toASM(
-        Buffer.from(txData.vout[0].scriptPubKey.hex, 'hex')
+        Buffer.from(vout.scriptPubKey.hex, 'hex')
       ).split(' ')
       // console.log(`script: ${JSON.stringify(script, null, 2)}`)
 
       // If there is no OP_RETURN present, then
-      if (script[0] !== 'OP_RETURN') return retObj
+      if (script[0] !== 'OP_RETURN') {
+        return retObj
+      }
 
       // Decode the command
       let cmd = Buffer.from(script[2], 'hex').toString('ascii').trim()
       // Make sure there are no extra spaces
       cmd = cmd.replace(/\s+/g, ' ').split(' ')
       // console.log(`cmd: ${JSON.stringify(cmd, null, 2)}`)
-
-      if (cmd[0].toLowerCase() !== 'avax' || cmd.length < 3) {
+      if (!cmd.length || cmd[0].toLowerCase() !== 'avax') {
         return retObj
       }
 
@@ -494,6 +500,9 @@ class BCH {
         incomingTxid = value
       }
 
+      if (hasTokens) {
+        incomingTxid = txid
+      }
       // failed to find address in op_return
       if (typeof avaxAddress !== 'string' || avaxAddress.length === 0) {
         return retObj

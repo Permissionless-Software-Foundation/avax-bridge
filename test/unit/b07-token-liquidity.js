@@ -263,7 +263,7 @@ describe('#token-liquidity', () => {
   describe('#detectNewAvaxTxs', () => {
     it('should return new txs', async () => {
       const knownTxids = avaxMockData.knownTxids
-      const txHistory = avaxMockData.txHistory.data.transactions.results
+      const txHistory = avaxMockData.transactions
 
       const obj = {
         seenAvaxTxs: knownTxids.slice(0, -1)
@@ -274,12 +274,12 @@ describe('#token-liquidity', () => {
       const result = await lib.detectNewAvaxTxs(obj)
 
       assert.isArray(result)
-      assert.hasAllKeys(result[0], ['id', 'memo', 'inputs', 'outputs'])
+      assert.hasAllKeys(result[0], ['id', 'memo', 'inputs', 'outputs', 'chainID', 'type'])
     })
 
     it('should return an empty array if no new txs', async () => {
       const knownTxids = avaxMockData.knownTxids
-      const txHistory = avaxMockData.txHistory.data.transactions.results
+      const txHistory = avaxMockData.transactions
 
       const obj = {
         seenAvaxTxs: knownTxids

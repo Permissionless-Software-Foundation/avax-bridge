@@ -4,25 +4,7 @@ const NETWORK = process.env.NETWORK ? process.env.NETWORK : 'testnet'
 
 let configOut = {}
 
-if (NETWORK === 'mainnet') {
-  // Normal mainnet wallet.
-  configOut = {
-    NETWORK: 'mainnet',
-    port: process.env.PORT || 5000,
-
-    // 145 derivation address.
-    BCH_ADDR: 'bitcoincash:qqd6adqvk0m7cmhjy4736r9dawjt3q8wmqsk3dcx3p',
-
-    // 245 derivation address
-    SLP_ADDR: 'simpleledger:qqd6adqvk0m7cmhjy4736r9dawjt3q8wmqud6kdx0l',
-    AVAX_ADDR: 'X-avax150agl543yn0n5z9z20tgmrggs8fc2ckkma4qfv',
-    AVAX_TOKEN_ID: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
-    TOKENS_QTY_ORIGINAL: 50000,
-    BCH_QTY_ORIGINAL: 250,
-    SLP_TOKEN_ID:
-      '69d9575df68d90b435186afc6c6ea3f7e898cb487adbd947dc7a5bb4e3789cbd'
-  }
-} else {
+if (NETWORK === 'testnet') {
   configOut = {
     NETWORK: 'testnet',
     port: process.env.PORT || 5100,
@@ -36,8 +18,20 @@ if (NETWORK === 'mainnet') {
     AVAX_TOKEN_ID: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
     TOKENS_QTY_ORIGINAL: 50000,
     BCH_QTY_ORIGINAL: 250,
-    SLP_TOKEN_ID:
-      '155784a206873c98acc09e8dabcccf6abf13c4c14d8662190534138a16bb93ce'
+    SLP_TOKEN_ID: 'c7cb019764df3a352d9433749330b4b2eb022d8fbc101e68a6943a7a58a8ee84'
+  }
+} else {
+  // Normal mainnet wallet.
+  configOut = {
+    NETWORK: 'mainnet',
+    port: process.env.PORT || 5000,
+    BCH_ADDR: 'bitcoincash:qrmjjjhz0a7dhp46ymw36l9zd0wcfryahq3s4989yj',
+    SLP_ADDR: 'simpleledger:qrmjjjhz0a7dhp46ymw36l9zd0wcfryahqat77j96v',
+    AVAX_ADDR: 'X-avax1anlgfmys9m7fcu5frkdnga6eajka37lzem8wp4',
+    AVAX_TOKEN_ID: '2Df96yHyhNc3vooieNNhyKwrjEfTsV2ReMo5FKjMpr8vwN4Jqy',
+    TOKENS_QTY_ORIGINAL: 1,
+    BCH_QTY_ORIGINAL: 1,
+    SLP_TOKEN_ID: 'c43eb59134473addee345df4172f4432bd09a8f087ba683462f0d66f8d221213'
   }
 }
 

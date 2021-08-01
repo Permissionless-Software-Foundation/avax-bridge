@@ -11,6 +11,7 @@ const cloneDeep = require('lodash.clonedeep')
 const BCH = require('../../src/lib/bch')
 
 const bchMockDataLib = require('./mocks/bch.mock')
+const slpMockData = require('./mocks/slp.mock')
 const mockWallet = require('./mocks/testwallet.json')
 
 const config = require('../../config')
@@ -24,7 +25,7 @@ describe('#bch-lib', () => {
   let bchMockData
   let tempConfig
 
-  before(() => {})
+  before(() => { })
 
   beforeEach(() => {
     uut = new BCH(config)
@@ -269,6 +270,9 @@ describe('#bch-lib', () => {
 
   describe('#createBchTx', () => {
     it('should send BCH on testnet', async () => {
+      // Mock out down-stream dependencies for a unit test.
+      uut.config.NETWORK = 'testnet'
+
       sandbox.stub(uut.tlUtils, 'openWallet').returns(mockWallet)
 
       sandbox.stub(uut, 'getBCHBalance').resolves(100095602)
@@ -291,6 +295,7 @@ describe('#bch-lib', () => {
     })
 
     it('should stop app if balance is zero', async () => {
+      uut.config.NETWORK = 'mainnet'
       sandbox.stub(uut.tlUtils, 'openWallet').returns(mockWallet)
 
       sandbox.stub(uut, 'getBCHBalance').resolves(0)
@@ -462,6 +467,24 @@ describe('#bch-lib', () => {
       // console.log(`opReturnData: ${JSON.stringify(opReturnData, null, 2)}`)
 
       assert.equal(opReturnData.isValid, false)
+    })
+
+    it('should process a valid AVAX command in a tx with multiple OP RETURNS', async () => {
+      // Mock network calls.
+      sandbox
+        .stub(uut.bchjs.RawTransactions, 'getRawTransaction')
+        .resolves(slpMockData.withTwoOPReturns)
+
+      const txid =
+        'd0756d0a25680e3e8b95d8e03d64fdd0f1654755eb4e2f7a1b079c74833af919'
+
+      const opReturnData = await uut.readOpReturn(txid, true)
+      // console.log(`opReturnData: ${JSON.stringify(opReturnData, null, 2)}`)
+
+      assert.equal(opReturnData.isValid, true)
+      assert.equal(opReturnData.type, 'avax')
+      assert.property(opReturnData, 'avaxAddress')
+      assert.property(opReturnData, 'incomingTxid')
     })
 
     it('should processes a valid AVAX command', async () => {

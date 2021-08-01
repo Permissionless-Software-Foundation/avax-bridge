@@ -27,7 +27,7 @@ describe('#slp-lib', () => {
   let uut
   let tempConfig
 
-  before(() => {})
+  before(() => { })
 
   beforeEach(() => {
     uut = new SLP(config)
@@ -58,7 +58,7 @@ describe('#slp-lib', () => {
       sandbox.stub(uut.bchjs.SLP.Utils, 'balancesForAddress').resolves([
         {
           tokenId:
-            '155784a206873c98acc09e8dabcccf6abf13c4c14d8662190534138a16bb93ce',
+            'c7cb019764df3a352d9433749330b4b2eb022d8fbc101e68a6943a7a58a8ee84',
           balance: 11999.16572854,
           slpAddress: 'slptest:qpt74e74f75w6s7cd8r9p5fumvdhqf995g69udvd5n',
           decimalCount: 8
@@ -322,6 +322,7 @@ describe('#slp-lib', () => {
 
     it('should generate a transaction', async () => {
       try {
+        uut.config.NETWORK = 'testnet'
         // Mock out down-stream dependencies for a unit test.
         sandbox.stub(uut.tlUtils, 'openWallet').returns(mockWallet)
         // sandbox.stub(slp.bchjs.Blockbook, 'utxo').resolves(slpMockData.utxos)
@@ -344,8 +345,6 @@ describe('#slp-lib', () => {
         const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
         const qty = 1
 
-        console.log(tempConfig)
-
         const result = await uut.createTokenTx(addr, qty, 245)
         // console.log(`result: ${JSON.stringify(result, null, 2)}`)
 
@@ -358,6 +357,7 @@ describe('#slp-lib', () => {
 
     it('should throw an error if remainder has less than dust', async () => {
       try {
+        uut.config.NETWORK = 'mainnet'
         // Modify the mock data to force the error for this test.
         slpMockDataCopy.utxos[0].value = '1500'
 
@@ -460,6 +460,12 @@ describe('#slp-lib', () => {
 
     it('should generate a transaction hex for testnet', async () => {
       // Mock out down-stream dependencies for a unit test.
+      tempConfig.NETWORK = 'testnet'
+      tempConfig.BCH_ADDR = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
+      tempConfig.SLP_ADDR = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
+
+      uut = new SLP(tempConfig)
+
       sandbox.stub(uut.tlUtils, 'openWallet').returns(mockWallet)
       sandbox
         .stub(uut.bchjs.Electrumx, 'utxo')
