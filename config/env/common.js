@@ -1,39 +1,34 @@
 // Establish the network, default to 'mainnet'
 // const NETWORK = process.env.NETWORK ? process.env.NETWORK : `mainnet`
-const NETWORK = process.env.NETWORK ? process.env.NETWORK : 'testnet'
+const NETWORK = process.env.NETWORK ? process.env.NETWORK : 'mainnet'
 
 let configOut = {}
 
-if (NETWORK === 'testnet') {
-  configOut = {
-    NETWORK: 'testnet',
-    port: process.env.PORT || 5100,
-
-    // 145 derivation path
-    BCH_ADDR: 'bchtest:qpl7x6u3pmwhf7ekjgqpjgy9fawgy9k5du0z8a8szj',
-
-    // 245 derivation path
-    SLP_ADDR: 'slptest:qptg4zdvrtxhxw4dyhvrqsjkae0tp58efg5layz4n5',
-    AVAX_ADDR: 'X-avax150agl543yn0n5z9z20tgmrggs8fc2ckkma4qfv',
-    AVAX_TOKEN_ID: '2tEi6r6PZ9VXHogUmkCzvijmW81TRNjtKWnR4FA55zTPc87fxC',
-    TOKENS_QTY_ORIGINAL: 50000,
-    BCH_QTY_ORIGINAL: 250,
-    SLP_TOKEN_ID: 'c7cb019764df3a352d9433749330b4b2eb022d8fbc101e68a6943a7a58a8ee84'
-  }
-} else {
-  // Normal mainnet wallet.
-  configOut = {
-    NETWORK: 'mainnet',
-    port: process.env.PORT || 5000,
-    BCH_ADDR: 'bitcoincash:qrmjjjhz0a7dhp46ymw36l9zd0wcfryahq3s4989yj',
-    SLP_ADDR: 'simpleledger:qrmjjjhz0a7dhp46ymw36l9zd0wcfryahqat77j96v',
-    AVAX_ADDR: 'X-avax1anlgfmys9m7fcu5frkdnga6eajka37lzem8wp4',
-    AVAX_TOKEN_ID: '2Df96yHyhNc3vooieNNhyKwrjEfTsV2ReMo5FKjMpr8vwN4Jqy',
-    TOKENS_QTY_ORIGINAL: 1,
-    BCH_QTY_ORIGINAL: 1,
-    SLP_TOKEN_ID: 'c43eb59134473addee345df4172f4432bd09a8f087ba683462f0d66f8d221213'
-  }
+// Normal mainnet wallet.
+configOut = {
+  NETWORK: NETWORK,
+  port: process.env.PORT || 5000,
+  BCH_ADDR: process.env.BCH_ADDR
+    ? process.env.BCH_ADDR
+    : 'bitcoincash:qrmjjjhz0a7dhp46ymw36l9zd0wcfryahq3s4989yj',
+  SLP_ADDR: process.env.SLP_ADDR
+    ? process.env.SLP_ADDR
+    : 'simpleledger:qrmjjjhz0a7dhp46ymw36l9zd0wcfryahqat77j96v',
+  AVAX_ADDR: process.env.AVAX_X_ADDR
+    ? process.env.AVAX_X_ADDR
+    : 'X-avax1anlgfmys9m7fcu5frkdnga6eajka37lzem8wp4',
+  AVAX_TOKEN_ID: process.env.AVAX_TOKEN
+    ? process.env.AVAX_TOKEN
+    : '2Df96yHyhNc3vooieNNhyKwrjEfTsV2ReMo5FKjMpr8vwN4Jqy',
+  TOKENS_QTY_ORIGINAL: 1,
+  BCH_QTY_ORIGINAL: 1,
+  SLP_TOKEN_ID: process.env.SLP_TOKENID
+    ? process.env.SLP_TOKENID
+    : 'c43eb59134473addee345df4172f4432bd09a8f087ba683462f0d66f8d221213'
 }
+
+// Env vars for slp-avax-bridge lib.
+process.env.TOKENID = configOut.SLP_TOKEN_ID
 
 configOut.logPass = 'test'
 // Avalanche Wallet key
