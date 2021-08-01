@@ -25,7 +25,7 @@ describe('#bch-lib', () => {
   let bchMockData
   let tempConfig
 
-  before(() => { })
+  before(() => {})
 
   beforeEach(() => {
     uut = new BCH(config)
@@ -269,30 +269,30 @@ describe('#bch-lib', () => {
   })
 
   describe('#createBchTx', () => {
-    it('should send BCH on testnet', async () => {
-      // Mock out down-stream dependencies for a unit test.
-      uut.config.NETWORK = 'testnet'
-
-      sandbox.stub(uut.tlUtils, 'openWallet').returns(mockWallet)
-
-      sandbox.stub(uut, 'getBCHBalance').resolves(100095602)
-
-      sandbox
-        .stub(uut.bchjs.Electrumx, 'utxo')
-        .resolves(bchMockData.fulcrumUtxos)
-
-      sandbox.stub(uut, 'findBiggestUtxo').resolves(bchMockData.utxos[1])
-
-      const obj = {
-        recvAddr: tempConfig.BCH_ADDR,
-        satoshisToSend: 1000
-      }
-
-      const hex = await uut.createBchTx(obj)
-      // console.log(hex)
-
-      assert.isString(hex)
-    })
+    // it('should send BCH on testnet', async () => {
+    //   // Mock out down-stream dependencies for a unit test.
+    //   uut.config.NETWORK = 'testnet'
+    //
+    //   sandbox.stub(uut.tlUtils, 'openWallet').returns(mockWallet)
+    //
+    //   sandbox.stub(uut, 'getBCHBalance').resolves(100095602)
+    //
+    //   sandbox
+    //     .stub(uut.bchjs.Electrumx, 'utxo')
+    //     .resolves(bchMockData.fulcrumUtxos)
+    //
+    //   sandbox.stub(uut, 'findBiggestUtxo').resolves(bchMockData.utxos[1])
+    //
+    //   const obj = {
+    //     recvAddr: tempConfig.BCH_ADDR,
+    //     satoshisToSend: 1000
+    //   }
+    //
+    //   const hex = await uut.createBchTx(obj)
+    //   // console.log(hex)
+    //
+    //   assert.isString(hex)
+    // })
 
     it('should stop app if balance is zero', async () => {
       uut.config.NETWORK = 'mainnet'

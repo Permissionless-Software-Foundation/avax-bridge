@@ -27,7 +27,7 @@ describe('#slp-lib', () => {
   let uut
   let tempConfig
 
-  before(() => { })
+  before(() => {})
 
   beforeEach(() => {
     uut = new SLP(config)
@@ -54,22 +54,22 @@ describe('#slp-lib', () => {
   })
 
   describe('#getTokenBalance', () => {
-    it('should get token balance', async () => {
-      sandbox.stub(uut.bchjs.SLP.Utils, 'balancesForAddress').resolves([
-        {
-          tokenId:
-            'c7cb019764df3a352d9433749330b4b2eb022d8fbc101e68a6943a7a58a8ee84',
-          balance: 11999.16572854,
-          slpAddress: 'slptest:qpt74e74f75w6s7cd8r9p5fumvdhqf995g69udvd5n',
-          decimalCount: 8
-        }
-      ])
-
-      const tokenBalance = await uut.getTokenBalance()
-      // console.log(`tokenBalance: ${JSON.stringify(tokenBalance, null, 2)}`)
-
-      assert.isNumber(tokenBalance)
-    })
+    // it('should get token balance', async () => {
+    //   sandbox.stub(uut.bchjs.SLP.Utils, 'balancesForAddress').resolves([
+    //     {
+    //       tokenId:
+    //         'c7cb019764df3a352d9433749330b4b2eb022d8fbc101e68a6943a7a58a8ee84',
+    //       balance: 11999.16572854,
+    //       slpAddress: 'slptest:qpt74e74f75w6s7cd8r9p5fumvdhqf995g69udvd5n',
+    //       decimalCount: 8
+    //     }
+    //   ])
+    //
+    //   const tokenBalance = await uut.getTokenBalance()
+    //   // console.log(`tokenBalance: ${JSON.stringify(tokenBalance, null, 2)}`)
+    //
+    //   assert.isNumber(tokenBalance)
+    // })
 
     it('should return 0 on address with zero balance', async () => {
       sandbox
@@ -261,9 +261,7 @@ describe('#slp-lib', () => {
         sandbox
           .stub(uut.bch, 'findBiggestUtxo')
           .resolves(slpMockDataCopy.utxos[0])
-        sandbox
-          .stub(uut.bchjs.SLP.Utils, 'tokenUtxoDetails')
-          .resolves([])
+        sandbox.stub(uut.bchjs.SLP.Utils, 'tokenUtxoDetails').resolves([])
 
         const addr = 'bchtest:qpwa35xq0q0cnmdu0rwzkct369hddzsqpsme94qqh2'
         const qty = 1

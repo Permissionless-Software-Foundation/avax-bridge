@@ -71,6 +71,7 @@ system-user-*.json
 
 start-token-liquidity.sh
 start-avax-bridge.sh
+wallet.json
 
 !README.md
 docs
